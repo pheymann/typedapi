@@ -1,5 +1,5 @@
 # Typedapi
-Build type safe APIs and let the Scala compiler do the rest:
+Define type safe APIs and let the Scala compiler do the rest:
 
 ```Scala
 import typedapi.client._
