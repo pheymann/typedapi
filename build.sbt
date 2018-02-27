@@ -54,7 +54,8 @@ lazy val commonSettings = Seq(
     case Some((2, 12)) => `compiler-2.12`
     case Some((2, 11)) => `compiler-2.11`
     case _             => Seq.empty[String]
-  }}
+  }},
+  publishTo := sonatypePublishTo.value
 )
 
 lazy val mavenSettings = Seq(
