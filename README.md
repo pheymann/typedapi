@@ -47,6 +47,12 @@ sbt "+ publishLocal"
 
 A Maven artifact is published and will be available soon.
 
+## Topics
+ - [How to use it](#how-to-use-it)
+ - [Add client support](#add-client-support)
+ - [Dependencies](#dependencies)
+ - [Contribution](#contribution)
+
 ## How to use it
 ### Basic structure
 An API endpoint always starts with `:= :>` followed by any number of `ApiElement`s. Every `ApiElement` can be used as initial element.
