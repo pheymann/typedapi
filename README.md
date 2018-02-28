@@ -130,7 +130,7 @@ val Api3 = := :> "find" :> Delete[Foo]
 ```
 
 ### Compile and run executable
-```
+```Scala
 val Api = := :> "fetch" :> Segment[String]('name) :> Get[User]
 val api = compile(transform(api))
 ```
