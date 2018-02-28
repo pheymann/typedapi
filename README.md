@@ -37,7 +37,17 @@ Support is planned for:
   - [akka-http](https://github.com/akka/akka-http)
 
 ## Get this library
-It is available for Scala 2.11 and 2.12 and can be install as local build:
+It is available for Scala 2.11 and 2.12 and can downloaded as Maven artifact:
+
+```
+// dsl
+"com.github.pheymann" %% "typedapi-client" % 0.1.0-M1
+
+// http4s support
+"com.github.pheymann" %% "typedapi-http4s-client" % 0.1.0-M1
+```
+
+You can also build on your machine:
 
 ```
 git clone https://github.com/pheymann/typedapi.git
