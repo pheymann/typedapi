@@ -168,7 +168,7 @@ find("John").run[IO]
 ```
 
 ## Add client support
-To enable **typedapi** to use a client library not supported yet you have to implement a (small) API called [ApiRequest](https://github.com/pheymann/typedapi/client/src/main/scala/typedapi/client/ApiRequest.scala). Take a look at [http4s](https://github.com/http4s/http4s) for an example.
+To enable **typedapi** to use a client library not supported yet you have to implement a (small) API called [ApiRequest](https://github.com/pheymann/typedapi/blob/master/client/src/main/scala/typedapi/client/ApiRequest.scala). Take a look at [http4s](https://github.com/pheymann/typedapi/blob/master/http4s-client/src/main/scala/typedapi/client/http4s/package.scala) for an example.
 
 ## Dependencies
  - [shapeless 2.3.3](https://github.com/milessabin/shapeless/)
