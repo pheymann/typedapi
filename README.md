@@ -12,7 +12,7 @@ val MyApi =
   (:= :> "fetch" :> "user" :> Query[String]('sortBy) :> Get[List[User]]) :|:
   (:= :> "create" :> "user" :> ReqBody[User] :> Post[Unit])
 
-val (fetch :|: create :|: :=) = compile(transform(MyApi))
+val (fetch :|: create :|: =:) = compile(transform(MyApi))
 
 import typedapi.client.http4s._
 import cats.effect.IO
