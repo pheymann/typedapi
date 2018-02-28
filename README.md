@@ -15,6 +15,8 @@ val MyApi =
 val (fetch :|: create :|: :=) = compile(transform(MyApi))
 
 import typedapi.client.http4s._
+import cats.effect.IO
+import org.http4s.client.blaze.Http1Client
 
 fetch("age").run[IO]: IO[List[User]]
 ```
@@ -43,7 +45,7 @@ cd typedapi
 sbt "+ publishLocal"
 ```
 
-A Maven artifact will be available soon.
+A Maven artifact is published and will be available soon.
 
 ## How to use it
 ### Basic structure
@@ -52,7 +54,7 @@ An API endpoint always starts with `:= :>` followed by any number of `ApiElement
 #### Path
 ```Scala
 // /find/user
-val api = := :> "find" :> "user"
+val Api = := :> "find" :> "user"
 ```
 
 Can be followed by:
@@ -66,7 +68,7 @@ Can be followed by:
 #### Segment
 ```Scala
 // /find/{name: String}
-val api = := :> "find" :> Segment[String]('name) ...
+val Api = := :> "find" :> Segment[String]('name) ...
 ```
  
 Can be followed by:
@@ -80,10 +82,10 @@ Can be followed by:
 #### Query
 ```Scala
 // /find?name={value: String}
-val api = := :> "find" :> Query[String]('name)
+val Api = := :> "find" :> Query[String]('name)
 
 // /find?name={value0, value1, ...}
-val api = := :> "find" :> Query[List[String]]('name)
+val Api = := :> "find" :> Query[List[String]]('name)
 ```
 Can be followed by:
  - `Query`
@@ -94,11 +96,11 @@ Can be followed by:
 #### Header
 ```Scala
 // /find - Header: name={value: String}
-val api = := :> "find" :> Header[String]('name)
+val Api0 = := :> "find" :> Header[String]('name)
 
 // /find - Headers: Map[String, String]
 // UNSAFE convenience input, expects a `rawHeaders: Map[String, String]`
-val api = := :> "find" :> RawHeaders
+val Api1 = := :> "find" :> RawHeaders
 ```
 Can be followed by:
  - `Header`
@@ -108,17 +110,17 @@ Can be followed by:
 #### ReqBody
 ```Scala
 // /find - `body: Foo`
-val api = := :> "find" :> ReqBody[Foo]
+val Api = := :> "find" :> ReqBody[Foo]
 ```
 Can be followed by:
  - a method: `Get`, ...
 
 #### Method
 ```Scala
-val api0 = := :> "find" :> Get[Foo]
-val api1 = := :> "find" :> Put[Foo]
-val api2 = := :> "find" :> Post[Foo]
-val api3 = := :> "find" :> Delete[Foo]
+val Api0 = := :> "find" :> Get[Foo]
+val Api1 = := :> "find" :> Put[Foo]
+val Api2 = := :> "find" :> Post[Foo]
+val Api3 = := :> "find" :> Delete[Foo]
 ```
 
 ### Compile and run executable
