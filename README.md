@@ -36,6 +36,8 @@ Support is planned for:
   - API for server side
   - [akka-http](https://github.com/akka/akka-http)
 
+When **typedapi** is enabled on the server-side we are able to use this library to build API contracts between clients and servers.
+
 ## Get this library
 It is available for Scala 2.11 and 2.12 and can downloaded as Maven artifact:
 
