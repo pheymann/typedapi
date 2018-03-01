@@ -23,68 +23,49 @@ final class ApiCompilerSpec extends Specification {
 
     "single api" >> {
       "method" >> {
-        val t0   = transform(:= :> Get[ReqInput])
-        val api0 = compile(t0)
+        val api0 = compile(transform(:= :> Get[ReqInput]))
         api0().run[Id] === ReqInput("GET", Nil, Map(), Map())
-
-        val t1   = transform(:= :> Put[ReqInput])
-        val api1 = compile(t1)
+        val api1 = compile(transform(:= :> Put[ReqInput]))
         api1().run[Id] === ReqInput("PUT", Nil, Map(), Map())
-
-        val t2   = transform(:= :> Post[ReqInput])
-        val api2 = compile(t2)
+        val api2 = compile(transform(:= :> Post[ReqInput]))
         api2().run[Id] === ReqInput("POST", Nil, Map(), Map())
-
-        val t3   = transform(:= :> Delete[ReqInput])
-        val api3 = compile(t3)
+        val api3 = compile(transform(:= :> Delete[ReqInput]))
         api3().run[Id] === ReqInput("DELETE", Nil, Map(), Map())
       }
       
       "segment" >> {
-        val t0   = transform(:= :> Segment[Int]('i0) :> Get[ReqInput])
-        val api0 = compile(t0)
+        val api0 = compile(transform(:= :> Segment[Int]('i0) :> Get[ReqInput]))
         api0(0).run[Id] === ReqInput("GET", "0" :: Nil, Map(), Map())
-
-        val t1   = transform(:= :> Segment[Int]('i0) :> Segment[Int]('i1) :> Get[ReqInput])
-        val api1 = compile(t1)
+        val api1 = compile(transform(:= :> Segment[Int]('i0) :> Segment[Int]('i1) :> Get[ReqInput]))
         api1(0, 1).run[Id] === ReqInput("GET", "0" :: "1" :: Nil, Map(), Map())
       }
 
       "query" >> {
-        val t0   = transform(:= :> Query[Int]('i0) :> Get[ReqInput])
-        val api0 = compile(t0)
+        val api0 = compile(transform(:= :> Query[Int]('i0) :> Get[ReqInput]))
         api0(0).run[Id] === ReqInput("GET", Nil, Map("i0" -> List("0")), Map())
-
-        val t1   = transform(:= :> Query[Int]('i0) :> Query[Int]('i1) :> Get[ReqInput])
-        val api1 = compile(t1)
+        val api1 = compile(transform(:= :> Query[Int]('i0) :> Query[Int]('i1) :> Get[ReqInput]))
         api1(0, 1).run[Id] === ReqInput("GET", Nil, Map("i0" -> List("0"), "i1" -> List("1")), Map())
       }
 
       "header" >> {
-        val t0   = transform(:= :> Header[Int]('i0) :> Get[ReqInput])
-        val api0 = compile(t0)
+        val api0 = compile(transform(:= :> Header[Int]('i0) :> Get[ReqInput]))
         api0(0).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0"))
-
-        val t1   = transform(:= :> Header[Int]('i0) :> Header[Int]('i1) :> Get[ReqInput])
-        val api1 = compile(t1)
+        val api1 = compile(transform(:= :> Header[Int]('i0) :> Header[Int]('i1) :> Get[ReqInput]))
         api1(0, 1).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0", "i1" -> "1"))
       }
 
       "raw header" >> {
-        val t0   = transform(:= :> RawHeaders :> Get[ReqInput])
-        val api0 = compile(t0)
+        val api0 = compile(transform(:= :> RawHeaders :> Get[ReqInput]))
         api0(Map("i0" -> "0")).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0"))
       }
 
       "request body" >> {
-        val t0   = transform(:= :> ReqBody[Int] :> Put[ReqInputWithBody[Int]])
-        val api0 = compile(t0)
+        val api0 = compile(transform(:= :> ReqBody[Int] :> Put[ReqInputWithBody[Int]]))
         api0(0).run[Id] === ReqInputWithBody("PUT", Nil, Map(), Map(), 0)
       }
 
       "path" >> {
-        val t0   = transform(:= :> "hello" :> "world" :> Get[ReqInput])
-        val api0 = compile(t0)
+        val api0 = compile(transform(:= :> "hello" :> "world" :> Get[ReqInput]))
         api0().run[Id] === ReqInput("GET", "hello" :: "world" :: Nil, Map(), Map())
       }
     }
