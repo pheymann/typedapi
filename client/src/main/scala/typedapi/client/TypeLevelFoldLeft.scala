@@ -6,27 +6,18 @@ import scala.annotation.implicitNotFound
 
 /** Reimplements shapeles Case2 but on the type level (no real HList instance) */
 @implicitNotFound("Cannot find TypeLevelFoldFunction instance for input = ${In}")
-sealed trait TypeLevelFoldFunction[H, In] extends Serializable {
+sealed trait TypeLevelFoldFunction[In, Agg] {
 
   type Out
-
-  def apply(agg: In): Out
 }
 
 object TypeLevelFoldFunction {
 
-  type Aux[H, In, Out0] = TypeLevelFoldFunction[H, In] { type Out = Out0 }
+  type Aux[In, Agg, Out0] = TypeLevelFoldFunction[In, Agg] { type Out = Out0 }
 
-  final class FoldFunctionHelper[H, In] {
-
-    def apply[Out0](f: In => Out0): Aux[H, In, Out0] = new TypeLevelFoldFunction[H, In] {
-      type Out = Out0
-
-      def apply(agg: In) = f(agg)
-    }
+  def at[In, Agg, Out0]: Aux[In, Agg, Out0] = new TypeLevelFoldFunction[In, Agg] {
+    type Out = Out0
   }
-
-  def at[H, In] = new FoldFunctionHelper[H, In]
 }
 
 /** Reimplements shapeless LeftFolder but on the type level (no real HList instance) */
@@ -34,8 +25,6 @@ object TypeLevelFoldFunction {
 sealed trait TypeLevelFoldLeft[H <: HList, Agg] extends Serializable {
 
   type Out
-
-  def apply(agg: Agg): Out
 }
 
 object TypeLevelFoldLeft {
@@ -49,15 +38,11 @@ trait TypeLevelFoldLeftLowPrio {
 
   implicit def hnilCase[Agg]: TypeLevelFoldLeft.Aux[HNil, Agg, Agg] = new TypeLevelFoldLeft[HNil, Agg] {
     type Out = Agg
-
-    def apply(agg: Agg): Out = agg
   }
 
   implicit def foldCase[H, T <: HList, Agg, FtOut, FOut](implicit f: TypeLevelFoldFunction.Aux[H, Agg, FtOut], 
                                                                   next: Lazy[TypeLevelFoldLeft.Aux[T, FtOut, FOut]]): TypeLevelFoldLeft.Aux[H :: T, Agg, FOut] = new TypeLevelFoldLeft[H :: T, Agg] {
-    type Out = FOut
-
-    def apply(agg: Agg): Out = next.value(f(agg))
+    type Out = next.value.Out
   }
 }
 
@@ -78,8 +63,8 @@ object TypeLevelFoldLeftList {
 
 trait TypeLevelFoldLeftListLowPrio {
 
-  implicit def lastFoldLeftList[Api <: HList](implicit folder0: Folder[Api]) = new TypeLevelFoldLeftList[Api :: HNil] {
-    type In  = Api
+  implicit def lastFoldLeftList[H <: HList, Agg](implicit folder0: TypeLevelFoldLeft[H, Agg]) = new TypeLevelFoldLeftList[H :: HNil] {
+    type In  = H
     type Out = folder0.Out :: HNil
   }
 

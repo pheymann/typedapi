@@ -32,7 +32,7 @@ final class ApiCompilerSpec extends Specification {
         val api3 = compile(transform(:= :> Delete[ReqInput]))
         api3().run[Id] === ReqInput("DELETE", Nil, Map(), Map())
       }
-
+      
       "segment" >> {
         val api0 = compile(transform(:= :> Segment[Int]('i0) :> Get[ReqInput]))
         api0(0).run[Id] === ReqInput("GET", "0" :: Nil, Map(), Map())
