@@ -27,7 +27,6 @@ final class ApiTransformerSpec {
   test[HeaderParam[fooW.T, String] :: HNil, (HeaderInput :: HNil, FieldType[fooW.T, String] :: HNil)]
   test[RawHeaders.type :: HNil, (RawHeadersInput :: HNil, FieldType[RawHeadersField.T, Map[String, String]] :: HNil)]
 
-
   test[
     Get[Foo] :: HeaderParam[fooW.T, Boolean] :: QueryParam[fooW.T, Int] :: SegmentParam[fooW.T, String] :: Path[pathW.T] :: HNil, 
     (pathW.T :: SegmentInput :: QueryInput :: HeaderInput :: GetCall[Foo] :: HNil, FieldType[fooW.T, String] :: FieldType[fooW.T, Int] :: FieldType[fooW.T, Boolean] :: HNil)
