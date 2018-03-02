@@ -87,7 +87,16 @@ lazy val mavenSettings = Seq(
 lazy val typedapi = project
   .in(file("."))
   .settings(commonSettings: _*)
-  .aggregate(client, `http4s-client`)
+  .aggregate(shared, client, server, `http4s-client`)
+
+lazy val shared = project
+  .in(file("shared"))
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-shared",
+    libraryDependencies ++= Dependencies.shared
+  )
 
 lazy val client = project
   .in(file("client"))
@@ -97,6 +106,17 @@ lazy val client = project
     name := "typedapi-client",
     libraryDependencies ++= Dependencies.client
   )
+  .dependsOn(shared)
+
+lazy val server = project
+  .in(file("server"))
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-server",
+    libraryDependencies ++= Dependencies.server
+  )
+  .dependsOn(shared)
 
 lazy val `http4s-client` = project
   .in(file("http4s-client"))

@@ -1,4 +1,4 @@
-package typedapi.client
+package typedapi.shared
 
 import shapeless._
 

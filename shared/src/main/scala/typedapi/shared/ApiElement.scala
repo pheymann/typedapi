@@ -1,4 +1,4 @@
-package typedapi.client
+package typedapi.shared
 
 import shapeless.Witness
 
@@ -8,7 +8,7 @@ sealed trait ApiElement
   * 
   * @param wit singleton type of static path element
   */
-final case class Path[S](wit: Witness.Lt[S]) extends ApiElement
+final case class PathElement[S](wit: Witness.Lt[S]) extends ApiElement
 
 /** Dynamically set segment within an URI which has a unique name to reference it on input.
   * 
@@ -47,14 +47,14 @@ final class HeaderHelper[A] {
   * 
   * @param headers
   */
-case object RawHeaders extends ApiElement
+case object RawHeadersParam extends ApiElement
 
 /** Request body type description. */
-final case class ReqBody[A]() extends ApiElement
+final case class ReqBodyElement[A]() extends ApiElement
 
-final case class Get[A]() extends ApiElement
-final case class Put[A]() extends ApiElement
-final case class PutWithBody[Bd, A]() extends ApiElement
-final case class Post[A]() extends ApiElement
-final case class PostWithBody[Bd, A]() extends ApiElement
-final case class Delete[A]() extends ApiElement
+final case class GetElement[A]() extends ApiElement
+final case class PutElement[A]() extends ApiElement
+final case class PutWithBodyElement[Bd, A]() extends ApiElement
+final case class PostElement[A]() extends ApiElement
+final case class PostWithBodyElement[Bd, A]() extends ApiElement
+final case class DeleteElement[A]() extends ApiElement

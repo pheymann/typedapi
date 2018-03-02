@@ -2,9 +2,17 @@ import sbt._
 
 object Dependencies {
 
-  val client = Seq(
+  val shared = Seq(
     "com.chuusai" %% "shapeless" % "2.3.3" % Compile,
 
+    "org.specs2"  %% "specs2-core" % "3.9.4" % Test
+  )
+
+  val client = Seq(
+    "org.specs2"  %% "specs2-core" % "3.9.4" % Test
+  )
+
+  val server = Seq(
     "org.specs2"  %% "specs2-core" % "3.9.4" % Test
   )
 

@@ -1,4 +1,4 @@
-package typedapi.client
+package typedapi.shared
 
 import shapeless._
 
@@ -16,18 +16,18 @@ sealed trait ApiList[H <: HList]
 /** Basic operations. */
 sealed trait ApiListWithOps[H <: HList] extends ApiList[H] {
 
-  def :>[A](headers: RawHeaders.type): RawHeadersCons[RawHeaders.type :: H] = RawHeadersCons()
-  def :>[A](body: ReqBody[A]): WithBodyCons[A, H] = WithBodyCons()
-  def :>[A](get: Get[A]): FinalCons[Get[A] :: H] = FinalCons()
-  def :>[A](put: Put[A]): FinalCons[Put[A] :: H] = FinalCons()
-  def :>[A](post: Post[A]): FinalCons[Post[A] :: H] = FinalCons()
-  def :>[A](delete: Delete[A]): FinalCons[Delete[A] :: H] = FinalCons()
+  def :>[A](headers: RawHeadersParam.type): RawHeadersCons[RawHeadersParam.type :: H] = RawHeadersCons()
+  def :>[A](body: ReqBodyElement[A]): WithBodyCons[A, H] = WithBodyCons()
+  def :>[A](get: GetElement[A]): FinalCons[GetElement[A] :: H] = FinalCons()
+  def :>[A](put: PutElement[A]): FinalCons[PutElement[A] :: H] = FinalCons()
+  def :>[A](post: PostElement[A]): FinalCons[PostElement[A] :: H] = FinalCons()
+  def :>[A](delete: DeleteElement[A]): FinalCons[DeleteElement[A] :: H] = FinalCons()
 }
 
 /** Initial element with empty api description. */
 case object EmptyCons extends ApiListWithOps[HNil] {
 
-  def :>[S](path: Witness.Lt[S]): PathCons[Path[S] :: HNil] = PathCons()
+  def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: HNil] = PathCons()
   def :>[S <: Symbol, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: HNil] = SegmentCons()
   def :>[S <: Symbol, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: HNil] = QueryCons()  
   def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: HNil] = HeaderCons()
@@ -36,7 +36,7 @@ case object EmptyCons extends ApiListWithOps[HNil] {
 /** Last set element is a path. */
 final case class PathCons[H <: HList]() extends ApiListWithOps[H] {
 
-  def :>[S](path: Witness.Lt[S]): PathCons[Path[S] :: H] = PathCons()
+  def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: H] = PathCons()
   def :>[S <: Symbol, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: H] = SegmentCons()
   def :>[S <: Symbol, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()  
   def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
@@ -45,7 +45,7 @@ final case class PathCons[H <: HList]() extends ApiListWithOps[H] {
 /** Last set element is a segment. */
 final case class SegmentCons[H <: HList]() extends ApiListWithOps[H] {
 
-  def :>[S](path: Witness.Lt[S]): PathCons[Path[S] :: H] = PathCons()
+  def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: H] = PathCons()
   def :>[S <: Symbol, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: H] = SegmentCons()
   def :>[S <: Symbol, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()
   def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
@@ -71,8 +71,8 @@ final case class RawHeadersCons[H <: HList]() extends ApiListWithOps[H]
 /** Last set element is a request body. */
 final case class WithBodyCons[Bd, H <: HList]() extends ApiList[H] {
 
-  def :>[A](put: Put[A]): FinalCons[PutWithBody[Bd, A] :: H] = FinalCons()
-  def :>[A](post: Post[A]): FinalCons[PostWithBody[Bd, A] :: H] = FinalCons()
+  def :>[A](put: PutElement[A]): FinalCons[PutWithBodyElement[Bd, A] :: H] = FinalCons()
+  def :>[A](post: PostElement[A]): FinalCons[PostWithBodyElement[Bd, A] :: H] = FinalCons()
 }
 
 /** A final element is a method describing the request type. */
