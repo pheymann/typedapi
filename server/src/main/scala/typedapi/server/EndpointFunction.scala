@@ -1,6 +1,7 @@
 package typedapi.server
 
 import shapeless._
+import shapeless.labelled.FieldType
 
 sealed trait EndpointFunction[In <: HList, Out] {
 
@@ -18,19 +19,19 @@ trait EndpointFunctionLowPrio {
     type Fun = Unit => Out
   }
 
-  implicit def function1[A, Out] = new EndpointFunction[A :: HNil, Out] {
+  implicit def function1[KA, A, Out] = new EndpointFunction[FieldType[KA, A] :: HNil, Out] {
     type Fun = A => Out
   }
 
-  implicit def function2[A, B, Out] = new EndpointFunction[A :: B :: HNil, Out] {
+  implicit def function2[KA, A, KB, B, Out] = new EndpointFunction[FieldType[KA, A] :: FieldType[KB, B] :: HNil, Out] {
     type Fun = (A, B) => Out
   }
 
-  implicit def function3[A, B, C, Out] = new EndpointFunction[A :: B :: C :: HNil, Out] {
+  implicit def function3[KA, A, KB, B, KC, C, Out] = new EndpointFunction[FieldType[KA, A] :: FieldType[KB, B] :: FieldType[KC, C] :: HNil, Out] {
     type Fun = (A, B, C) => Out
   }
 
-  implicit def function4[A, B, C, D, Out] = new EndpointFunction[A :: B :: C :: D :: HNil, Out] {
+  implicit def function4[KA, A, KB, B, KC, C, KD, D, Out] = new EndpointFunction[FieldType[KA, A] :: FieldType[KB, B] :: FieldType[KC, C] :: FieldType[KD, D] :: HNil, Out] {
     type Fun = (A, B, C, D) => Out
   }
 }

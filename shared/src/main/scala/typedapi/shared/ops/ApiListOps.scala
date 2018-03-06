@@ -1,11 +1,15 @@
 package typedapi.shared.ops
 
 import typedapi.shared._
-import shapeless.Witness
+import shapeless._
 
 trait ApiListOps {
 
   def := = EmptyCons
+
+  def transform[H <: HList, Out](apiList: FinalCons[H])
+                                (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out]): TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out] = 
+    folder
 
   def Path[S](wit: Witness.Lt[S]) = PathElement[S](wit)
   def Segment[A] = new SegmentHelper[A]

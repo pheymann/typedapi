@@ -7,10 +7,6 @@ package object client extends HListToCompositionLowPrio with TypeLevelFoldLeftLo
 
   type Transformed[El <: HList, In <: HList, Out, D <: HList] = (El, In, Out)
 
-  def transform[H <: HList, Out](apiList: FinalCons[H])
-                                (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out]): TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out] = 
-    folder
-
   def compile[H <: HList, El <: HList, In <: HList, O, D <: HList](folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), (El, In, O)])
                                                                   (implicit compiler: ApiCompiler.Aux[El, In, O, D]): ApiCompiler.Aux[El, In, O, D] = 
     compiler
