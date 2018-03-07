@@ -7,10 +7,6 @@ trait ApiListOps {
 
   def := = EmptyCons
 
-  def transform[H <: HList, Out](apiList: FinalCons[H])
-                                (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out]): TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out] = 
-    folder
-
   def Path[S](wit: Witness.Lt[S]) = PathElement[S](wit)
   def Segment[A] = new SegmentHelper[A]
   def Query[A]   = new QueryHelper[A]
