@@ -23,9 +23,15 @@ final class EndpointCompilationSpec extends Specification {
         (:= :> "find" :> Segment[String]('name) :> Get[List[Foo]]) :|:
         (:= :> "create" :> ReqBody[Foo] :> Post[Foo])
 
-      println(Api)
+      val api = transform(Api)
 
-      pending
+      val find: String => List[Foo] = name => List(Foo(name))
+      val create: Foo => Foo        = body => body
+
+      val (findE :|: createE :|: =:) = typedapi.server.link(api).to(find :|: create :|: =:)
+
+      findE("john") === find("john")
+      createE(Foo("john")) === create(Foo("john"))
     }
   }
 }

@@ -68,8 +68,8 @@ trait TypeLevelFoldLeftListLowPrio {
     type Out = folder0.Out :: HNil
   }
 
-  implicit def folderLeftList[Api <: HList, Agg, T <: HList](implicit folder0: TypeLevelFoldLeft[Api, Agg], list: TypeLevelFoldLeftList[T]) = new TypeLevelFoldLeftList[Api :: T] {
-    type In  = Api
+  implicit def folderLeftList[H <: HList, Agg, T <: HList](implicit folder0: TypeLevelFoldLeft[H, Agg], list: TypeLevelFoldLeftList[T]) = new TypeLevelFoldLeftList[H :: T] {
+    type In  = H
     type Out = folder0.Out :: list.Out
   }
 }

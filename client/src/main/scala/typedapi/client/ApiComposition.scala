@@ -5,7 +5,7 @@ import shapeless._
 /** Syntactic sugar to enable:
   *   val api = (:= "foo" :> Get[Foo]) :|: (:= "bar" :> Get[Bar])
   * 
-  *   val (foo :|: bar :|: :=) = compile(transform(api))
+  *   val (foo :|: bar :|: =:) = compile(transform(api))
   */
 sealed trait ApiComposition
 
