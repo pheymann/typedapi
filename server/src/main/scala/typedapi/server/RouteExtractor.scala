@@ -3,31 +3,31 @@ package typedapi.server
 import typedapi.shared._
 import shapeless.{HList, HNil, Witness}
 import shapeless.labelled.FieldType
-import shapeless.ops.hlist.Reverse
 
 import scala.util.Try
 
-sealed trait RouteExtractor[El <: HList, In <: HList, EIn <: HList] {
+sealed trait RouteExtractor[-R <: EndpointRequest, El <: HList, In <: HList, EIn <: HList] {
 
   type Out
 
-  def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out]
+  def apply(request: R, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out]
 }
 
 object RouteExtractor {
 
-  type Aux[El <: HList, In <: HList, EIn <: HList, Out0] = RouteExtractor[El, In, EIn] { type Out = Out0 }
+  type Aux[-R <: EndpointRequest, El <: HList, In <: HList, EIn <: HList, Out0] = RouteExtractor[R, El, In, EIn] { type Out = Out0 }
 }
 
 trait RouteExtractorLowPrio {
 
-  implicit def pathExtractor[S, El <: HList, In <: HList, EIn <: HList](implicit wit: Witness.Aux[S], next: RouteExtractor[El, In, EIn]) = new RouteExtractor[shapeless.::[S, El], In, EIn] {
+  implicit def pathExtractor[S, El <: HList, In <: HList, EIn <: HList](implicit wit: Witness.Aux[S], next: RouteExtractor[EndpointRequest, El, In, EIn]) = 
+    new RouteExtractor[EndpointRequest, shapeless.::[S, El], In, EIn] {
     type Out = next.Out
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
       case p :: tail => 
         if (p == wit.value.toString()) 
-          next(request.copy(uri = tail), extractedHeaderKeys, inAgg)
+          next(request.withUri(tail), extractedHeaderKeys, inAgg)
         else
           None
 
@@ -38,111 +38,114 @@ trait RouteExtractorLowPrio {
 
 trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
 
-  implicit def segmentExtractor[El <: HList, K, A, In <: HList, EIn <: HList](implicit value: ValueExtractor[A], next: RouteExtractor[El, In, shapeless.::[A, EIn]]) = new RouteExtractor[shapeless.::[SegmentInput, El], shapeless.::[FieldType[K, A], In], EIn] {
+  implicit def finalExtractor[EIn <: HList] = new RouteExtractor[EndpointRequest, HNil, HNil, EIn] {
+    type Out = EIn
+
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = Some(inAgg)
+  }
+
+  implicit def segmentExtractor[El <: HList, K, A, In <: HList, EIn <: HList](implicit value: ValueExtractor[A], next: RouteExtractor[EndpointRequest, El, In, shapeless.::[A, EIn]]) = new RouteExtractor[EndpointRequest, shapeless.::[SegmentInput, El], shapeless.::[FieldType[K, A], In], EIn] {
     type Out = next.Out
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case p :: tail => value(p).flatMap(v => next(request.copy(uri = tail), extractedHeaderKeys, v :: inAgg))
+      case p :: tail => value(p).flatMap(v => next(request.withUri(tail), extractedHeaderKeys, v :: inAgg))
       case Nil       => None
     }
   }
 
-  implicit def queryExtractor[El <: HList, K <: Symbol, A, In <: HList, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[A], next: RouteExtractor[El, In, shapeless.::[A, EIn]]) = new RouteExtractor[shapeless.::[QueryInput, El], shapeless.::[FieldType[K, A], In], EIn] {
+  implicit def queryExtractor[El <: HList, K <: Symbol, A, In <: HList, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[A], next: RouteExtractor[EndpointRequest, El, In, shapeless.::[A, EIn]]) = new RouteExtractor[EndpointRequest, shapeless.::[QueryInput, El], shapeless.::[FieldType[K, A], In], EIn] {
     type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => for {
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] =
+      for {
         raw <- request.queries.get(wit.value.name)
         v   <- value(raw)
         out <- next(request, extractedHeaderKeys, v :: inAgg)
       } yield out
-
-      case _ => None
-    }
   }
 
-  implicit def headerExtractor[El <: HList, K <: Symbol, A, In <: HList, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[A], next: RouteExtractor[El, In, shapeless.::[A, EIn]]) = new RouteExtractor[shapeless.::[HeaderInput, El], shapeless.::[FieldType[K, A], In], EIn] {
+  implicit def headerExtractor[El <: HList, K <: Symbol, A, In <: HList, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[A], next: RouteExtractor[EndpointRequest, El, In, shapeless.::[A, EIn]]) = new RouteExtractor[EndpointRequest, shapeless.::[HeaderInput, El], shapeless.::[FieldType[K, A], In], EIn] {
     type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => for {
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] =
+      for {
         raw <- request.headers.get(wit.value.name)
         v   <- value(raw)
         out <- next(request, extractedHeaderKeys + wit.value.name, v :: inAgg)
       } yield out
-
-      case _ => None
-    }
   }
 
-  implicit def rawHeaderExtractor[El <: HList, In <: HList, EIn <: HList](implicit next: RouteExtractor[El, In, shapeless.::[Map[String, String], EIn]]) = new RouteExtractor[shapeless.::[RawHeadersInput, El], shapeless.::[FieldType[RawHeadersField.T, Map[String, String]], In], EIn] {
+  implicit def rawHeaderExtractor[El <: HList, In <: HList, EIn <: HList](implicit next: RouteExtractor[EndpointRequest, El, In, shapeless.::[Map[String, String], EIn]]) = new RouteExtractor[EndpointRequest, shapeless.::[RawHeadersInput, El], shapeless.::[FieldType[RawHeadersField.T, Map[String, String]], In], EIn] {
     type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => 
-        val raw = request.headers.filterKeys(!extractedHeaderKeys(_))
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = {
+      val raw = request.headers.filterKeys(!extractedHeaderKeys(_))
 
-        if (raw.isEmpty) 
-          None
-        else
-          next(request.copy(headers = Map.empty), extractedHeaderKeys, raw :: inAgg)
-
-      case _ => None
+      if (raw.isEmpty)
+        None
+      else
+        next(request, extractedHeaderKeys, raw :: inAgg)
     }
   }
 
-  implicit def getExtractor[EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[EIn, REIn]) = new RouteExtractor[shapeless.::[GetCall, HNil], HNil, EIn] {
-    type Out = REIn
+  implicit def getExtractor[El <: HList, In <: HList](implicit next: RouteExtractor[EndpointRequest, El, In, HNil]) = new RouteExtractor[EndpointRequest, shapeless.::[GetCall, El], In, HNil] {
+    type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => if (request.method == "GET") Some(inAgg.reverse) else None
-      case _   => None
-    }
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: HNil): Option[Out] =
+      if (request.method == "GET") 
+        next(request, extractedHeaderKeys, inAgg)
+      else 
+        None
   }
 
-  implicit def putExtractor[EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[EIn, REIn]) = new RouteExtractor[shapeless.::[PutCall, HNil], HNil, EIn] {
-    type Out = REIn
+  implicit def putExtractor[El <: HList, In <: HList](implicit next: RouteExtractor[EndpointRequest, El, In, HNil]) = new RouteExtractor[EndpointRequest, shapeless.::[PutCall, El], In, HNil] {
+    type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => if (request.method == "PUT") Some(inAgg.reverse) else None
-      case _   => None
-    }
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: HNil): Option[Out] =
+      if (request.method == "PUT") 
+        next(request, extractedHeaderKeys, inAgg)
+      else 
+        None
   }
 
-  implicit def putWithBodyExtractor[Bd, EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[shapeless.::[BodyType[Bd], EIn], REIn]) = new RouteExtractor[shapeless.::[PutWithBodyCall[Bd], HNil], shapeless.::[FieldType[BodyField.T, Bd], HNil], EIn] {
-    type Out = REIn
+  implicit def putWithBodyExtractor[Bd, El <: HList, In <: HList](implicit next: RouteExtractor[EndpointRequest, El, In, shapeless.::[Bd, HNil]]) = new RouteExtractor[BodyEndpointRequest[Bd], shapeless.::[PutWithBodyCall[Bd], El], shapeless.::[FieldType[BodyField.T, Bd], In], HNil] {
+    type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => if (request.method == "PUT") Some((BodyType[Bd] :: inAgg).reverse) else None
-      case _   => None
-    }
+    def apply(request: BodyEndpointRequest[Bd], extractedHeaderKeys: Set[String], inAgg: HNil): Option[Out] =
+      if (request.method == "PUT") 
+        next(request, extractedHeaderKeys, request.body :: inAgg)
+      else 
+        None
   }
 
-  implicit def postExtractor[EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[EIn, REIn]) = new RouteExtractor[shapeless.::[PostCall, HNil], HNil, EIn] {
-    type Out = REIn
+  implicit def postExtractor[El <: HList, In <: HList](implicit next: RouteExtractor[EndpointRequest, El, In, HNil]) = new RouteExtractor[EndpointRequest, shapeless.::[PostCall, El], In, HNil] {
+    type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => if (request.method == "POST") Some(inAgg.reverse) else None
-      case _   => None
-    }
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: HNil): Option[Out] =
+      if (request.method == "POST") 
+        next(request, extractedHeaderKeys, inAgg)
+      else 
+        None
   }
 
-  implicit def postWithBodyExtractor[Bd, EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[shapeless.::[BodyType[Bd], EIn], REIn]) = new RouteExtractor[shapeless.::[PostWithBodyCall[Bd], HNil], shapeless.::[FieldType[BodyField.T, Bd], HNil], EIn] {
-    type Out = REIn
+  implicit def postWithBodyExtractor[Bd, El <: HList, In <: HList](implicit next: RouteExtractor[EndpointRequest, El, In, shapeless.::[Bd, HNil]]) = new RouteExtractor[BodyEndpointRequest[Bd], shapeless.::[PostWithBodyCall[Bd], El], shapeless.::[FieldType[BodyField.T, Bd], In], HNil] {
+    type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => if (request.method == "POST") Some((BodyType[Bd] :: inAgg).reverse) else None
-      case _   => None
-    }
+    def apply(request: BodyEndpointRequest[Bd], extractedHeaderKeys: Set[String], inAgg: HNil): Option[Out] =
+      if (request.method == "POST") 
+        next(request, extractedHeaderKeys, request.body :: inAgg)
+      else 
+        None
   }
 
-  implicit def deleteExtractor[EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[EIn, REIn]) = new RouteExtractor[shapeless.::[DeleteCall, HNil], HNil, EIn] {
-    type Out = REIn
+  implicit def deleteExtractor[El <: HList, In <: HList](implicit next: RouteExtractor[EndpointRequest, El, In, HNil]) = new RouteExtractor[EndpointRequest, shapeless.::[DeleteCall, El], In, HNil] {
+    type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
-      case Nil => if (request.method == "DELETE") Some(inAgg.reverse) else None
-      case _   => None
-    }
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: HNil): Option[Out] =
+      if (request.method == "DELETE") 
+        next(request, extractedHeaderKeys, inAgg)
+      else 
+        None
   }
 }
 
