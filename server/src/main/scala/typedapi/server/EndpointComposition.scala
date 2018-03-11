@@ -25,7 +25,7 @@ trait HListToCompositionLowPrio {
     type Out = =:.type
   }
 
-  implicit def consComposition[H <: HList, El <: HList, In <: HList, Out, Fun, T <: HList](implicit next: HListToComposition[T], fun: EndpointFunction.Aux[In, Out, Fun]) = new HListToComposition[(El, In, Out) :: T] {
+  implicit def consComposition[H <: HList, El <: HList, In <: HList, CIn <: HList, Out, Fun, T <: HList](implicit next: HListToComposition[T], fun: EndpointFunction.Aux[In, CIn, Out, Fun]) = new HListToComposition[(El, In, Out) :: T] {
 
     type Out = :|:[Fun, next.Out]
   }

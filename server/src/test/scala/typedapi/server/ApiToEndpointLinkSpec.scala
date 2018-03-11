@@ -1,7 +1,6 @@
 package typedapi.server
 
 import shapeless._
-import shapeless.labelled.field
 
 import org.specs2.mutable.Specification
 
@@ -19,7 +18,7 @@ final class EndpointCompilationSpec extends Specification {
 
       val endpoint1 = typedapi.server.link(api).to((name, limit) => List(Foo(name)).take(limit))
       endpoint1.f("john", 10) === List(Foo("john"))
-      endpoint1(field[nameW.T]("john") :: field[limitW.T](10) :: HNil) === List(Foo("john"))
+      endpoint1("john" :: 10 :: HNil) === List(Foo("john"))
     }
 
     "multiple APIs to multiple endpoints" >> {

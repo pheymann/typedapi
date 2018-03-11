@@ -9,9 +9,9 @@ package object server extends typedapi.shared.ops.ApiListOps with TypeLevelFoldL
                                 (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out]): TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out] = 
     folder
 
-  def link[H <: HList, El <: HList, In <: HList, Out, Fun](transformed: TypeLevelFoldLeft.Aux[H, (HNil, HNil), (El, In, Out)])
-                                                          (implicit endpoint: EndpointFunction.Aux[In, Out, Fun]): EndpointDefinition[El, In, Out, Fun] = 
-    new EndpointDefinition[El, In, Out, Fun](endpoint)
+  def link[H <: HList, El <: HList, In <: HList, CIn <: HList, Out, Fun](transformed: TypeLevelFoldLeft.Aux[H, (HNil, HNil), (El, In, Out)])
+                                                                        (implicit endpoint: EndpointFunction.Aux[In, CIn, Out, Fun]): EndpointDefinition[El, In, CIn, Out, Fun] = 
+    new EndpointDefinition[El, In, CIn, Out, Fun](endpoint)
 
   def transform[H <: HList, In <: HList, Out <: HList](apiLists: CompositionCons[H])
                                                       (implicit folders: TypeLevelFoldLeftList.Aux[H, In, Out]): TypeLevelFoldLeftList.Aux[H, In, Out] =
