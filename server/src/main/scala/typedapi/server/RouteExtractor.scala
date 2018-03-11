@@ -103,11 +103,29 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     }
   }
 
+  implicit def putWithBodyExtractor[Bd, EIn <: HList] = new RouteExtractor[shapeless.::[PutWithBodyCall[Bd], HNil], shapeless.::[FieldType[BodyField.T, Bd], HNil], EIn] {
+    type Out = shapeless.::[BodyType[Bd], EIn]
+
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
+      case Nil => if (request.method == "PUT") Some(BodyType[Bd] :: inAgg) else None
+      case _   => None
+    }
+  }
+
   implicit def postExtractor[EIn <: HList] = new RouteExtractor[shapeless.::[PostCall, HNil], HNil, EIn] {
     type Out = EIn
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
       case Nil => if (request.method == "POST") Some(inAgg) else None
+      case _   => None
+    }
+  }
+
+  implicit def postWithBodyExtractor[Bd, EIn <: HList] = new RouteExtractor[shapeless.::[PostWithBodyCall[Bd], HNil], shapeless.::[FieldType[BodyField.T, Bd], HNil], EIn] {
+    type Out = shapeless.::[BodyType[Bd], EIn]
+
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] = request.uri match {
+      case Nil => if (request.method == "POST") Some(BodyType[Bd] :: inAgg) else None
       case _   => None
     }
   }
@@ -138,3 +156,5 @@ trait ValueExtractorInstances {
   implicit val doubleExtractor  = extract[Double](_.toDouble)
   implicit val stringExtractor  = extract[String](identity)
 }
+
+final case class BodyType[Bd]()
