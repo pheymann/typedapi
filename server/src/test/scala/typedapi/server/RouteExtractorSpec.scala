@@ -57,7 +57,7 @@ final class RouteExtractorSpec extends Specification {
       val api2 = transform(:= :> "foo" :> Header[Int]('age) :> RawHeaders :> Get[Foo])
 
       extract(api2).apply(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0")), Set.empty, HNil) === None
-      extract(api2).apply(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0", "foo" -> "bar")), Set.empty, HNil) === Some(Map("foo" -> "bar") :: 0 :: HNil)
+      extract(api2).apply(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0", "foo" -> "bar")), Set.empty, HNil) === Some(0 :: Map("foo" -> "bar") :: HNil)
     }
 
     "body type" >> {
@@ -92,7 +92,7 @@ final class RouteExtractorSpec extends Specification {
     "combinations" >> {
       val api0 = transform(:= :> "foo" :> Query[Int]('age) :> Header[String]('id) :> Get[Foo])
 
-      extract(api0).apply(EndpointRequest("GET", List("foo"), Map("age" -> "0"), Map("id" -> "john")), Set.empty, HNil) === Some("john" :: 0 :: HNil)
+      extract(api0).apply(EndpointRequest("GET", List("foo"), Map("age" -> "0"), Map("id" -> "john")), Set.empty, HNil) === Some(0 :: "john" :: HNil)
 
       val api1 = transform(:= :> Get[Foo])
 
