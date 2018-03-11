@@ -3,7 +3,7 @@ package typedapi
 import typedapi.shared._
 import shapeless._
 
-package object server extends typedapi.shared.ops.ApiListOps with TypeLevelFoldLeftLowPrio with TypeLevelFoldLeftListLowPrio with ApiTransformer with EndpointFunctionLowPrio with HListToCompositionLowPrio {
+package object server extends typedapi.shared.ops.ApiListOps with TypeLevelFoldLeftLowPrio with TypeLevelFoldLeftListLowPrio with ApiTransformer with EndpointFunctionLowPrio with ValueExtractorInstances with RouteExtractorMediumPrio with HListToCompositionLowPrio {
 
   def transform[H <: HList, Out](apiList: FinalCons[H])
                                 (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out]): TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out] = 
