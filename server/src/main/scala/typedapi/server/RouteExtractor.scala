@@ -104,11 +104,11 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
   }
 
   implicit def putWithBodyExtractor[Bd, EIn <: HList] = new RouteExtractor[shapeless.::[PutWithBodyCall[Bd], HNil], shapeless.::[FieldType[BodyField.T, Bd], HNil], EIn] {
-    type Out = shapeless.::[BodyType[Bd], EIn]
+    type Out = (BodyType[Bd], EIn)
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] =
       if (request.uri.isEmpty && request.method == "PUT") 
-        Some((BodyType[Bd] :: inAgg))
+        Some((BodyType[Bd], inAgg))
       else 
         None
   }
@@ -124,11 +124,11 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
   }
 
   implicit def postWithBodyExtractor[Bd, EIn <: HList, REIn <: HList] = new RouteExtractor[shapeless.::[PostWithBodyCall[Bd], HNil], shapeless.::[FieldType[BodyField.T, Bd], HNil], EIn] {
-    type Out = shapeless.::[BodyType[Bd], EIn]
+    type Out = (BodyType[Bd], EIn)
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] =
       if (request.uri.isEmpty && request.method == "POST") 
-        Some((BodyType[Bd] :: inAgg))
+        Some((BodyType[Bd], inAgg))
       else 
         None
   }

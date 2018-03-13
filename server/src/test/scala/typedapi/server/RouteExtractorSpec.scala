@@ -64,11 +64,11 @@ final class RouteExtractorSpec extends Specification {
     "body type" >> {
       val api0 = transform(:= :> ReqBody[Foo] :> Put[Foo])
 
-      extract(api0).apply(EndpointRequest("PUT", Nil, Map.empty, Map.empty), Set.empty, HNil) === Some(BodyType[Foo] :: HNil)
+      extract(api0).apply(EndpointRequest("PUT", Nil, Map.empty, Map.empty), Set.empty, HNil) === Some((BodyType[Foo], HNil))
 
       val api1 = transform(:= :> ReqBody[Foo] :> Post[Foo])
 
-      extract(api1).apply(EndpointRequest("POST", Nil, Map.empty, Map.empty), Set.empty, HNil) === Some(BodyType[Foo] :: HNil)
+      extract(api1).apply(EndpointRequest("POST", Nil, Map.empty, Map.empty), Set.empty, HNil) === Some((BodyType[Foo], HNil))
     }
 
     "methods" >> {

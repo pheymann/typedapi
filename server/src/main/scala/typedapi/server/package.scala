@@ -9,10 +9,17 @@ package object server extends typedapi.shared.ops.ApiListOps with TypeLevelFoldL
                                 (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out]): TypeLevelFoldLeft.Aux[H, (HNil, HNil), Out] = 
     folder
 
-  def link[H <: HList, El <: HList, In <: HList, CIn <: HList, RCIn <: HList, Out, Fun](transformed: TypeLevelFoldLeft.Aux[H, (HNil, HNil), (El, In, Out)])
-                                                                                       (implicit endpoint: EndpointFunction.Aux[In, CIn, Out, Fun], extractor: RouteExtractor.Aux[El, In, HNil, RCIn])
-      : EndpointDefinition[El, In, CIn, RCIn, Out, Fun] =
-    new EndpointDefinition(endpoint, extractor)
+  def link[H <: HList, El <: HList, In <: HList, ROut, CIn <: HList, Out, Fun](transformed: TypeLevelFoldLeft.Aux[H, (HNil, HNil), (El, In, Out)])
+                                                                              (implicit extractor: RouteExtractor.Aux[El, In, HNil, ROut], endpoint: EndpointFunction.Aux[In, CIn, Out, Fun])
+      : EndpointDefinition[El, In, ROut, CIn, Out, Fun] =
+    new EndpointDefinition(extractor, endpoint)
+
+  def serve[R , El <: HList, In <: HList, ROut, CIn <: HList, Fun, FOut, Out0](endpoint: Endpoint[El, In, ROut, CIn, FOut, Fun])
+                                                                              (implicit executor: EndpointExecutor.Aux[R, El, In, ROut, CIn, Fun, FOut, Out0]): List[Serve.Aux[R, Out0]] = List(new Serve[R] {
+      type Out = Out0
+
+      def apply(req: R, eReq: EndpointRequest): Option[Out0] = executor(req, eReq, endpoint)
+    })
 
   def transform[H <: HList, In <: HList, Out <: HList](apiLists: CompositionCons[H])
                                                       (implicit folders: TypeLevelFoldLeftList.Aux[H, In, Out]): TypeLevelFoldLeftList.Aux[H, In, Out] =
