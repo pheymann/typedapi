@@ -7,10 +7,10 @@ sealed trait EndpointExecutor[R, El <: HList, In <: HList, ROut, CIn <: HList, F
 
   type Out
 
-  def extract(eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, FOut, Fun]): Option[ROut] = 
+  def extract(eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, Fun, FOut]): Option[ROut] = 
     endpoint.extractor(eReq, Set.empty, HNil)
 
-  def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, FOut, Fun]): Option[Out]
+  def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, Fun, FOut]): Option[Out]
 }
 
 object EndpointExecutor {
@@ -24,7 +24,7 @@ trait NoReqBodyExecutor[R, El <: HList, In <: HList, ROut <: HList, CIn <: HList
 
   implicit def rev: Reverse.Aux[ROut, CIn]
 
-  protected def execute(input: ROut, endpoint: Endpoint[El, In, ROut, CIn, FOut, Fun]): FOut = 
+  protected def execute(input: ROut, endpoint: Endpoint[El, In, ROut, CIn, Fun, FOut]): FOut = 
     endpoint.apply(input.reverse)
 }
 
@@ -32,6 +32,6 @@ trait ReqBodyExecutor[R, El <: HList, In <: HList, Bd , ROut <: HList, CIn <: HL
 
   implicit def rev: Reverse.Aux[Bd :: ROut, CIn]
 
-  protected def execute(input: ROut, body: Bd, endpoint: Endpoint[El, In, ROut, CIn, FOut, Fun]): FOut = 
+  protected def execute(input: ROut, body: Bd, endpoint: Endpoint[El, In, ROut, CIn, Fun, FOut]): FOut = 
     endpoint.apply((body :: input).reverse)
 }

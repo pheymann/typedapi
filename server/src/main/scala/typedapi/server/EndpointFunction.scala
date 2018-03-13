@@ -13,7 +13,7 @@ sealed trait EndpointFunction[In <: HList, Out] {
 
 object EndpointFunction {
 
-  type Aux[In <: HList, CIn0 <: HList, Out, Fun0] = EndpointFunction[In, Out] { 
+  type Aux[In <: HList, CIn0 <: HList, Fun0, Out] = EndpointFunction[In, Out] { 
     type Fun = Fun0 
     type CIn = CIn0
   }

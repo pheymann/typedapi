@@ -28,10 +28,10 @@ final class EndpointCompilationSpec extends Specification {
       val find: String => List[Foo] = name => List(Foo(name))
       val create: Foo => Foo        = body => body
 
-      val (findE :|: createE :|: =:) = typedapi.server.link(api).to(find :|: create :|: =:)
+      val (findE :: createE :: HNil) = typedapi.server.link(api).to(find :|: create :|: =:)
 
-      findE("john") === find("john")
-      createE(Foo("john")) === create(Foo("john"))
+      findE.f("john") === find("john")
+      createE.f(Foo("john")) === create(Foo("john"))
     }
   }
 }
