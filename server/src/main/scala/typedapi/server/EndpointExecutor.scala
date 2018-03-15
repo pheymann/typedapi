@@ -1,7 +1,7 @@
 package typedapi.server
 
 import shapeless._
-import shapeless.ops.hlist.Reverse
+import shapeless.ops.hlist.Prepend
 
 sealed trait EndpointExecutor[R, El <: HList, In <: HList, ROut, CIn <: HList, Fun, FOut] {
 
@@ -20,18 +20,17 @@ object EndpointExecutor {
   }
 }
 
-trait NoReqBodyExecutor[R, El <: HList, In <: HList, ROut <: HList, CIn <: HList, Fun, FOut] extends EndpointExecutor[R, El, In, ROut, CIn, Fun, FOut] {
+trait NoReqBodyExecutor[R, El <: HList, In <: HList, CIn <: HList, Fun, FOut] extends EndpointExecutor[R, El, In, CIn, CIn, Fun, FOut] {
 
-  implicit def rev: Reverse.Aux[ROut, CIn]
-
-  protected def execute(input: ROut, endpoint: Endpoint[El, In, ROut, CIn, Fun, FOut]): FOut = 
-    endpoint.apply(input.reverse)
+  protected def execute(input: CIn, endpoint: Endpoint[El, In, CIn, CIn, Fun, FOut]): FOut = 
+    endpoint.apply(input)
 }
 
-trait ReqBodyExecutor[R, El <: HList, In <: HList, Bd , ROut <: HList, CIn <: HList, Fun, FOut] extends EndpointExecutor[R, El, In, (BodyType[Bd], ROut), CIn, Fun, FOut] {
+trait ReqBodyExecutor[R, El <: HList, In <: HList, Bd, ROut <: HList, POut <: HList, CIn <: HList, Fun, FOut] extends EndpointExecutor[R, El, In, (BodyType[Bd], ROut), CIn, Fun, FOut] {
 
-  implicit def rev: Reverse.Aux[Bd :: ROut, CIn]
+  implicit def prepend: Prepend.Aux[ROut, Bd :: HNil, POut]
+  implicit def eqProof: POut =:= CIn
 
-  protected def execute(input: ROut, body: Bd, endpoint: Endpoint[El, In, ROut, CIn, Fun, FOut]): FOut = 
-    endpoint.apply((body :: input).reverse)
+  protected def execute(input: ROut, body: Bd, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, Fun, FOut]): FOut = 
+    endpoint.apply(input :+ body)
 }
