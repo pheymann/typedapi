@@ -6,10 +6,10 @@ import cats.effect.IO
 import org.http4s.client.blaze.Http1Client
 import org.specs2.mutable.Specification
 
-final class IntegrationTest extends Specification {
+final class ApiRequestSpec extends Specification {
 
   val TestGet = := :> "get" :> Segment[String]('name) :> Query[Int]('age) :> Get[User]
-  val testGet = compile(transform(TestGet))
+  val testGet = compile(TestGet)
 
   val api = 
     (:= :> "put" :> ReqBody[User] :> Put[User]) :|:
@@ -17,7 +17,7 @@ final class IntegrationTest extends Specification {
     (:= :> "post" :> ReqBody[User] :> Post[User]) :|:
     (:= :> "delete" :> Segment[String]('name) :> Query[List[String]]('reasons) :> Delete[User])
 
-  val (testPut0 :|: testPut1 :|: testPost :|: testDelete :|: =:) = compile(transform(api))
+  val (testPut0 :|: testPut1 :|: testPost :|: testDelete :|: =:) = compile(api)
 
   implicit val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://localhost", 9090)
 

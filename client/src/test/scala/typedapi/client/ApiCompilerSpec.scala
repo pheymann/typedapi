@@ -23,49 +23,49 @@ final class ApiCompilerSpec extends Specification {
 
     "single api" >> {
       "method" >> {
-        val api0 = compile(transform(:= :> Get[ReqInput]))
+        val api0 = compile(:= :> Get[ReqInput])
         api0().run[Id] === ReqInput("GET", Nil, Map(), Map())
-        val api1 = compile(transform(:= :> Put[ReqInput]))
+        val api1 = compile(:= :> Put[ReqInput])
         api1().run[Id] === ReqInput("PUT", Nil, Map(), Map())
-        val api2 = compile(transform(:= :> Post[ReqInput]))
+        val api2 = compile(:= :> Post[ReqInput])
         api2().run[Id] === ReqInput("POST", Nil, Map(), Map())
-        val api3 = compile(transform(:= :> Delete[ReqInput]))
+        val api3 = compile(:= :> Delete[ReqInput])
         api3().run[Id] === ReqInput("DELETE", Nil, Map(), Map())
       }
       
       "segment" >> {
-        val api0 = compile(transform(:= :> Segment[Int]('i0) :> Get[ReqInput]))
+        val api0 = compile(:= :> Segment[Int]('i0) :> Get[ReqInput])
         api0(0).run[Id] === ReqInput("GET", "0" :: Nil, Map(), Map())
-        val api1 = compile(transform(:= :> Segment[Int]('i0) :> Segment[Int]('i1) :> Get[ReqInput]))
+        val api1 = compile(:= :> Segment[Int]('i0) :> Segment[Int]('i1) :> Get[ReqInput])
         api1(0, 1).run[Id] === ReqInput("GET", "0" :: "1" :: Nil, Map(), Map())
       }
 
       "query" >> {
-        val api0 = compile(transform(:= :> Query[Int]('i0) :> Get[ReqInput]))
+        val api0 = compile(:= :> Query[Int]('i0) :> Get[ReqInput])
         api0(0).run[Id] === ReqInput("GET", Nil, Map("i0" -> List("0")), Map())
-        val api1 = compile(transform(:= :> Query[Int]('i0) :> Query[Int]('i1) :> Get[ReqInput]))
+        val api1 = compile(:= :> Query[Int]('i0) :> Query[Int]('i1) :> Get[ReqInput])
         api1(0, 1).run[Id] === ReqInput("GET", Nil, Map("i0" -> List("0"), "i1" -> List("1")), Map())
       }
 
       "header" >> {
-        val api0 = compile(transform(:= :> Header[Int]('i0) :> Get[ReqInput]))
+        val api0 = compile(:= :> Header[Int]('i0) :> Get[ReqInput])
         api0(0).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0"))
-        val api1 = compile(transform(:= :> Header[Int]('i0) :> Header[Int]('i1) :> Get[ReqInput]))
+        val api1 = compile(:= :> Header[Int]('i0) :> Header[Int]('i1) :> Get[ReqInput])
         api1(0, 1).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0", "i1" -> "1"))
       }
 
       "raw header" >> {
-        val api0 = compile(transform(:= :> RawHeaders :> Get[ReqInput]))
+        val api0 = compile(:= :> RawHeaders :> Get[ReqInput])
         api0(Map("i0" -> "0")).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0"))
       }
 
       "request body" >> {
-        val api0 = compile(transform(:= :> ReqBody[Int] :> Put[ReqInputWithBody[Int]]))
+        val api0 = compile(:= :> ReqBody[Int] :> Put[ReqInputWithBody[Int]])
         api0(0).run[Id] === ReqInputWithBody("PUT", Nil, Map(), Map(), 0)
       }
 
       "path" >> {
-        val api0 = compile(transform(:= :> "hello" :> "world" :> Get[ReqInput]))
+        val api0 = compile(:= :> "hello" :> "world" :> Get[ReqInput])
         api0().run[Id] === ReqInput("GET", "hello" :: "world" :: Nil, Map(), Map())
       }
     }
@@ -76,7 +76,7 @@ final class ApiCompilerSpec extends Specification {
         (:= :> "fetch" :> Segment[String]('type) :> Get[ReqInput]) :|:
         (:= :> "store" :> ReqBody[Int] :> Post[ReqInputWithBody[Int]])
 
-      val (find :|: fetch :|: store :|: =:) = compile(transform(api))
+      val (find :|: fetch :|: store :|: =:) = compile(api)
 
       find().run[Id] === ReqInput("GET", "find" :: Nil, Map(), Map())
       fetch("all").run[Id] === ReqInput("GET", "fetch" :: "all" :: Nil, Map(), Map())
