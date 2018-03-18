@@ -153,6 +153,7 @@ trait ValueExtractorInstances {
   }
 
   implicit val booleanExtractor = extract[Boolean](_.toBoolean)
+  implicit val byteExtractor    = extract[Byte](_.toByte)
   implicit val shortExtractor   = extract[Short](_.toShort)
   implicit val intExtractor     = extract[Int](_.toInt)
   implicit val longExtractor    = extract[Long](_.toLong)
