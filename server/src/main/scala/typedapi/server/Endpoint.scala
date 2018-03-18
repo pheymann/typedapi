@@ -2,15 +2,18 @@ package typedapi.server
 
 import shapeless._
 
-final case class Endpoint[El <: HList, In <: HList, ROut, CIn <: HList, Fun, Out](extractor: RouteExtractor.Aux[El, In, HNil, ROut],
-                                                                                  fun: EndpointFunction.Aux[In, CIn, Fun, Out], 
-                                                                                  f: Fun) {
+import scala.language.higherKinds
 
-  def apply(in: CIn): Out = fun(in, f)
+abstract class Endpoint[El <: HList, In <: HList, ROut, CIn <: HList, F[_], Out](val extractor: RouteExtractor.Aux[El, In, HNil, ROut]) {
+
+  def apply(in: CIn): F[Out]
 }
 
-final class EndpointDefinition[El <: HList, In <: HList, ROut, CIn <: HList, Fun, Out](extractor: RouteExtractor.Aux[El, In, HNil, ROut],
-                                                                                       fun: EndpointFunction.Aux[In, CIn, Fun, Out]) {
+final class EndpointDefinition[El <: HList, In <: HList, ROut, CIn <: HList, Fun[_[_]], Out](extractor: RouteExtractor.Aux[El, In, HNil, ROut], 
+  funDef: FunctionDef.Aux[In, CIn, Fun, Out]) {
 
-  def to(f: Fun): Endpoint[El, In, ROut, CIn, Fun, Out] = Endpoint(extractor, fun, f)
+  def to[F[_]](f: Fun[F]): Endpoint[El, In, ROut, CIn, F, Out] = 
+    new Endpoint[El, In, ROut, CIn, F, Out](extractor) {
+      def apply(in: CIn): F[Out] = funDef(in, f)
+    }
 }

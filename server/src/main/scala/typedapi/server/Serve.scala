@@ -16,7 +16,7 @@ trait MountEndpoints[S, Req, Resp] {
 
   type Out
 
-  def apply(server: ServerManager[S], endpoints: List[Serve.Aux[Req, Resp]]): Out
+  def apply(server: ServerManager[S, Req, Resp], endpoints: List[Serve.Aux[Req, Resp]]): Out
 }
 
 object MountEndpoints {
