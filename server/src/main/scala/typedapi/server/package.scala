@@ -1,7 +1,7 @@
 package typedapi
 
 import typedapi.shared._
-import shapeless.ops.hlist.{ Mapper, ToTraversable }
+import shapeless.ops.hlist.Mapper
 import shapeless._
 
 import scala.language.higherKinds
@@ -29,25 +29,32 @@ funDef: FunctionDef[In, Out])
 
 
   def serve[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut](endpoint: Endpoint[El, In, ROut, CIn, F, FOut])
-    (implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]): List[Serve.Aux[executor.R, executor.Out]] = List(new Serve[executor.R] {
-      type R = executor.R
-      type Out = executor.Out
-
-      def apply(req: R, eReq: EndpointRequest): Option[Out] = executor(req, eReq, endpoint)
+    (implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]): List[Serve[executor.R, executor.Out]] = List(new Serve[executor.R, executor.Out] {
+      def apply(req: executor.R, eReq: EndpointRequest): Option[executor.Out] = executor(req, eReq, endpoint)
     })
 
   private object endpointToServe extends Poly1 {
 
     implicit def default[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut](implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]) = at[Endpoint[El, In, ROut, CIn, F, FOut]] { endpoint =>
-      new Serve[executor.R] {
-        type R = executor.R
-        type Out = executor.Out
-
-        def apply(req: R, eReq: EndpointRequest): Option[Out] = executor(req, eReq, endpoint)
+      new Serve[executor.R, executor.Out] {
+        def apply(req: executor.R, eReq: EndpointRequest): Option[executor.Out] = executor(req, eReq, endpoint)
       }
     }
   }
 
-  def serve[End <: HList, MOut <: HList, Req, Resp](comp: EndpointComposition[End])(implicit mapper: Mapper.Aux[endpointToServe.type, End, MOut], traverse: ToTraversable.Aux[MOut, List, Serve.Aux[Req, Resp]]) = 
-    comp.endpoints.map(endpointToServe).toList
+  trait ServeToList[H <: HList, Req, Resp] {
+
+    def apply(h: H): List[Serve[Req, Resp]]
+  }
+
+  implicit def hnilToList[Req, Resp] = new ServeToList[HNil, Req, Resp] {
+    def apply(h: HNil): List[Serve[Req, Resp]] = Nil
+  }
+
+  implicit def serveToList[Req, Resp, T <: HList](implicit next: ServeToList[T, Req, Resp]) = new ServeToList[Serve[Req, Resp] :: T, Req, Resp] {
+    def apply(h: Serve[Req, Resp] :: T): List[Serve[Req, Resp]] = h.head :: next(h.tail)
+  }
+
+  def serve[End <: HList, MOut <: HList, Req, Resp](comp: EndpointComposition[End])(implicit mapper: Mapper.Aux[endpointToServe.type, End, MOut], toList: ServeToList[MOut, Req, Resp]): List[Serve[Req, Resp]] = 
+    toList(comp.endpoints.map(endpointToServe))
 }
