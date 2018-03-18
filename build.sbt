@@ -87,7 +87,7 @@ lazy val mavenSettings = Seq(
 lazy val typedapi = project
   .in(file("."))
   .settings(commonSettings: _*)
-  .aggregate(shared, client, server, `http4s-client`)
+  .aggregate(shared, client, server, `http4s-client`, `http4s-server`)
 
 lazy val shared = project
   .in(file("shared"))
@@ -126,8 +126,22 @@ lazy val `http4s-client` = project
     mavenSettings,
     Defaults.itSettings,
     name := "typedapi-http4s-client",
-    libraryDependencies ++= Dependencies.http4s,
+    libraryDependencies ++= Dependencies.http4sClient,
 
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(client)
+
+lazy val `http4s-server` = project
+  .in(file("http4s-server"))
+  .configs(IntegrationTest)
+  .settings(
+    commonSettings,
+    mavenSettings,
+    Defaults.itSettings,
+    name := "typedapi-http4s-server",
+    libraryDependencies ++= Dependencies.http4sServer,
+
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+  )
+  .dependsOn(server)
