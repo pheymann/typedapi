@@ -54,7 +54,23 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] =
       for {
         raw <- request.queries.get(wit.value.name)
-        v   <- value(raw)
+        v   <- raw.headOption.flatMap(value.apply)
+        out <- next(request, extractedHeaderKeys, v :: inAgg)
+      } yield out
+  }
+
+  implicit def queryListExtractor[El <: HList, K <: Symbol, A, In <: HList, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[A], next: RouteExtractor[El, In, shapeless.::[List[A], EIn]]) = new RouteExtractor[shapeless.::[QueryInput, El], shapeless.::[FieldType[K, List[A]], In], EIn] {
+    type Out = next.Out
+
+    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Option[Out] =
+      for {
+        raw <- request.queries.get(wit.value.name)
+        v   <- {
+          val vs = raw.flatMap(value.apply)
+
+          if (vs.isEmpty) None
+          else            Some(vs)
+        }
         out <- next(request, extractedHeaderKeys, v :: inAgg)
       } yield out
   }

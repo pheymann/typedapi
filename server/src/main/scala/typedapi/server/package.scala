@@ -30,7 +30,7 @@ package object server extends typedapi.shared.ops.ApiListOps
       def apply(req: executor.R, eReq: EndpointRequest): Option[executor.Out] = executor(req, eReq, endpoint)
     })
 
-  private object endpointToServe extends Poly1 {
+  object endpointToServe extends Poly1 {
 
     implicit def default[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut](implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]) = 
       at[Endpoint[El, In, ROut, CIn, F, FOut]] { endpoint =>

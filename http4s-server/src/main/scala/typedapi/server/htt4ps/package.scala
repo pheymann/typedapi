@@ -1,9 +1,12 @@
 package typedapi.server
 
 import cats.Monad
+import cats.implicits._
 import cats.effect.IO
 import org.http4s._
 import org.http4s.dsl._
+import org.http4s.server.Server
+import org.http4s.server.blaze.BlazeBuilder
 import shapeless._
 import shapeless.ops.hlist.Prepend
 
@@ -14,6 +17,9 @@ package object http4s {
   implicit def noReqBodyExecutor[El <: HList, In <: HList, CIn <: HList, F[_]: Monad, FOut](implicit encoder: EntityEncoder[F, FOut]) = new NoReqBodyExecutor[El, In, CIn, F, FOut] {
     type R   = Request[F]
     type Out = F[Response[F]]
+
+    private val dsl = Http4sDsl[F]
+    import dsl._
 
     def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, CIn, CIn, F, FOut]): Option[Out] = {
       extract(eReq, endpoint).map { extracted =>
@@ -26,18 +32,21 @@ package object http4s {
     }
   }
 
-  implicit def withReqBodyExecutor[El <: HList, In <: HList, Bd, ROut <: HList, POut <: HList, CIn <: HList, FOut]
-    (implicit encoder: EntityEncoder[IO, FOut], 
-              decoder: EntityDecoder[IO, Bd],
+  implicit def withReqBodyExecutor[El <: HList, In <: HList, Bd, ROut <: HList, POut <: HList, CIn <: HList, F[_]: Monad, FOut]
+    (implicit encoder: EntityEncoder[F, FOut], 
+              decoder: EntityDecoder[F, Bd],
               _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], 
-              _eqProof: POut =:= CIn) = new ReqBodyExecutor[El, In, Bd, ROut, POut, CIn, IO, FOut] {
-    type R   = Request[IO]
-    type Out = IO[Response[IO]]
+              _eqProof: POut =:= CIn) = new ReqBodyExecutor[El, In, Bd, ROut, POut, CIn, F, FOut] {
+    type R   = Request[F]
+    type Out = F[Response[F]]
 
     implicit val prepend = _prepend
     implicit val eqProof = _eqProof
 
-    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, IO, FOut]): Option[Out] = {
+    private val dsl = Http4sDsl[F]
+    import dsl._
+
+    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, F, FOut]): Option[Out] = {
       extract(eReq, endpoint).map { case (_, extracted) =>
         for {
           body     <- req.as[Bd]
@@ -49,7 +58,33 @@ package object http4s {
     }
   }
 
-//  implicit val mountEndpoints = new MountEndpoints[BlazeBuilder[IO], Request[IO], IO[Response[IO]]] {
+  implicit val mountEndpoints = new MountEndpoints[BlazeBuilder[IO], Request[IO], IO[Response[IO]]] {
+    import org.http4s.dsl.io._
 
-//  }
+    type Out = IO[Server[IO]]
+
+    def apply(server: ServerManager[BlazeBuilder[IO]], endpoints: List[Serve[Request[IO], IO[Response[IO]]]]): Out = {
+      val service = HttpService[IO] {
+        case request =>
+          def execute(eps: List[Serve[Request[IO], IO[Response[IO]]]], eReq: EndpointRequest): IO[Response[IO]] = eps match {
+            case collection.immutable.::(endpoint, tail) => endpoint(request, eReq) match {
+              case Some(response) => response
+              case None           => execute(tail, eReq)
+            }
+
+            case Nil => NotFound("")
+          }
+
+          val eReq = EndpointRequest(
+            request.method.name, 
+            request.uri.path.split("/").toList, 
+            request.uri.multiParams.map { case (key, value) => key -> value.toList },
+            request.headers.toList.map(header => header.name.toString -> header.value)(collection.breakOut)
+          )
+          execute(endpoints, eReq)
+      }
+
+      server.server.bindHttp(server.port, server.host).mountService(service, "/").start
+    }
+  }
 }

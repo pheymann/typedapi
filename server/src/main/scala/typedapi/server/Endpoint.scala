@@ -11,7 +11,7 @@ abstract class Endpoint[El <: HList, In <: HList, ROut, CIn <: HList, F[_], Out]
 
 final case class EndpointRequest(method: String, 
                                  uri: List[String],
-                                 queries: Map[String, String],
+                                 queries: Map[String, List[String]],
                                  headers: Map[String, String])
 
 final class EndpointDefinition[El <: HList, In <: HList, ROut, CIn <: HList, Fun[_[_]], Out](extractor: RouteExtractor.Aux[El, In, HNil, ROut], 

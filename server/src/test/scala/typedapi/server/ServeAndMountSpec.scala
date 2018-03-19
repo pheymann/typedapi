@@ -9,8 +9,8 @@ final class ServeAndMountSpec extends Specification {
   case class Foo(name: String)
 
   sealed trait Req
-  case class TestRequest(uri: List[String], queries: Map[String, String], headers: Map[String, String]) extends Req
-  case class TestRequestWithBody[Bd](uri: List[String], queries: Map[String, String], headers: Map[String, String], body: Bd) extends Req
+  case class TestRequest(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String]) extends Req
+  case class TestRequestWithBody[Bd](uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd) extends Req
 
   case class TestResponse(raw: String)
 
@@ -45,7 +45,7 @@ final class ServeAndMountSpec extends Specification {
       val endpoint = typedapi.server.link(Api).to[Id]((name, sortByAge) => List(Foo(name)))
       val served   = serve(endpoint)
 
-      val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> "1"), Map.empty)
+      val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq = EndpointRequest("GET", req.uri, req.queries, req.headers)
 
       served.head(req, eReq) === Some(TestResponse("List(Foo(joe))"))
@@ -70,7 +70,7 @@ final class ServeAndMountSpec extends Specification {
 
       val served    = serve(endpoint0 :|: endpoint1 :|: =:)
 
-      val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> "1"), Map.empty)
+      val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq = EndpointRequest("GET", req.uri, req.queries, req.headers)
 
       served.head(req, eReq) === Some(TestResponse("List(Foo(joe))"))

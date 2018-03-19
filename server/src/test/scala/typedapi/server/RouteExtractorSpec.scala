@@ -34,12 +34,16 @@ final class RouteExtractorSpec extends Specification {
     }
 
     "queries" >> {
-      val ext = extract(:= :> "foo" :> Query[Int]('age) :> Get[Foo])
+      val ext0 = extract(:= :> "foo" :> Query[Int]('age) :> Get[Foo])
 
-      ext(EndpointRequest("GET", List("foo"), Map("age" -> "0"), Map.empty), Set.empty, HNil) === Some(0 :: HNil)
-      ext(EndpointRequest("GET", List("foo"), Map("age" -> "wrong"), Map.empty), Set.empty, HNil) === None
-      ext(EndpointRequest("GET", List("foo"), Map("wrong" -> "0"), Map.empty), Set.empty, HNil) === None
-      ext(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === None
+      ext0(EndpointRequest("GET", List("foo"), Map("age" -> List("0")), Map.empty), Set.empty, HNil) === Some(0 :: HNil)
+      ext0(EndpointRequest("GET", List("foo"), Map("age" -> List("wrong")), Map.empty), Set.empty, HNil) === None
+      ext0(EndpointRequest("GET", List("foo"), Map("wrong" -> List("0")), Map.empty), Set.empty, HNil) === None
+      ext0(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === None
+
+      val ext1 = extract(:= :> "foo" :> Query[List[Int]]('age) :> Get[Foo])
+
+      ext1(EndpointRequest("GET", List("foo"), Map("age" -> List("0", "1")), Map.empty), Set.empty, HNil) === Some(List(0, 1) :: HNil)
     }
 
     "headers" >> {
@@ -95,7 +99,7 @@ final class RouteExtractorSpec extends Specification {
     "combinations" >> {
       val ext0 = extract(:= :> "foo" :> Query[Int]('age) :> Header[String]('id) :> Get[Foo])
 
-      ext0(EndpointRequest("GET", List("foo"), Map("age" -> "0"), Map("id" -> "john")), Set.empty, HNil) === Some(0 :: "john" :: HNil)
+      ext0(EndpointRequest("GET", List("foo"), Map("age" -> List("0")), Map("id" -> "john")), Set.empty, HNil) === Some(0 :: "john" :: HNil)
 
       val ext1 = extract(:= :> Get[Foo])
 
