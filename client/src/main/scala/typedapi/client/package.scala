@@ -22,7 +22,7 @@ package object client extends typedapi.shared.ops.ApiListOps
     compiler
 
   def compile[H <: HList, In <: HList, Fold <: HList, HL <: HList, Out <: HList](apiLists: CompositionCons[H])
-                                                                                (implicit folders: TypeLevelFoldLeftList.Aux[H, In, Fold],
+                                                                                (implicit folders: TypeLevelFoldLeftList.Aux[H, Fold],
                                                                                           compilers: ApiCompilerList.Aux[Fold, HL], 
                                                                                           composition: HListToComposition[HL]): composition.Out =
     composition(compilers.compilers)

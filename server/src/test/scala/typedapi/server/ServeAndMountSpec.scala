@@ -4,6 +4,8 @@ import shapeless.{HList, HNil, Id, ::}
 import shapeless.ops.hlist.Prepend
 import org.specs2.mutable.Specification
 
+import scala.language.higherKinds
+
 final class ServeAndMountSpec extends Specification {
 
   case class Foo(name: String)
@@ -39,11 +41,20 @@ final class ServeAndMountSpec extends Specification {
         }
     }
 
+  def toList[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut](endpoint: Endpoint[El, In, ROut, CIn, F, FOut])
+                                                                      (implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]): List[Serve[executor.R, executor.Out]] = 
+    List(new Serve[executor.R, executor.Out] {
+      def apply(req: executor.R, eReq: EndpointRequest): Option[executor.Out] = executor(req, eReq, endpoint)
+    })
+
+  def toList[End <: HList](end: End)(implicit s: ServeToList[End, Req, TestResponse]): List[Serve[Req, TestResponse]] =
+    s(end)
+
   "serve endpoints as simple Request -> Response functions and mount them into a server" >> {
     "serve single endpoint and no body" >> {
       val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[List[Foo]]
       val endpoint = typedapi.server.link(Api).to[Id]((name, sortByAge) => List(Foo(name)))
-      val served   = serve(endpoint)
+      val served   = toList(endpoint)
 
       val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq = EndpointRequest("GET", req.uri, req.queries, req.headers)
@@ -54,7 +65,7 @@ final class ServeAndMountSpec extends Specification {
     "serve single endpoint and with body" >> {
       val Api      = := :> "find" :> "user" :> Segment[String]('name) :> ReqBody[Foo] :> Post[List[Foo]]
       val endpoint = typedapi.server.link(Api).to[Id]((name, body) => List(Foo(name), body))
-      val served   = serve(endpoint)
+      val served   = toList(endpoint)
 
       val req  = TestRequestWithBody(List("find", "user", "joe"), Map.empty, Map.empty, Foo("jim"))
       val eReq = EndpointRequest("POST", req.uri, req.queries, req.headers)
@@ -63,12 +74,19 @@ final class ServeAndMountSpec extends Specification {
     }
 
     "serve multiple endpoints" >> {
-      val Api0      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[List[Foo]]
-      val endpoint0 = typedapi.server.link(Api0).to[Id]((name, sortByAge) => List(Foo(name)))
-      val Api1      = := :> "create" :> "user" :> ReqBody[Foo] :> Post[Foo]
-      val endpoint1 = typedapi.server.link(Api1).to[Id]((foo) => foo)
+      val Api = 
+        (:= :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[List[Foo]]) :|:
+        (:= :> "create" :> "user" :> ReqBody[Foo] :> Post[Foo])
 
-      val served    = serve(endpoint0 :|: endpoint1 :|: =:)
+      def find(name: String, age: Int): Id[List[Foo]] = List(Foo(name))
+      def create(foo: Foo): Id[Foo] = foo
+
+      val endpoints = typedapi.server.link(Api).to[Id] {
+        find _ :|:
+        create _ :|: =:
+      }
+
+      val served = toList(endpoints)
 
       val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq = EndpointRequest("GET", req.uri, req.queries, req.headers)
