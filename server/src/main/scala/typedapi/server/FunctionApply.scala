@@ -4,8 +4,11 @@ import shapeless._
 import shapeless.labelled.FieldType
 
 import scala.language.higherKinds
+import scala.annotation.implicitNotFound
 
-sealed trait FunctionApply[In <: HList, Out] {
+@implicitNotFound("Could not find FunctionApply instance. Support max arity is 8. If you need more implement this type-class.\n" +
+                  "  input: ${In}")
+trait FunctionApply[In <: HList, Out] {
 
   type Fun[_[_]]
   type CIn <: HList
@@ -79,4 +82,56 @@ trait FunctionApplyLowPrio {
   }
 
   implicit def funApply4[KA, A, KB, B, KC, C, KD, D, Out] = new Function4[KA, A, KB, B, KC, C, KD, D, Out]
+
+  final class Function5[KA, A, KB, B, KC, C, KD, D, KE, E, Out] extends FunctionApply[FieldType[KA, A] :: FieldType[KB, B] :: FieldType[KC, C] :: FieldType[KD, D] :: FieldType[KE, E] :: HNil, Out] {
+    type Fun[F[_]] = (A, B, C, D, E) => F[Out]
+    type CIn = A :: B :: C :: D :: E :: HNil
+
+    def apply[F[_]](in: A :: B :: C :: D :: E :: HNil, f: Fun[F]): F[Out] = {
+      val a :: b :: c :: d :: e :: HNil = in
+
+      f(a, b, c, d, e)
+    }
+  }
+
+  implicit def funApply5[KA, A, KB, B, KC, C, KD, D, KE, E, Out] = new Function5[KA, A, KB, B, KC, C, KD, D, KE, E, Out]
+
+  final class Function6[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, Out] extends FunctionApply[FieldType[KA, A] :: FieldType[KB, B] :: FieldType[KC, C] :: FieldType[KD, D] :: FieldType[KA, A] :: FieldType[KF, F] :: HNil, Out] {
+    type Fun[M[_]] = (A, B, C, D, E, F) => M[Out]
+    type CIn = A :: B :: C :: D :: E :: F :: HNil
+
+    def apply[M[_]](in: A :: B :: C :: D :: E :: F :: HNil, _f: Fun[M]): M[Out] = {
+      val a :: b :: c :: d :: e :: f :: HNil = in
+
+      _f(a, b, c, d, e, f)
+    }
+  }
+
+  implicit def funApply6[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, Out] = new Function6[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, Out]
+
+  final class Function7[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, KG, G, Out] extends FunctionApply[FieldType[KA, A] :: FieldType[KB, B] :: FieldType[KC, C] :: FieldType[KD, D] :: FieldType[KA, A] :: FieldType[KF, F] :: FieldType[KG, G] :: HNil, Out] {
+    type Fun[M[_]] = (A, B, C, D, E, F, G) => M[Out]
+    type CIn = A :: B :: C :: D :: E :: F :: G :: HNil
+
+    def apply[M[_]](in: A :: B :: C :: D :: E :: F :: G :: HNil, f: Fun[M]): M[Out] = {
+      val a :: b :: c :: d :: e :: _f :: g :: HNil = in
+
+      f(a, b, c, d, e, _f, g)
+    }
+  }
+
+  implicit def funApply7[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, KG, G, Out] = new Function7[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, KG, G, Out]
+
+  final class Function8[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, KG, G, KH, H, Out] extends FunctionApply[FieldType[KA, A] :: FieldType[KB, B] :: FieldType[KC, C] :: FieldType[KD, D] :: FieldType[KA, A] :: FieldType[KF, F] :: FieldType[KG, G] :: FieldType[KH, H] :: HNil, Out] {
+    type Fun[M[_]] = (A, B, C, D, E, F, G, H) => M[Out]
+    type CIn = A :: B :: C :: D :: E :: F :: G :: H :: HNil
+
+    def apply[M[_]](in: A :: B :: C :: D :: E :: F :: G :: H :: HNil, f: Fun[M]): M[Out] = {
+      val a :: b :: c :: d :: e :: _f :: g :: h :: HNil = in
+
+      f(a, b, c, d, e, _f, g, h)
+    }
+  }
+
+  implicit def funApply8[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, KG, G, KH, H, Out] = new Function8[KA, A, KB, B, KC, C, KD, D, KE, E, KF, F, KG, G, KH, H, Out]
 }

@@ -3,10 +3,16 @@ package typedapi.server
 import shapeless._
 
 import scala.language.higherKinds
+import scala.annotation.implicitNotFound
 
+/** Compiles RouteExtractor and FunApply for every API endpoint and generates expected list of endpoint functions. */
+@implicitNotFound("""Could not find precompiled instance for transformed APIs. Maybe the RouteExtractor or FunctionApply couldn't be found for an API.
+                    |  transformed: ${H}""")
 sealed trait PrecompileEndpoint[H <: HList] {
 
+  // list of expected endpoint functions
   type Comp[_[_]] <: HList
+  // list of endpoint constructors
   type Out[_[_]]  <: HList
 
   def precompiled[F[_]]: Out[F]
@@ -20,6 +26,7 @@ object PrecompileEndpoint {
   }
 }
 
+/** Fuses RouteExtractor, FunApply and endpoint function fun into an Endpoint. */
 trait EndpointConstructor[F[_], Fun, El <: HList, In <: HList, ROut, CIn <: HList, Out] {
 
   def apply(fun: Fun): Endpoint[El, In, ROut, CIn, F, Out]
@@ -65,6 +72,9 @@ object =: {
   def :|:[Fun](fun: Fun): FunctionComposition[Fun :: HNil] = FunctionComposition(fun :: HNil)
 }
 
+@implicitNotFound("""Could not find merger for given constructor and endpoint function. Maybe the EndpointExecutor couldn't be found for an API.
+                    |  precompiled: ${Pre}
+                    |  functions:   ${Fun}""")
 sealed trait MergeToEndpoint[F[_], Pre <: HList, Fun <: HList] {
 
   type Out <: HList
@@ -101,6 +111,18 @@ trait MergeToEndpointLowPrio {
 
 final class EndpointCompositionDefinition[H <: HList, Comp[_[_]] <: HList, Pre[_[_]] <: HList](pre: PrecompileEndpoint.Aux[H, Comp, Pre]) {
 
+  /** Restricts type of input parameter to a composition of functions defined by the precompile.
+    *
+    * {{{
+    * val Api =
+    *   (:= :> Segment[String]('name) :> Get[User]) :|:
+    *   (:= :> "foo" :> Segment[String]('name) :> Get[User])
+    * 
+    * val f0: String => IO[User] = name => IO.pure(User(name))
+    * val f1: String => IO[User] = name => IO.pure(User(name))
+    * link(Api).to[IO](f0 _ :|: f1 _ :|: =:)
+    * }}}
+    */
   def to[F[_]](comp: FunctionComposition[Comp[F]])(implicit merge: MergeToEndpoint[F, Pre[F], Comp[F]]): merge.Out =
     merge(pre.precompiled[F], comp.funs)
 }

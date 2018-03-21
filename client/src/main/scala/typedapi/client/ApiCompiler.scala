@@ -7,8 +7,7 @@ import shapeless.labelled.{FieldType, field}
 import scala.collection.mutable.Builder
 import scala.annotation.implicitNotFound
 
-/** Compiles type level api description into a function returning data (uri, query, header, body) and return-type `A` which are used for a request.
-  */
+/** Compiles type level api description into a function returning data (uri, query, header, body) and return-type `A` which are used for a request. */
 @implicitNotFound("Cannot find ApiExecutor instance for:\n - elements: ${El}\n - inputs: ${In}")
 trait ApiCompiler[El <: HList, In <: HList, O] {
 
