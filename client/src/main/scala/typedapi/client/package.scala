@@ -8,10 +8,10 @@ package object client extends typedapi.shared.ops.ApiListOps
                       with TypeLevelFoldLeftLowPrio 
                       with TypeLevelFoldLeftListLowPrio 
                       with ApiTransformer 
+                      with FoldResultEvidenceLowPrio
                       with ApiCompilerMediumPrio 
                       with ApiCompilerListLowPrio 
-                      with ops.ApiCompilerOps
-                      with FoldResultEvidenceLowPrio {
+                      with ops.ApiCompilerOps {
 
   type Transformed[El <: HList, In <: HList, Out, D <: HList] = (El, In, Out)
 

@@ -94,7 +94,7 @@ trait MergeToEndpointLowPrio {
         new Serve[executor.R, executor.Out] {
           private val endpoint = constructors.head(fun.head)
 
-          def apply(req: executor.R, eReq: EndpointRequest): Option[executor.Out] = executor(req, eReq, endpoint)
+          def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
         } :: next(constructors.tail, fun.tail)
     }
 }

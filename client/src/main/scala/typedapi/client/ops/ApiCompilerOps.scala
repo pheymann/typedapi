@@ -10,12 +10,7 @@ abstract class BaseApiOps[El <: HList, In <: HList, O, D <: HList](compiler: Api
   def apply[I, C](input: I)(implicit cm: ClientManager[C]) = TypedApi.execute(compiler, input, cm)
 }
 
-trait ApiCompilerOps {
-
-  implicit class ApiOps0[El <: HList, O, D <: HList](compiler: ApiCompiler.Aux[El, HNil, O, D]) {
-
-    def apply[C]()(implicit cm: ClientManager[C]) = new TypedApi.EmptyExecutionHelper[El, O, D, C](compiler, cm)
-  }
+sealed trait ApiCompilerOpsLowPrio {
 
   implicit class ApiOps1[El <: HList, O, D <: HList,  K0, V0](compiler: ApiCompiler.Aux[El, FieldType[K0, V0] :: HNil, O, D]) extends BaseApiOps(compiler) {
 
@@ -96,4 +91,13 @@ trait ApiCompilerOps {
   }
 
   implicit class ApiOpsN[El <: HList, O, D <: HList,  In <: HList](compiler: ApiCompiler.Aux[El, In, O, D]) extends BaseApiOps(compiler)
+}
+
+
+trait ApiCompilerOps extends ApiCompilerOpsLowPrio {
+
+  implicit class ApiOps0[El <: HList, O, D <: HList](compiler: ApiCompiler.Aux[El, HNil, O, D]) {
+
+    def apply[C]()(implicit cm: ClientManager[C]) = new TypedApi.EmptyExecutionHelper[El, O, D, C](compiler, cm)
+  }
 }

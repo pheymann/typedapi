@@ -10,10 +10,10 @@ sealed trait EndpointExecutor[El <: HList, In <: HList, ROut, CIn <: HList, F[_]
   type R
   type Out
 
-  def extract(eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, F, FOut]): Option[ROut] = 
+  def extract(eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, F, FOut]): Either[ExtractionError, ROut] = 
     endpoint.extractor(eReq, Set.empty, HNil)
 
-  def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, F, FOut]): Option[Out]
+  def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, F, FOut]): Either[ExtractionError, Out]
 }
 
 object EndpointExecutor {

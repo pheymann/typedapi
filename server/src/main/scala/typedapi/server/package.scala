@@ -14,8 +14,8 @@ package object server extends typedapi.shared.ops.ApiListOps
                       with RouteExtractorMediumPrio
                       with FoldResultEvidenceLowPrio
                       with ServeToListLowPrio
-with PrecompileEndpointLowPrio
-with MergeToEndpointLowPrio {
+                      with PrecompileEndpointLowPrio
+                      with MergeToEndpointLowPrio {
 
   def link[H <: HList, Fold, El <: HList, In <: HList, ROut, Out](apiList: FinalCons[H])
                                                                  (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Fold],
@@ -28,7 +28,7 @@ with MergeToEndpointLowPrio {
   def mount[S, El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut, Req, Resp, Out](server: ServerManager[S], endpoint: Endpoint[El, In, ROut, CIn, F, FOut])
                                                                      (implicit executor: EndpointExecutor.Aux[Req, El, In, ROut, CIn, F, FOut, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
     mounting(server, List(new Serve[executor.R, executor.Out] {
-      def apply(req: executor.R, eReq: EndpointRequest): Option[executor.Out] = executor(req, eReq, endpoint)
+      def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
     }))
 
   def link[H <: HList, Fold <: HList](apiLists: CompositionCons[H])
@@ -41,7 +41,7 @@ with MergeToEndpointLowPrio {
     implicit def default[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut](implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]) = 
       at[Endpoint[El, In, ROut, CIn, F, FOut]] { endpoint =>
         new Serve[executor.R, executor.Out] {
-          def apply(req: executor.R, eReq: EndpointRequest): Option[executor.Out] = executor(req, eReq, endpoint)
+          def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
         }
       }
   }

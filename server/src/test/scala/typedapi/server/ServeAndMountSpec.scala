@@ -21,7 +21,7 @@ final class ServeAndMountSpec extends Specification {
       type R = Req
       type Out = TestResponse
 
-      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, In, CIn, CIn, Id, FOut]): Option[Out] =
+      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, In, CIn, CIn, Id, FOut]): Either[ExtractionError, Out] =
         extract(eReq, endpoint).map { extracted => 
           TestResponse(execute(extracted, endpoint).toString())
         }
@@ -35,7 +35,7 @@ final class ServeAndMountSpec extends Specification {
       implicit val prepend = _prepend
       implicit def eqProof = _eqProof
 
-      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, Id, FOut]): Option[Out] =
+      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, Id, FOut]): Either[ExtractionError, Out] =
         extract(eReq, endpoint).map { case (_, extracted) => 
           TestResponse(execute(extracted, req.asInstanceOf[TestRequestWithBody[Bd]].body, endpoint).toString())
         }
@@ -44,7 +44,7 @@ final class ServeAndMountSpec extends Specification {
   def toList[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut](endpoint: Endpoint[El, In, ROut, CIn, F, FOut])
                                                                       (implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]): List[Serve[executor.R, executor.Out]] = 
     List(new Serve[executor.R, executor.Out] {
-      def apply(req: executor.R, eReq: EndpointRequest): Option[executor.Out] = executor(req, eReq, endpoint)
+      def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
     })
 
   def toList[End <: HList](end: End)(implicit s: ServeToList[End, Req, TestResponse]): List[Serve[Req, TestResponse]] =
@@ -59,7 +59,7 @@ final class ServeAndMountSpec extends Specification {
       val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq = EndpointRequest("GET", req.uri, req.queries, req.headers)
 
-      served.head(req, eReq) === Some(TestResponse("List(Foo(joe))"))
+      served.head(req, eReq) === Right(TestResponse("List(Foo(joe))"))
     }
 
     "serve single endpoint and with body" >> {
@@ -70,7 +70,7 @@ final class ServeAndMountSpec extends Specification {
       val req  = TestRequestWithBody(List("find", "user", "joe"), Map.empty, Map.empty, Foo("jim"))
       val eReq = EndpointRequest("POST", req.uri, req.queries, req.headers)
 
-      served.head(req, eReq) === Some(TestResponse("List(Foo(joe), Foo(jim))"))
+      served.head(req, eReq) === Right(TestResponse("List(Foo(joe), Foo(jim))"))
     }
 
     "serve multiple endpoints" >> {
@@ -91,7 +91,7 @@ final class ServeAndMountSpec extends Specification {
       val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq = EndpointRequest("GET", req.uri, req.queries, req.headers)
 
-      served.head(req, eReq) === Some(TestResponse("List(Foo(joe))"))
+      served.head(req, eReq) === Right(TestResponse("List(Foo(joe))"))
     }
   }
 }

@@ -21,7 +21,7 @@ package object http4s {
     private val dsl = Http4sDsl[F]
     import dsl._
 
-    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, CIn, CIn, F, FOut]): Option[Out] = {
+    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, CIn, CIn, F, FOut]): Either[ExtractionError, Out] = {
       extract(eReq, endpoint).map { extracted =>
         Monad[F].flatMap(execute(extracted, endpoint)) { response =>
           val resp: F[Response[F]] = Ok.apply(response)(Monad[F], encoder)
@@ -46,7 +46,7 @@ package object http4s {
     private val dsl = Http4sDsl[F]
     import dsl._
 
-    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, F, FOut]): Option[Out] = {
+    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, F, FOut]): Either[ExtractionError, Out] = {
       extract(eReq, endpoint).map { case (_, extracted) =>
         for {
           body     <- req.as[Bd]
@@ -68,11 +68,12 @@ package object http4s {
         case request =>
           def execute(eps: List[Serve[Request[IO], IO[Response[IO]]]], eReq: EndpointRequest): IO[Response[IO]] = eps match {
             case collection.immutable.::(endpoint, tail) => endpoint(request, eReq) match {
-              case Some(response) => response
-              case None           => execute(tail, eReq)
+              case Right(response)            => response
+              case Left(RouteNotFound)        => execute(tail, eReq)
+              case Left(BadRouteRequest(msg)) => BadRequest(msg)
             }
 
-            case Nil => NotFound("")
+            case Nil => NotFound("uri = " + request.uri)
           }
 
           val eReq = EndpointRequest(

@@ -22,24 +22,24 @@ object Dependencies {
   val http4sClient = Seq(
     "org.http4s" %% "http4s-blaze-client" % http4sV % Provided,
 
-    "org.http4s" %% "http4s-blaze-server" % http4sV % "it",
-    "org.http4s" %% "http4s-dsl" % http4sV % "it",
-    "org.http4s" %% "http4s-circe" % http4sV        % "it",
-    "io.circe"   %% "circe-core" % circeV    % "it",
-    "io.circe"   %% "circe-parser" % circeV  % "it",
-    "io.circe"   %% "circe-generic" % circeV % "it",
-    "org.specs2" %% "specs2-core" % "3.9.4" % "it"
+    "org.http4s" %% "http4s-blaze-server" % http4sV % Test,
+    "org.http4s" %% "http4s-dsl" % http4sV % Test,
+    "org.http4s" %% "http4s-circe" % http4sV        % Test,
+    "io.circe"   %% "circe-core" % circeV    % Test,
+    "io.circe"   %% "circe-parser" % circeV  % Test,
+    "io.circe"   %% "circe-generic" % circeV % Test,
+    "org.specs2" %% "specs2-core" % "3.9.4" % Test
   )
 
   val http4sServer = Seq(
     "org.http4s" %% "http4s-blaze-server" % http4sV % Provided,
     "org.http4s" %% "http4s-dsl" % http4sV % Provided,
 
-    "org.http4s" %% "http4s-blaze-client" % http4sV % "it",
-    "org.http4s" %% "http4s-circe" % http4sV        % "it",
-    "io.circe"   %% "circe-core" % circeV    % "it",
-    "io.circe"   %% "circe-parser" % circeV  % "it",
-    "io.circe"   %% "circe-generic" % circeV % "it",
-    "org.specs2" %% "specs2-core" % "3.9.4" % "it"
+    "org.http4s" %% "http4s-blaze-client" % http4sV % Test,
+    "org.http4s" %% "http4s-circe" % http4sV        % Test,
+    "io.circe"   %% "circe-core" % circeV    % Test,
+    "io.circe"   %% "circe-parser" % circeV  % Test,
+    "io.circe"   %% "circe-generic" % circeV % Test,
+    "org.specs2" %% "specs2-core" % "3.9.4" % Test
   )
 }
