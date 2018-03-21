@@ -56,14 +56,14 @@ trait ApiCompilerLowPrio {
     }
   }
 
-  implicit def headersInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[HeaderInput :: T, FieldType[K, V] :: In, O] {
+  implicit def headerInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[HeaderInput :: T, FieldType[K, V] :: In, O] {
     type Out = compiler.Out
 
     def apply(inputs: FieldType[K, V] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val headersName     = wit.value.name
-      val headersValue: V = inputs.head
+      val headerName     = wit.value.name
+      val headerValue: V = inputs.head
 
-      compiler(inputs.tail, uri, queries, Map((headersName, headersValue.toString())) ++ headers)
+      compiler(inputs.tail, uri, queries, Map((headerName, headerValue.toString())) ++ headers)
     }
   }
 
@@ -132,6 +132,18 @@ trait ApiCompilerLowPrio {
 
 trait ApiCompilerMediumPrio extends ApiCompilerLowPrio {
 
+  implicit def queryOptInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[QueryInput :: T, FieldType[K, Option[V]] :: In, O] {
+    type Out = compiler.Out
+
+    def apply(inputs: FieldType[K, Option[V]] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val queryName             = wit.value.name
+      val queryValue: Option[V] = inputs.head
+      val updatedQueries        = queryValue.fold(queries)(q => Map(queryName -> List(q.toString())) ++ queries)
+
+      compiler(inputs.tail, uri, updatedQueries, headers)
+    }
+  }
+
   implicit def queryListInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[QueryInput :: T, FieldType[K, List[V]] :: In, O] {
     type Out = compiler.Out
 
@@ -139,7 +151,22 @@ trait ApiCompilerMediumPrio extends ApiCompilerLowPrio {
       val queryName           = wit.value.name
       val queryValue: List[V] = inputs.head
 
-      compiler(inputs.tail, uri, Map((queryName, queryValue.map(_.toString()))) ++ queries, headers)
+      if (queryValue.isEmpty)
+        compiler(inputs.tail, uri, queries, headers)
+      else
+        compiler(inputs.tail, uri, Map((queryName, queryValue.map(_.toString()))) ++ queries, headers)
+    }
+  }
+
+  implicit def headersOptInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[HeaderInput :: T, FieldType[K, Option[V]] :: In, O] {
+    type Out = compiler.Out
+
+    def apply(inputs: FieldType[K, Option[V]] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val headerName             = wit.value.name
+      val headerValue: Option[V] = inputs.head
+      val updatedHeaders         = headerValue.fold(headers)(h => Map(headerName -> h.toString()) ++ headers)
+
+      compiler(inputs.tail, uri, queries, updatedHeaders)
     }
   }
 }

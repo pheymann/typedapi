@@ -45,6 +45,12 @@ final class ApiCompilerSpec extends Specification {
         api0(0).run[Id] === ReqInput("GET", Nil, Map("i0" -> List("0")), Map())
         val api1 = compile(:= :> Query[Int]('i0) :> Query[Int]('i1) :> Get[ReqInput])
         api1(0, 1).run[Id] === ReqInput("GET", Nil, Map("i0" -> List("0"), "i1" -> List("1")), Map())
+        val api2 = compile(:= :> Query[List[Int]]('i0) :> Get[ReqInput])
+        api2(List(0, 1)).run[Id] === ReqInput("GET", Nil, Map("i0" -> List("0", "1")), Map())
+        api2(Nil).run[Id] === ReqInput("GET", Nil, Map.empty, Map())
+        val api3 = compile(:= :> Query[Option[Int]]('i0) :> Get[ReqInput])
+        api3(Some(0)).run[Id] === ReqInput("GET", Nil, Map("i0" -> List("0")), Map())
+        api3(None).run[Id] === ReqInput("GET", Nil, Map.empty, Map())
       }
 
       "header" >> {
@@ -52,6 +58,9 @@ final class ApiCompilerSpec extends Specification {
         api0(0).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0"))
         val api1 = compile(:= :> Header[Int]('i0) :> Header[Int]('i1) :> Get[ReqInput])
         api1(0, 1).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0", "i1" -> "1"))
+        val api2 = compile(:= :> Header[Option[Int]]('i0) :> Get[ReqInput])
+        api2(Some(0)).run[Id] === ReqInput("GET", Nil, Map(), Map("i0" -> "0"))
+        api2(None).run[Id] === ReqInput("GET", Nil, Map(), Map.empty)
       }
 
       "raw header" >> {
