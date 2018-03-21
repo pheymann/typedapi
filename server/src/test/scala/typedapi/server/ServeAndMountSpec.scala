@@ -22,7 +22,7 @@ final class ServeAndMountSpec extends Specification {
       type Out = TestResponse
 
       def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, In, CIn, CIn, Id, FOut]): Either[ExtractionError, Out] =
-        extract(eReq, endpoint).map { extracted => 
+        extract(eReq, endpoint).right.map { extracted => 
           TestResponse(execute(extracted, endpoint).toString())
         }
     }
@@ -36,7 +36,7 @@ final class ServeAndMountSpec extends Specification {
       implicit def eqProof = _eqProof
 
       def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, Id, FOut]): Either[ExtractionError, Out] =
-        extract(eReq, endpoint).map { case (_, extracted) => 
+        extract(eReq, endpoint).right.map { case (_, extracted) => 
           TestResponse(execute(extracted, req.asInstanceOf[TestRequestWithBody[Bd]].body, endpoint).toString())
         }
     }
