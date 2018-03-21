@@ -6,11 +6,18 @@ import shapeless.labelled.FieldType
 import shapeless.ops.hlist.Reverse
 
 import scala.util.Try
+import scala.annotation.implicitNotFound
 
 sealed trait ExtractionError
 case object RouteNotFound extends ExtractionError
 final case class BadRouteRequest(msg: String) extends ExtractionError
 
+/** Build a function which extracts inputs from a given requests based on the API. 
+  *  - if a request path does not fit the API definition `RouteNotFound` is returned
+  *  - if a query, header, body, etc is missing `BadRouteRequest` is returned
+  */
+@implicitNotFound("Cannot find RouteExtractor. Maybe a ValueExtractor could not be found.\n" + 
+                  "  elements: ${El}\n  inputs:   ${In}")
 sealed trait RouteExtractor[El <: HList, In <: HList, EIn <: HList] {
 
   type Out
