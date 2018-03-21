@@ -8,7 +8,8 @@ import scala.collection.mutable.Builder
 import scala.annotation.implicitNotFound
 
 /** Compiles type level api description into a function returning data (uri, query, header, body) and return-type `A` which are used for a request. */
-@implicitNotFound("Cannot find ApiExecutor instance for:\n - elements: ${El}\n - inputs: ${In}")
+@implicitNotFound("Something went really wrong, cannot find ApiCompiler." +
+                  "  elements: ${El}\n  inputs: ${In}")
 trait ApiCompiler[El <: HList, In <: HList, O] {
 
   type Out <: HList
