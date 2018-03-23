@@ -61,3 +61,44 @@ You can also put information into the path by using segments:
 := :> "hello" :> Segment[String]('name) :> ReqBody[B]:> Put[A]
 // PUT {body: B} /hello/{name}
 ```
+
+Every segment gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
+
+### Query Parameter
+You can add query parameters with:
+
+```Scala
+:= :> "hello" :> Query[Int]('id) :> Get[A]
+// GET /hello?id={: Int}
+
+:= :> "hello" :> Query[Int]('id) :> ReqBody[B] :> Put[A]
+// PUT {body: B} /hello?id={: Int}
+```
+
+Every query gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
+
+### Header
+You can add header parameters with:
+
+```Scala
+:= :> "hello" :> Header[Int]('id) :> Get[A]
+// GET /hello {headers: id={:Int}}
+
+:= :> "hello" :> Header[Int]('id) :> ReqBody[B] :> Put[A]
+// PUT {body: B} /hello {headers: id={:Int}}
+
+:= :> "hello" :> Query[String]('name) :> Header[Int]('id) :> Get[A]
+// GET /hello?name={:String} {headers: id={:Int}}
+```
+
+Every header gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
+
+#### Add multiple headers at once
+Sometimes you have to pass a set of standard headers with every request, but you don't want to encode them in every API. TypedApi provides a convinience element calles `RawHeaders` which is a `Map[String, String]`.
+
+```Scala
+:= :> "hello" :> RawHeaders :> Get[A]
+// GET /hello {headers: any pair of String -> String}
+```
+
+You cannot define a typesafe header after a `RawHeaders` element. Furthermore, you should use this with care as it is not typesafe.
