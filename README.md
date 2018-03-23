@@ -52,7 +52,7 @@ This library is the result of the following questions:
 
 > How much can we encode on the type level? Are we able to describe a whole API and generate the call functions from that without using Macros?
 
-It is inspired by [Servant](https://github.com/haskell-servant/servant) and it provides an API layer which is independent of the underlying server/client implementation. Right now TypedApi supports:
+It is inspired by [Servant](https://github.com/haskell-servant/servant) and it provides an API layer which is independent of the underlying server/client implementation. Right now Typedapi supports:
 
   - [http4s](https://github.com/http4s/http4s)
 
