@@ -1,19 +1,6 @@
 package typedapi.client
 
-trait ClientManager[C] {
+final case class ClientManager[C](client: C, host: String, port: Int) {
 
-  def client: C
-  def host: String
-  def port: Int
-
-  def base = s"$host:$port"
-}
-
-object ClientManager {
-
-  def apply[C](_client: C, _host: String, _port: Int) = new ClientManager[C] {
-    val client = _client
-    val host   = _host
-    val port   = _port
-  }
+  val base = s"$host:$port"
 }

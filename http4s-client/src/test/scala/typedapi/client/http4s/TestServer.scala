@@ -6,13 +6,13 @@ import io.circe.generic.JsonCodec
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.io._
+import org.http4s.server.Server
 import org.http4s.server.blaze._
-
-import scala.io.StdIn
 
 @JsonCodec case class User(name: String, age: Int)
 
 object Age extends QueryParamDecoderMatcher[Int]("age")
+
 object Reasons {
   def unapplySeq(params: Map[String, Seq[String]]) = params.get("reasons")
   def unapply(params: Map[String, Seq[String]]) = unapplySeq(params)
@@ -24,15 +24,19 @@ object TestServer {
   implicit val encoder = jsonEncoderOf[IO, User]
    
   val service = HttpService[IO] {
-    case GET -> Root / "get" / name :? Age(age) => Ok(User(name, age))
+    case GET -> Root / "find" / name :? Age(age) => Ok(User(name, age))
 
-    case req @ PUT -> Root / "put" =>
+    case req @ PUT -> Root / "without" / "reqbody" => Ok(User("joe", 27).asJson)
+
+    case req @ PUT -> Root / "with" / "reqbody" =>
       for {
         user <- req.as[User]
         resp <- Ok(user.asJson)
       } yield resp
 
-    case req @ POST -> Root / "post" =>
+    case req @ POST -> Root / "without" / "reqbody" => Ok(User("joe", 27).asJson)
+
+    case req @ POST -> Root / "with" / "reqbody" =>
       for {
         user <- req.as[User]
         resp <- Ok(user.asJson)
@@ -43,17 +47,12 @@ object TestServer {
       Ok(User(name, 30))
   }
 
-  def main(args: Array[String]): Unit = {
-    val port = args(0).toInt
-
+  def start(): Server[IO] = {
     val builder = BlazeBuilder[IO]
-      .bindHttp(port, "localhost")
+      .bindHttp(9001, "localhost")
       .mountService(service, "/")
       .start
 
-    val server = builder.unsafeRunSync()
-
-    StdIn.readLine()
-    server.shutdown.unsafeRunSync()
+    builder.unsafeRunSync()
   }
 }

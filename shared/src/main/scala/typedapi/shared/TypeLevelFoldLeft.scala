@@ -1,4 +1,4 @@
-package typedapi.client
+package typedapi.shared
 
 import shapeless._
 
@@ -49,14 +49,12 @@ trait TypeLevelFoldLeftLowPrio {
 /** Helper to work on a composition of HLists we want to fold over. */
 trait TypeLevelFoldLeftList[H <: HList] {
 
-  type In  <: HList
   type Out <: HList
 }
 
 object TypeLevelFoldLeftList {
 
-  type Aux[H <: HList, In0 <: HList, Out0 <: HList] = TypeLevelFoldLeftList[H] {
-    type In  = In0
+  type Aux[H <: HList, Out0 <: HList] = TypeLevelFoldLeftList[H] {
     type Out = Out0
   }
 }
@@ -64,12 +62,10 @@ object TypeLevelFoldLeftList {
 trait TypeLevelFoldLeftListLowPrio {
 
   implicit def lastFoldLeftList[H <: HList, Agg](implicit folder0: TypeLevelFoldLeft[H, Agg]) = new TypeLevelFoldLeftList[H :: HNil] {
-    type In  = H
     type Out = folder0.Out :: HNil
   }
 
-  implicit def folderLeftList[Api <: HList, Agg, T <: HList](implicit folder0: TypeLevelFoldLeft[Api, Agg], list: TypeLevelFoldLeftList[T]) = new TypeLevelFoldLeftList[Api :: T] {
-    type In  = Api
+  implicit def folderLeftList[H <: HList, Agg, T <: HList](implicit folder0: TypeLevelFoldLeft[H, Agg], list: TypeLevelFoldLeftList[T]) = new TypeLevelFoldLeftList[H :: T] {
     type Out = folder0.Out :: list.Out
   }
 }
