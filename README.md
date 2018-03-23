@@ -25,8 +25,6 @@ fetch("age").run[IO]: IO[List[User]]
 ```
 
 ### Server side
-**note** You will get server-side support via Maven with RC2.
-
 ```Scala
 import typedapi.server._
 
@@ -64,9 +62,11 @@ It is available for Scala 2.11 and 2.12 and can downloaded as Maven artifact:
 ```
 // dsl
 "com.github.pheymann" %% "typedapi-client" % <version>
+"com.github.pheymann" %% "typedapi-server" % <version>
 
 // http4s support
 "com.github.pheymann" %% "typedapi-http4s-client" % <version>
+"com.github.pheymann" %% "typedapi-http4s-server" % <version>
 ```
 
 You can also build on your machine:
