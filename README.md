@@ -22,6 +22,8 @@ import typedapi.client.http4s._
 import cats.effect.IO
 import org.http4s.client.blaze.Http1Client
 
+implicit val encoder = ???
+implicit val decoder = ???
 implicit val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://my-host", 8080)
 
 fetch("joe").run[IO]: IO[User]
