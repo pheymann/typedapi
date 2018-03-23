@@ -30,10 +30,6 @@ fetch("age").run[IO]: IO[List[User]]
 ```Scala
 import typedapi.server._
 
-val MyApi = 
-  (:= :> "fetch" :> "user" :> Query[String]('sortBy) :> Get[List[User]]) :|:
-  (:= :> "create" :> "user" :> ReqBody[User] :> Post[Unit])
-
 def fetch(sortBy: String): IO[List[User]] = ???
 def create(user: User): IO[User] = ???
 
