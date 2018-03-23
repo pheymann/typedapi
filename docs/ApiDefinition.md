@@ -77,6 +77,16 @@ You can add query parameters with:
 
 Every query gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
 
+#### Optional Query
+```Scala
+:= :> "hello" :> Query[Option[Int]]('id) :> Get[A]
+```
+
+#### Query with a List of elements
+```Scala
+:= :> "hello" :> Query[List[Int]]('id) :> Get[A]
+```
+
 ### Header
 You can add header parameters with:
 
@@ -92,6 +102,11 @@ You can add header parameters with:
 ```
 
 Every header gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
+
+#### Optional Header
+```Scala
+:= :> "hello" :> Header[Option[Int]]('id) :> Get[A]
+```
 
 #### Add multiple headers at once
 Sometimes you have to pass a set of standard headers with every request, but you don't want to encode them in every API. TypedApi provides a convinience element calles `RawHeaders` which is a `Map[String, String]`.
