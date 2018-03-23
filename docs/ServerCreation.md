@@ -34,7 +34,7 @@ val server = mount(sm, endpoint)
 server.unsafeRunSync()
 ```
 
-Make sure you have the proper `Encoder`s and `Decoder`s in place.
+**Make sure** you have the proper `Encoder`s and `Decoder`s in place.
 
 #### Multiple APIs
 ```Scala
