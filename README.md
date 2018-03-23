@@ -37,7 +37,7 @@ val MyApi =
 def fetch(sortBy: String): IO[List[User]] = ???
 def create(user: User): IO[User] = ???
 
-lval endpoints = ink(MyApi).to(fetch _ :|: create _ :|: =:)
+val endpoints = ink(MyApi).to(fetch _ :|: create _ :|: =:)
 
 import typedapi.server.http4s._
 import cats.effect.IO
