@@ -10,7 +10,9 @@ Define type safe APIs and let the Scala compiler do the rest:
 import typedapi.client._
 
 val MyApi = 
+  // GET /fetch/user?sortBy=<>
   (:= :> "fetch" :> "user" :> Query[String]('sortBy) :> Get[List[User]]) :|:
+  // POST /create/user
   (:= :> "create" :> "user" :> ReqBody[User] :> Post[Unit])
 
 val (fetch :|: create :|: =:) = compile(MyApi)
