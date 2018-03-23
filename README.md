@@ -69,7 +69,7 @@ It is available for Scala 2.11 and 2.12 and can downloaded as Maven artifact:
 "com.github.pheymann" %% "typedapi-http4s-server" % <version>
 ```
 
-You can also build on your machine:
+You can also build it on your machine:
 
 ```
 git clone https://github.com/pheymann/typedapi.git
