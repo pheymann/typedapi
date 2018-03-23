@@ -1,4 +1,4 @@
-## Extend TypedApi to fit your needs
+## Extend Typedapi to fit your needs
 You ended up in this file if:
  - the default implements for a HTTP framework doesn't fit your needs
  - if the framework you want to use is not supported
@@ -23,7 +23,7 @@ Take a look into [http4s-server](https://github.com/pheymann/typedapi/blob/maste
 You can implement all type-classes or just a subset to override implementations provided by TypedApi.
 
 ### Define APIs with more than 10 input elements
-Right TypedApi is only able to support API definitions with at most 10 input elements. This is because [ApiCompilerOps](https://github.com/pheymann/typedapi/blob/master/client/src/main/scala/typedapi/client/ops/ApiCompilerOps.scala) and [FunctionApply](https://github.com/pheymann/typedapi/blob/master/server/src/main/scala/typedapi/server/FunctionApply.scala) only provide instances up to arity 10.
+Right Typedapi is only able to support API definitions with at most 10 input elements. This is because [ApiCompilerOps](https://github.com/pheymann/typedapi/blob/master/client/src/main/scala/typedapi/client/ops/ApiCompilerOps.scala) and [FunctionApply](https://github.com/pheymann/typedapi/blob/master/server/src/main/scala/typedapi/server/FunctionApply.scala) only provide instances up to arity 10.
 
 If you need more you just have to provide an instance of these type-classes and you are good to go.
 
