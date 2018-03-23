@@ -1,5 +1,5 @@
 ## How to define an API
-The central idea behind TypedApi is to make client and server implementation as typesafe and simple as possible.
+The central idea behind Typedapi is to make client and server implementation as typesafe and simple as possible.
 
  - On the client-side you only define what you expect from an API provided by a server. In other words you define a contract between the client and the server.
  - The server-side then has to comply with that contract by implementing proper endpoint functions.
@@ -16,7 +16,7 @@ val Api = := :> Get[A]
 This translates to `GET /` returning some `A`.
 
 ### Methods
-So far TypedApi supports the following methods:
+So far Typedapi supports the following methods:
  
 ```Scala
 := :> Get[A]
@@ -109,7 +109,7 @@ Every header gets a name which is again encoded as singleton type in the API typ
 ```
 
 #### Add multiple headers at once
-Sometimes you have to pass a set of standard headers with every request, but you don't want to encode them in every API. TypedApi provides a convinience element calles `RawHeaders` which is a `Map[String, String]`.
+Sometimes you have to pass a set of standard headers with every request, but you don't want to encode them in every API. Typedapi provides a convinience element calles `RawHeaders` which is a `Map[String, String]`.
 
 ```Scala
 := :> "hello" :> RawHeaders :> Get[A]
