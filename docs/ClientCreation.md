@@ -1,5 +1,5 @@
 ## Create a client from your API
-After we [defined](#ApiDefinition.md) our API we have to compile it to a function/set of functions we can use to make our calls.
+After we [defined](https://github.com/pheymann/typedapi/blob/master/docs/ApiDefinition.md) our API we have to compile it to a function/set of functions we can use to make our calls.
 
 When I say "compile" I mean "let the Scala compiler derive the proper function by using type-classes and implicit resolution".
 
@@ -17,7 +17,7 @@ val myAwesomeApi = compile(Api)
 ```
 
 ### Http4s
-If you want to use [http4s]() as your client backend you have to add the following code:
+If you want to use [http4s](https://github.com/http4s/http4s) as your client backend you have to add the following code:
 
 ```Scala
 import typedapi.client.http4s._
