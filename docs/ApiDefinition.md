@@ -14,7 +14,7 @@ val Api = := :> Get[A]
 ```
  
 This translates to `GET /` returning some `A`.
- 
+
 ### Methods
 So far TypedApi supports the following methods:
  
@@ -102,3 +102,12 @@ Sometimes you have to pass a set of standard headers with every request, but you
 ```
 
 You cannot define a typesafe header after a `RawHeaders` element. Furthermore, you should use this with care as it is not typesafe.
+
+### Multiple definitions in a single API
+You can put multiple definitions into a single API element:
+
+```Scala
+val Api =
+  (:= :> "hello" :> Get[A]) :|:
+  (:= :> "world" :> Query[Int]('foo) :> Delete[B])
+```
