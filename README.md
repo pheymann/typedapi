@@ -86,6 +86,7 @@ The documentation is located in [docs](https://github.com/pheymann/typedapi/blob
  - [How to define an API](https://github.com/pheymann/typedapi/blob/master/docs/ApiDefinition.md)
  - [How to create a client](https://github.com/pheymann/typedapi/blob/master/docs/ClientCreation.md)
  - [How to create a server](https://github.com/pheymann/typedapi/blob/master/docs/ServerCreation.md)
+ - [Extend the library](https://github.com/pheymann/typedapi/blob/master/docs/ExtendIt.md)
 
 ## Dependencies
  - [shapeless 2.3.3](https://github.com/milessabin/shapeless/)
