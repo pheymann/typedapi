@@ -35,7 +35,7 @@ val r = myAwesomeApi("Joe").run[IO]
 //r: IO[User]
 ```
 
-Make sure you have the proper `Encoder` and `Decoder` in place.
+Make sure you have the proper `Encoder`s and `Decoder`s in place.
 
 #### Multiple APIs
 ```Scala
