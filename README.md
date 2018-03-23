@@ -11,8 +11,8 @@ Define type safe APIs and let the Scala compiler do the rest:
 import typedapi.client._
 
 val MyApi = 
-  // GET /fetch/user?sortBy=<>
-  (:= :> "fetch" :> "user" :> Query[String]('sortBy) :> Get[List[User]]) :|:
+  // GET /fetch/user?name=<>
+  (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[User]) :|:
   // POST /create/user
   (:= :> "create" :> "user" :> ReqBody[User] :> Post[Unit])
 
@@ -24,17 +24,17 @@ import org.http4s.client.blaze.Http1Client
 
 implicit val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://my-host", 8080)
 
-fetch("age").run[IO]: IO[List[User]]
+fetch("joe").run[IO]: IO[User]
 ```
 
 ### Server side
 ```Scala
 import typedapi.server._
 
-def fetch(sortBy: String): IO[List[User]] = ???
-def create(user: User): IO[User] = ???
+val fetch: String => IO[User] = name => ???
+val create: User => IO[Unit] = user => ???
 
-val endpoints = link(MyApi).to(fetch _ :|: create _ :|: =:)
+val endpoints = link(MyApi).to[IO](fetch :|: create :|: =:)
 
 import typedapi.server.http4s._
 import cats.effect.IO
