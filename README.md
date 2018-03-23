@@ -14,7 +14,7 @@ val MyApi =
   // GET /fetch/user?name=<>
   (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[User]) :|:
   // POST /create/user
-  (:= :> "create" :> "user" :> ReqBody[User] :> Post[Unit])
+  (:= :> "create" :> "user" :> ReqBody[User] :> Post[User])
 
 val (fetch :|: create :|: =:) = compile(MyApi)
 
@@ -32,7 +32,7 @@ fetch("joe").run[IO]: IO[User]
 import typedapi.server._
 
 val fetch: String => IO[User] = name => ???
-val create: User => IO[Unit] = user => ???
+val create: User => IO[User] = user => ???
 
 val endpoints = link(MyApi).to[IO](fetch :|: create :|: =:)
 
