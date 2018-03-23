@@ -18,7 +18,7 @@ final case class BadRouteRequest(msg: String) extends ExtractionError
   */
 @implicitNotFound("Cannot find RouteExtractor. Maybe a ValueExtractor could not be found.\n" + 
                   "  elements: ${El}\n  inputs:   ${In}")
-sealed trait RouteExtractor[El <: HList, In <: HList, EIn <: HList] {
+trait RouteExtractor[El <: HList, In <: HList, EIn <: HList] {
 
   type Out
 
