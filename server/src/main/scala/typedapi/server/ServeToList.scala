@@ -4,8 +4,11 @@ import shapeless._
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Cannot find ServeToList instance to map Serve HList to List. Maybe you have different Request, Response types defined?.\n" + 
-                  "  serves: ${H}\n  request: ${Req}\n  response: ${Resp}")
+@implicitNotFound("""Cannot find ServeToList instance to map Serve HList to List. Maybe you have different Request, Response types defined?. 
+
+serves: ${H}
+request: ${Req}
+response: ${Resp}""")
 sealed trait ServeToList[H <: HList, Req, Resp] {
 
   def apply(h: H): List[Serve[Req, Resp]]

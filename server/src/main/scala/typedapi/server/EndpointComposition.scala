@@ -6,8 +6,11 @@ import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
 /** Compiles RouteExtractor and FunApply for every API endpoint and generates expected list of endpoint functions. */
-@implicitNotFound("""Could not find precompiled instance for transformed APIs. Maybe the RouteExtractor or FunctionApply couldn't be found for an API.
-                    |  transformed: ${H}""")
+@implicitNotFound("""Could not precompile your API. This can happen when:
+  - you defined an endpoint function with an arity larger than the biggest supported one (FunctionApply.scala)
+  - you try to extract an value from the route which is not supported (ValueExtractor in RouteExtractor.scala)
+ 
+transformed: ${H}""")
 sealed trait PrecompileEndpoint[H <: HList] {
 
   // list of expected endpoint functions
@@ -72,9 +75,11 @@ object =: {
   def :|:[Fun](fun: Fun): FunctionComposition[Fun :: HNil] = FunctionComposition(fun :: HNil)
 }
 
-@implicitNotFound("""Could not find merger for given constructor and endpoint function. Maybe the EndpointExecutor couldn't be found for an API.
-                    |  precompiled: ${Pre}
-                    |  functions:   ${Fun}""")
+@implicitNotFound("""Could not merge precompiled API with your endpoint functions. This can happen when you forget to provide implicits needed by
+the executor, e.g. encoders/decoders.
+
+precompiled: ${Pre}
+functions:   ${Fun}""")
 sealed trait MergeToEndpoint[F[_], Pre <: HList, Fun <: HList] {
 
   type Out <: HList

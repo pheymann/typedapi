@@ -8,8 +8,10 @@ import scala.collection.mutable.Builder
 import scala.annotation.implicitNotFound
 
 /** Compiles type level api description into a function returning data (uri, query, header, body) and return-type `A` which are used for a request. */
-@implicitNotFound("Something went really wrong, cannot find ApiCompiler." +
-                  "  elements: ${El}\n  inputs: ${In}")
+@implicitNotFound("""Woops, you shouldn't be here. We cannot find an ApiCompiler.
+
+elements: ${El}
+inputs: ${In}""")
 trait ApiCompiler[El <: HList, In <: HList, O] {
 
   type Out <: HList
@@ -171,6 +173,9 @@ trait ApiCompilerMediumPrio extends ApiCompilerLowPrio {
   }
 }
 
+@implicitNotFound("""Woops, you shouldn't be here. We cannot find an ApiCompilerList.
+
+list: ${H}""")
 trait ApiCompilerList[H <: HList] {
 
   type Out <: HList

@@ -5,7 +5,9 @@ import shapeless._
 import scala.annotation.implicitNotFound
 
 /** Reimplements shapeles Case2 but on the type level (no real HList instance) */
-@implicitNotFound("Cannot find TypeLevelFoldFunction instance for input = ${In}")
+@implicitNotFound("""Woops, you shouldn't be here. We cannot find TypeLevelFoldFunction instance.
+
+input: ${In}""")
 sealed trait TypeLevelFoldFunction[In, Agg] {
 
   type Out
@@ -21,7 +23,10 @@ object TypeLevelFoldFunction {
 }
 
 /** Reimplements shapeless LeftFolder but on the type level (no real HList instance) */
-@implicitNotFound("Cannot find TypeLevelFold instance for:\n - list = ${H}\n - aggregation = ${Agg}")
+@implicitNotFound("""Woops, you shouldn't be here. We cannot find TypeLevelFold instance.
+
+list: ${H}
+aggregation: ${Agg}""")
 sealed trait TypeLevelFoldLeft[H <: HList, Agg] extends Serializable {
 
   type Out
@@ -47,6 +52,9 @@ trait TypeLevelFoldLeftLowPrio {
 }
 
 /** Helper to work on a composition of HLists we want to fold over. */
+@implicitNotFound("""Woops, you shouldn't be here. We cannot find TypeLevelFoldList instance.
+
+list: ${H}""")
 trait TypeLevelFoldLeftList[H <: HList] {
 
   type Out <: HList

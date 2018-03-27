@@ -6,8 +6,9 @@ import shapeless.labelled.FieldType
 import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Could not find FunctionApply instance. Support max arity is 8. If you need more implement this type-class.\n" +
-                  "  input: ${In}")
+@implicitNotFound("""Could not find FunctionApply instance. Support max arity is 8. If you need more implement this type-class.
+
+input: ${In}""")
 trait FunctionApply[In <: HList, Out] {
 
   type Fun[_[_]]

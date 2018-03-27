@@ -16,8 +16,10 @@ final case class BadRouteRequest(msg: String) extends ExtractionError
   *  - if a request path does not fit the API definition `RouteNotFound` is returned
   *  - if a query, header, body, etc is missing `BadRouteRequest` is returned
   */
-@implicitNotFound("Cannot find RouteExtractor. Maybe a ValueExtractor could not be found.\n" + 
-                  "  elements: ${El}\n  inputs:   ${In}")
+@implicitNotFound("""Cannot find RouteExtractor. Maybe a ValueExtractor could not be found.
+
+elements: ${El}
+inputs:   ${In}""")
 trait RouteExtractor[El <: HList, In <: HList, EIn <: HList] {
 
   type Out
