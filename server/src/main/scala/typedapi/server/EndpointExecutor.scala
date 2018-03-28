@@ -6,8 +6,10 @@ import shapeless.ops.hlist.Prepend
 import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("Cannot find EndpointExecutor. Do you miss some implicit values e.g. encoder/decoder?\n" + 
-                  "  elements: ${El}\n  inputs:   ${In}")
+@implicitNotFound("""Cannot find EndpointExecutor. Do you miss some implicit values e.g. encoder/decoder?
+
+elements: ${El}
+inputs:   ${In}""")
 sealed trait EndpointExecutor[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut] {
 
   type R
