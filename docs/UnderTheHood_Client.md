@@ -42,7 +42,7 @@ type A  = User
 
 `El` doesn't carry type information anylonger about input or output types. It just defines what elements are within the API. On the otherhand, `In` describes the input types and their names without caring about the actual API elements.
 
-#### How das it work?
+#### How does it work?
 The type-class `ApiTransformer` walks through the API and maps every element to `El` and `In` if it is an input element. To do so Typedapi implements `TypelevelFoldLeft` which does the same as the usual `foldLeft` of `List` structures but operates solely on a `HList` type. No instance is given. What happens is, that Typedapi folds `H` and thereby creates the type triple `(El, In, A)`.
 
 ### API Compiler
