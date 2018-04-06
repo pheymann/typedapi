@@ -5,8 +5,7 @@ import shapeless._
 
 import scala.language.higherKinds
 
-package object server extends typedapi.shared.ops.ApiListOps 
-                      with TypeLevelFoldLeftLowPrio 
+package object server extends TypeLevelFoldLeftLowPrio 
                       with TypeLevelFoldLeftListLowPrio 
                       with ApiTransformer 
                       with FunctionApplyLowPrio 
@@ -17,7 +16,7 @@ package object server extends typedapi.shared.ops.ApiListOps
                       with PrecompileEndpointLowPrio
                       with MergeToEndpointLowPrio {
 
-  def link[H <: HList, Fold, El <: HList, In <: HList, ROut, Out](apiList: FinalCons[H])
+  def link[H <: HList, Fold, El <: HList, In <: HList, ROut, Out](apiList: ApiTypeCarrier[H])
                                                                  (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Fold],
                                                                            ev: FoldResultEvidence.Aux[Fold, El, In, Out],
                                                                            extractor: RouteExtractor.Aux[El, In, HNil, ROut], 

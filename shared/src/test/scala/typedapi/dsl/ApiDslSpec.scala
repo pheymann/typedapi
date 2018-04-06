@@ -1,13 +1,14 @@
-package typedapi.shared
+package typedapi.dsl
 
+import typedapi.shared._
 import shapeless._
 import org.specs2.mutable.Specification
 
-final class ApiListSpec extends Specification with ops.ApiListOps {
+final class ApiDslSpec extends Specification {
 
   case class Foo()
 
-  "ApiList is a helper construct to generate apis on the type level" >> {
+  "ApiDsl is a helper construct to generate apis on the type level" >> {
     val testW = Witness("test")
     val fooW  = Witness('foo)
     val base  = := :> "test"
@@ -18,14 +19,14 @@ final class ApiListSpec extends Specification with ops.ApiListOps {
       := :> Segment[Int](fooW) === SegmentCons[SegmentParam[fooW.T, Int] :: HNil]()
       := :> Query[Int](fooW) === QueryCons[QueryParam[fooW.T, Int] :: HNil]()
       := :> Header[Int](fooW) === HeaderCons[HeaderParam[fooW.T, Int] :: HNil]()
-      := :> Get[Foo] === FinalCons[GetElement[Foo] :: HNil]()
+      := :> Get[Foo] === ApiTypeCarrier[GetElement[Foo] :: HNil]()
     }
 
     "path: add every element" >> {
       base :> Segment[Int](fooW) === SegmentCons[SegmentParam[fooW.T, Int] :: Base]()
       base :> Query[Int](fooW) === QueryCons[QueryParam[fooW.T, Int] :: Base]()
       base :> Header[Int](fooW) === HeaderCons[HeaderParam[fooW.T, Int] :: Base]()
-      base :> Get[Foo] === FinalCons[GetElement[Foo] :: Base]()
+      base :> Get[Foo] === ApiTypeCarrier[GetElement[Foo] :: Base]()
     }
 
     "segment: add every element" >> {
@@ -36,7 +37,7 @@ final class ApiListSpec extends Specification with ops.ApiListOps {
       _base :> Segment[Int](fooW) === SegmentCons[SegmentParam[fooW.T, Int] :: _Base]()
       _base :> Query[Int](fooW) === QueryCons[QueryParam[fooW.T, Int] :: _Base]()
       _base :> Header[Int](fooW) === HeaderCons[HeaderParam[fooW.T, Int] :: _Base]()
-      _base :> Get[Foo] === FinalCons[GetElement[Foo] :: _Base]()
+      _base :> Get[Foo] === ApiTypeCarrier[GetElement[Foo] :: _Base]()
     }
 
     "query: add queries, headers, body and final" >> {
@@ -48,7 +49,7 @@ final class ApiListSpec extends Specification with ops.ApiListOps {
       shapeless.test.illTyped("_base :> Segment[Int](fooW)")
       _base :> Query[Int](fooW) === QueryCons[QueryParam[fooW.T, Int] :: _Base]()
       _base :> Header[Int](fooW) === HeaderCons[HeaderParam[fooW.T, Int] :: _Base]()
-      _base :> Get[Foo] === FinalCons[GetElement[Foo] :: _Base]()
+      _base :> Get[Foo] === ApiTypeCarrier[GetElement[Foo] :: _Base]()
     }
 
     "header: add header, final" >> {
@@ -60,7 +61,7 @@ final class ApiListSpec extends Specification with ops.ApiListOps {
       shapeless.test.illTyped("_base :> Segment[Int](fooW)")
       shapeless.test.illTyped("_base :> Query[Int](fooW)")
       _base :> Header[Int](fooW) === HeaderCons[HeaderParam[fooW.T, Int] :: _Base]()
-      _base :> Get[Foo] === FinalCons[GetElement[Foo] :: _Base]()
+      _base :> Get[Foo] === ApiTypeCarrier[GetElement[Foo] :: _Base]()
     }
 
     "raw headers: add final" >> {
@@ -71,7 +72,7 @@ final class ApiListSpec extends Specification with ops.ApiListOps {
       shapeless.test.illTyped("_base :> \"fail\"")
       shapeless.test.illTyped("_base :> Segment[Int](fooW)")
       shapeless.test.illTyped("_base :> Query[Int](fooW)")
-      _base :> Get[Foo] === FinalCons[GetElement[Foo] :: _Base]()
+      _base :> Get[Foo] === ApiTypeCarrier[GetElement[Foo] :: _Base]()
     }
 
     "request body: add put or post" >> {
@@ -83,8 +84,8 @@ final class ApiListSpec extends Specification with ops.ApiListOps {
       shapeless.test.illTyped("_base :> Query[Int](fooW)")
       shapeless.test.illTyped("_base :> Header[Int](fooW)")
       shapeless.test.illTyped("_base :> Get[Foo]")
-      _base :> Put[Foo] === FinalCons[PutWithBodyElement[Foo, Foo] :: _Base]()
-      _base :> Post[Foo] === FinalCons[PostWithBodyElement[Foo, Foo] :: _Base]()
+      _base :> Put[Foo] === ApiTypeCarrier[PutWithBodyElement[Foo, Foo] :: _Base]()
+      _base :> Post[Foo] === ApiTypeCarrier[PostWithBodyElement[Foo, Foo] :: _Base]()
     }
 
     "final: nothing at all" >> {

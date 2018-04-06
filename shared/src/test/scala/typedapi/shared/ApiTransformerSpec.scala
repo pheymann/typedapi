@@ -4,7 +4,7 @@ import shapeless._
 import shapeless.labelled.FieldType
 
 // compilation-only test
-final class ApiTransformerSpec extends TypeLevelFoldLeftLowPrio with ApiTransformer with ops.ApiListOps {
+final class ApiTransformerSpec extends TypeLevelFoldLeftLowPrio with ApiTransformer {
 
   case class Foo()
 
@@ -25,7 +25,7 @@ final class ApiTransformerSpec extends TypeLevelFoldLeftLowPrio with ApiTransfor
   test[GetElement[Foo] :: QueryParam[fooW.T, String] :: HNil, (QueryInput :: GetCall :: HNil, FieldType[fooW.T, String] :: HNil, Foo)]
   test[GetElement[Foo] :: QueryParam[fooW.T, List[String]] :: HNil, (QueryInput :: GetCall :: HNil, FieldType[fooW.T, List[String]] :: HNil, Foo)]
   test[GetElement[Foo] :: HeaderParam[fooW.T, String] :: HNil, (HeaderInput :: GetCall :: HNil, FieldType[fooW.T, String] :: HNil, Foo)]
-  test[GetElement[Foo] :: RawHeaders.type :: HNil, (RawHeadersInput :: GetCall :: HNil, FieldType[RawHeadersField.T, Map[String, String]] :: HNil, Foo)]
+  test[GetElement[Foo] :: RawHeadersParam.type :: HNil, (RawHeadersInput :: GetCall :: HNil, FieldType[RawHeadersField.T, Map[String, String]] :: HNil, Foo)]
 
   test[
     GetElement[Foo] :: HeaderParam[fooW.T, Boolean] :: QueryParam[fooW.T, Int] :: SegmentParam[fooW.T, String] :: PathElement[pathW.T] :: HNil, 

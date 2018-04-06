@@ -52,9 +52,10 @@ case object RawHeadersParam extends ApiElement
 /** Request body type description. */
 final case class ReqBodyElement[A]() extends ApiElement
 
-final case class GetElement[A]() extends ApiElement
-final case class PutElement[A]() extends ApiElement
-final case class PutWithBodyElement[Bd, A]() extends ApiElement
-final case class PostElement[A]() extends ApiElement
-final case class PostWithBodyElement[Bd, A]() extends ApiElement
-final case class DeleteElement[A]() extends ApiElement
+sealed trait MethodElement extends ApiElement
+final case class GetElement[A]() extends MethodElement
+final case class PutElement[A]() extends MethodElement
+final case class PutWithBodyElement[Bd, A]() extends MethodElement
+final case class PostElement[A]() extends MethodElement
+final case class PostWithBodyElement[Bd, A]() extends MethodElement
+final case class DeleteElement[A]() extends MethodElement

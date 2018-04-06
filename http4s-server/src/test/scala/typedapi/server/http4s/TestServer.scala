@@ -1,5 +1,6 @@
 package typedapi.server.http4s
 
+import typedapi.dsl._
 import typedapi.server._
 import org.http4s.server.Server
 import org.http4s.server.blaze.BlazeBuilder

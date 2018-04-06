@@ -1,5 +1,6 @@
 package typedapi.server
 
+import typedapi.dsl._
 import shapeless.{HList, HNil, Id, ::}
 import shapeless.ops.hlist.Prepend
 import org.specs2.mutable.Specification

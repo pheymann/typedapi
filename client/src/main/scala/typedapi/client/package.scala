@@ -3,8 +3,7 @@ package typedapi
 import typedapi.shared._
 import shapeless._
 
-package object client extends typedapi.shared.ops.ApiListOps 
-                      with HListToCompositionLowPrio 
+package object client extends HListToCompositionLowPrio 
                       with TypeLevelFoldLeftLowPrio 
                       with TypeLevelFoldLeftListLowPrio 
                       with ApiTransformer 
@@ -15,7 +14,7 @@ package object client extends typedapi.shared.ops.ApiListOps
 
   type Transformed[El <: HList, In <: HList, Out, D <: HList] = (El, In, Out)
 
-  def compile[H <: HList, Fold, El <: HList, In <: HList, Out, D <: HList](apiList: FinalCons[H])
+  def compile[H <: HList, Fold, El <: HList, In <: HList, Out, D <: HList](apiList: ApiTypeCarrier[H])
                                                                           (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Fold],
                                                                                     ev: FoldResultEvidence.Aux[Fold, El, In, Out],
                                                                                     compiler: ApiCompiler.Aux[El, In, Out, D]): ApiCompiler.Aux[El, In, Out, D] = 

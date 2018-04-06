@@ -1,5 +1,6 @@
 package typedapi.client.http4s
 
+import typedapi.dsl._
 import typedapi.client._
 
 import cats.effect.IO
