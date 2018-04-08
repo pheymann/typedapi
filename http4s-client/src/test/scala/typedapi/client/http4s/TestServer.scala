@@ -24,27 +24,42 @@ object TestServer {
   implicit val encoder = jsonEncoderOf[IO, User]
    
   val service = HttpService[IO] {
-    case GET -> Root / "find" / name :? Age(age) => Ok(User(name, age))
+    case GET -> Root / "path" => Ok(User("foo", 27))
+    case GET -> Root / "segment" / name => Ok(User(name, 27))
 
-    case req @ PUT -> Root / "without" / "reqbody" => Ok(User("joe", 27).asJson)
+    case GET -> Root / "query" :? Age(age) => Ok(User("foo", age))
 
-    case req @ PUT -> Root / "with" / "reqbody" =>
+    case req @ GET -> Root / "header" => 
+      val headers = req.headers.toList
+      val age     = headers.find(_.name.value == "age").get.value.toInt
+
+      Ok(User("foo", age))
+
+    case req @ GET -> Root / "header" / "raw" => 
+      val headers = req.headers.toList
+      val name    = headers.find(_.name.value == "name").get.value
+      val age     = headers.find(_.name.value == "age").get.value.toInt
+
+      Ok(User(name, age))
+
+    case GET -> Root => Ok(User("foo", 27))
+    case PUT -> Root => Ok(User("foo", 27))
+    case req @ PUT -> Root / "body" => Ok(User("foo", 27))
       for {
         user <- req.as[User]
         resp <- Ok(user.asJson)
       } yield resp
 
-    case req @ POST -> Root / "without" / "reqbody" => Ok(User("joe", 27).asJson)
-
-    case req @ POST -> Root / "with" / "reqbody" =>
+    case POST -> Root => Ok(User("foo", 27))
+    case req @ POST -> Root / "body" => Ok(User("foo", 27))
       for {
         user <- req.as[User]
         resp <- Ok(user.asJson)
       } yield resp
 
-    case DELETE -> Root / "delete" / name :? Reasons(reasons) => 
+    case DELETE -> Root :? Reasons(reasons) => 
       println(reasons)
-      Ok(User(name, 30))
+      Ok(User("foo", 27))
   }
 
   def start(): Server[IO] = {
