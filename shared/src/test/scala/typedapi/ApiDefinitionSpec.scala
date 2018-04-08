@@ -3,6 +3,7 @@ package typedapi
 import typedapi.shared._
 import shapeless._
 
+// compilation-only test
 object ApiDefinitionSpec {
 
   case class Foo()
