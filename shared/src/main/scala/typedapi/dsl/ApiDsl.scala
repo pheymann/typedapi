@@ -17,7 +17,7 @@ sealed trait ApiList[H <: HList]
 /** Basic operations. */
 sealed trait ApiListWithOps[H <: HList] extends ApiList[H] {
 
-  def :>[A](headers: RawHeadersParam.type): RawHeadersCons[RawHeadersParam.type :: H] = RawHeadersCons()
+  def :>(headers: RawHeadersParam.type): RawHeadersCons[RawHeadersParam.type :: H] = RawHeadersCons()
   def :>[A](body: ReqBodyElement[A]): WithBodyCons[A, H] = WithBodyCons()
   def :>[A](get: GetElement[A]): ApiTypeCarrier[GetElement[A] :: H] = ApiTypeCarrier()
   def :>[A](put: PutElement[A]): ApiTypeCarrier[PutElement[A] :: H] = ApiTypeCarrier()

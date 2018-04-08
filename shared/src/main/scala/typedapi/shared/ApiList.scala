@@ -46,9 +46,13 @@ sealed trait HeaderList[H <: HList]
 final case class HeaderListCons[H <: HList]() extends HeaderList[H] {
 
   def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderListCons[HeaderParam[S, A] :: H] = HeaderListCons()
+  def :>(headers: RawHeadersParam.type): RawHeaderCons[RawHeadersParam.type :: H] = RawHeaderCons()
 }
+
+final case class RawHeaderCons[H <: HList]() extends HeaderList[H]
 
 case object HeaderListEmpty extends HeaderList[HNil] {
 
   def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderListCons[HeaderParam[S, A] :: HNil] = HeaderListCons()
+  def :>(headers: RawHeadersParam.type): RawHeaderCons[RawHeadersParam.type :: HNil] = RawHeaderCons()
 }

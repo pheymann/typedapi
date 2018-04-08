@@ -42,8 +42,8 @@ object ApiDslSpec {
 
   type _BaseQ = QueryParam[fooW.T, Int] :: Base
 
-  shapeless.test.illTyped("_baseQ :> \"fail\"")
-  shapeless.test.illTyped("_baseQ :> Segment[Int](fooW)")
+  test.illTyped("_baseQ :> \"fail\"")
+  test.illTyped("_baseQ :> Segment[Int](fooW)")
   testCompile(_baseQ :> Query[Int](fooW))[QueryParam[fooW.T, Int] :: _BaseQ]
   testCompile(_baseQ :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: _BaseQ]
   testCompile(_baseQ :> Get[Foo])[GetElement[Foo] :: _BaseQ]
@@ -53,9 +53,9 @@ object ApiDslSpec {
 
   type _BaseH = HeaderParam[fooW.T, Int] :: Base
 
-  shapeless.test.illTyped("_baseH :> \"fail\"")
-  shapeless.test.illTyped("_baseH :> Segment[Int](fooW)")
-  shapeless.test.illTyped("_baseH :> Query[Int](fooW)")
+  test.illTyped("_baseH :> \"fail\"")
+  test.illTyped("_baseH :> Segment[Int](fooW)")
+  test.illTyped("_baseH :> Query[Int](fooW)")
   testCompile(_baseH :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: _BaseH]
   testCompile(_baseH :> Get[Foo])[GetElement[Foo] :: _BaseH]
 
@@ -64,9 +64,9 @@ object ApiDslSpec {
 
   type _BaseRH = RawHeaders.type :: Base
 
-  shapeless.test.illTyped("_baseRH :> \"fail\"")
-  shapeless.test.illTyped("_baseRH :> Segment[Int](fooW)")
-  shapeless.test.illTyped("_baseRH :> Query[Int](fooW)")
+  test.illTyped("_baseRH :> \"fail\"")
+  test.illTyped("_baseRH :> Segment[Int](fooW)")
+  test.illTyped("_baseRH :> Query[Int](fooW)")
   testCompile(_baseRH :> Get[Foo])[GetElement[Foo] :: _BaseRH]
 
   // request body: add put or post
@@ -74,18 +74,18 @@ object ApiDslSpec {
 
   type _BaseRB = Base
 
-  shapeless.test.illTyped("_baseRB :> Segment[Int](fooW)")
-  shapeless.test.illTyped("_baseRB :> Query[Int](fooW)")
-  shapeless.test.illTyped("_baseRB :> Header[Int](fooW)")
-  shapeless.test.illTyped("_baseRB :> Get[Foo]")
+  test.illTyped("_baseRB :> Segment[Int](fooW)")
+  test.illTyped("_baseRB :> Query[Int](fooW)")
+  test.illTyped("_baseRB :> Header[Int](fooW)")
+  test.illTyped("_baseRB :> Get[Foo]")
   testCompile(_baseRB :> Put[Foo])[PutWithBodyElement[Foo, Foo] :: _BaseRB]
   testCompile(_baseRB :> Post[Foo])[PostWithBodyElement[Foo, Foo] :: _BaseRB]
 
   // method: nothing at all
   val _baseF = base :> Get[Foo]
 
-  shapeless.test.illTyped("_baseF :> Segment[Int](fooW)")
-  shapeless.test.illTyped("_baseF :> Query[Int](fooW)")
-  shapeless.test.illTyped("_baseF :> Header[Int](fooW)")
-  shapeless.test.illTyped("_baseF :> Get[Foo]")
+  test.illTyped("_baseF :> Segment[Int](fooW)")
+  test.illTyped("_baseF :> Query[Int](fooW)")
+  test.illTyped("_baseF :> Header[Int](fooW)")
+  test.illTyped("_baseF :> Get[Foo]")
 }

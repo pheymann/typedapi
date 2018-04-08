@@ -2,6 +2,8 @@ package typedapi.shared
 
 import shapeless.Witness
 
+import scala.annotation.implicitNotFound
+
 sealed trait ApiElement
 
 /** Static path element represented as singleton type.
@@ -59,3 +61,23 @@ final case class PutWithBodyElement[Bd, A]() extends MethodElement
 final case class PostElement[A]() extends MethodElement
 final case class PostWithBodyElement[Bd, A]() extends MethodElement
 final case class DeleteElement[A]() extends MethodElement
+
+@implicitNotFound("""You try to add a request body to a method which doesn't expect one.
+
+method: ${M}
+""")
+sealed trait MethodToReqBody[M <: MethodElement, Bd] {
+
+  type Out <: MethodElement
+}
+
+trait MethodToReqBodyLowPrio {
+
+  implicit def putToReqBody[A, Bd] = new MethodToReqBody[PutElement[A], Bd] {
+    type Out = PutWithBodyElement[Bd, A]
+  }
+
+  implicit def postToReqBody[A, Bd] = new MethodToReqBody[PostElement[A], Bd] {
+    type Out = PostWithBodyElement[Bd, A]
+  }
+}
