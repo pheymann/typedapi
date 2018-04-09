@@ -27,17 +27,17 @@ final class ServerApiSpec extends Specification {
       }
  
       "headers" >> {
-        client.expect[User](Request[IO](method = GET, uri = Uri.fromString(s"http://localhost:$port/header").getOrElse(null), headers = Headers(Header("age", "42")))).unsafeRunSync() === User("joe", 42)
-        client.expect[User](Request[IO](method = GET, uri =Uri.fromString(s"http://localhost:$port/header/raw").getOrElse(null), headers = Headers(Header("age", "42"), Header("name", "jim")))).unsafeRunSync() === User("jim", 42)
+        client.expect[User](Request[IO](method = GET, uri = Uri.fromString(s"http://localhost:$port/header").right.get, headers = Headers(Header("age", "42")))).unsafeRunSync() === User("joe", 42)
+        client.expect[User](Request[IO](method = GET, uri =Uri.fromString(s"http://localhost:$port/header/raw").right.get, headers = Headers(Header("age", "42"), Header("name", "jim")))).unsafeRunSync() === User("jim", 42)
       }
 
       "methods" >> {
         client.expect[User](s"http://localhost:$port/").unsafeRunSync() === User("joe", 27)
-        client.expect[User](PUT(Uri.fromString(s"http://localhost:$port/").getOrElse(null))).unsafeRunSync() === User("joe", 27)
-        client.expect[User](PUT(Uri.fromString(s"http://localhost:$port/body").getOrElse(null), User("joe", 27))).unsafeRunSync() === User("joe", 27)
-        client.expect[User](POST(Uri.fromString(s"http://localhost:$port/").getOrElse(null))).unsafeRunSync() === User("joe", 27)
-        client.expect[User](POST(Uri.fromString(s"http://localhost:$port/body").getOrElse(null), User("joe", 27))).unsafeRunSync() === User("joe", 27)
-        client.expect[User](DELETE(Uri.fromString(s"http://localhost:$port/?reasons=because").getOrElse(null))).unsafeRunSync() === User("joe", 27)
+        client.expect[User](PUT(Uri.fromString(s"http://localhost:$port/").right.get)).unsafeRunSync() === User("joe", 27)
+        client.expect[User](PUT(Uri.fromString(s"http://localhost:$port/body").right.get, User("joe", 27))).unsafeRunSync() === User("joe", 27)
+        client.expect[User](POST(Uri.fromString(s"http://localhost:$port/").right.get)).unsafeRunSync() === User("joe", 27)
+        client.expect[User](POST(Uri.fromString(s"http://localhost:$port/body").right.get, User("joe", 27))).unsafeRunSync() === User("joe", 27)
+        client.expect[User](DELETE(Uri.fromString(s"http://localhost:$port/?reasons=because").right.get)).unsafeRunSync() === User("joe", 27)
       }
   }
 
