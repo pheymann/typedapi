@@ -1,9 +1,9 @@
-package typedapi.shared.ops
+package typedapi
 
 import typedapi.shared._
-import shapeless._
+import shapeless.Witness
 
-trait ApiListOps {
+package object dsl {
 
   def := = EmptyCons
 

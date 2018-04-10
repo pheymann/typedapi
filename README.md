@@ -6,15 +6,34 @@
 # Typedapi
 Define type safe APIs and let the Scala compiler do the rest:
 
-### Client side
+### Api definition
+For the Servant lovers:
+
 ```Scala
-import typedapi.client._
+import typedapi.dsl._
 
 val MyApi = 
   // GET /fetch/user?name=<>
   (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[User]) :|:
   // POST /create/user
   (:= :> "create" :> "user" :> ReqBody[User] :> Post[User])
+```
+
+And for all the others:
+
+```Scala
+import typedapi._
+
+val MyApi =
+  // GET /fetch/user?name=<>
+  (api(method = Get[User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name))) :|:
+  // POST /create/user
+  (apiWithBody(method = Post[User], body = ReqBody[User], path = Root / "create" / "user"))
+```
+
+### Client side
+```Scala
+import typedapi.client._
 
 val (fetch :|: create :|: =:) = compile(MyApi)
 
@@ -22,8 +41,6 @@ import typedapi.client.http4s._
 import cats.effect.IO
 import org.http4s.client.blaze.Http1Client
 
-implicit val encoder = ???
-implicit val decoder = ???
 implicit val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://my-host", 8080)
 
 fetch("joe").run[IO]: IO[User]
@@ -48,7 +65,9 @@ val server = mount(sm, endpoints)
 server.unsafeRunSync()
 ```
 
-This is all you have to do to define an API with multiple endpoints and to create call functions for them. No extra code is needed.
+This is all you have to do to define an API with multiple endpoints and to create a working client and server for them.
+
+You can find the above code as a complete project [here](https://github.com/pheymann/typedapi/docs/example).
 
 ## Motivation
 This library is the result of the following questions:

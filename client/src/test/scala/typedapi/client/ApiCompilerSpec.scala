@@ -1,5 +1,6 @@
 package typedapi.client
 
+import typedapi.dsl._
 import typedapi.client.test._
 
 import shapeless.Id

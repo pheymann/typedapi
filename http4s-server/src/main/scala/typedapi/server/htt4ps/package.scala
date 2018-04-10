@@ -78,7 +78,12 @@ package object http4s {
 
           val eReq = EndpointRequest(
             request.method.name, 
-            request.uri.path.split("/").tail.toList, 
+            {
+              val path = request.uri.path.split("/")
+
+              if (path.isEmpty) List.empty
+              else              path.tail.toList
+            },
             request.uri.multiParams.map { case (key, value) => key -> value.toList },
             request.headers.toList.map(header => header.name.toString -> header.value)(collection.breakOut)
           )
