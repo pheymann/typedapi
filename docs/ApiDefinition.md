@@ -49,9 +49,9 @@ You may noticed that `Put` and `Post` don't have a field to describe a request b
 // PUT {body: A} /
 
 // function
-api(Put[A], ReqBody[B])
+apiWithBody(Put[A], ReqBody[B])
 // or
-api(method = Put[A], body = ReqBody[B])
+apiWithBody(method = Put[A], body = ReqBody[B])
 ```
  
 By the way, you can only add `Put` and `Post` as the next element of `ReqBody`. Everything else will not compile. Thus, you end up with a valid API description and not something like `:= :> ReqBody[B] :> Get[A]` or `api(Get[A], ReqBody[B])`.
@@ -69,7 +69,7 @@ When you want to describe more than just the root path you can add path elements
 
 // function
 api(Get[A], Root / "hello" / "world")
-api(Put[A], ReqBody[B], Root / "hello" / "world")
+apiWithBody(Put[A], ReqBody[B], Root / "hello" / "world")
 ```
  
 All path elements are translated to singleton types and therefore encoded in the type of the API.
@@ -91,7 +91,7 @@ You can also put information into the path by using segments:
 // function
 api(Get[A], Root / Segment[Int]('id))
 api(Get[A], Root / "hello" / Segment[String]('name)
-api(Put[A], ReqBody[B], Root / "hello" / Segment[String]('name))
+apiWithBody(Put[A], ReqBody[B], Root / "hello" / Segment[String]('name))
 ```
 
 Every segment gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
@@ -109,7 +109,7 @@ You can add query parameters with:
 
 // function
 api(Get[A], Root / "hello", Queries.add(Query[Int]('id)))
-api(Put[A], ReqBody[B], Root / "hello", Queries.add(Query[Int]('id)))
+apiWithBody(Put[A], ReqBody[B], Root / "hello", Queries.add(Query[Int]('id)))
 ```
 
 Every query gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
@@ -148,7 +148,7 @@ You can add header parameters with:
 
 // function
 api(Get[A], Root / "hello", headers = Headers.add(Header[Int]('id)))
-api(Put[A], ReqBody[B], Root / "hello", headers = Headers.add(Header[Int]('id)))
+apiWithBody(Put[A], ReqBody[B], Root / "hello", headers = Headers.add(Header[Int]('id)))
 api(Get[A], Root / "hello", Queries.add(Query[String]('name)), Headers.add(Header[Int]('id)))
 ```
 
