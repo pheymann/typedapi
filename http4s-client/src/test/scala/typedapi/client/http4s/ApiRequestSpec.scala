@@ -61,23 +61,23 @@ final class ApiRequestSpec extends Specification {
       import typedapi._
 
       "paths and segments" >> {
-        val a = compile(api(Get[User], Root :> "path"))
+        val a = compile(api(Get[User], Root / "path"))
         a().run[IO].unsafeRunSync() === User("foo", 27)
         
-        val b = compile(api(Get[User], Root :> "segment" :> Segment[String]('name)))
+        val b = compile(api(Get[User], Root / "segment" / Segment[String]('name)))
         b("jim").run[IO].unsafeRunSync() === User("jim", 27)
       }
   
       "queries" >> {
-        val a = compile(api(Get[User], Root :> "query", Queries :> Query[Int]('age)))
+        val a = compile(api(Get[User], Root / "query", Queries add Query[Int]('age)))
         a(42).run[IO].unsafeRunSync() === User("foo", 42)
       }
  
       "headers" >> {
-        val a = compile(api(Get[User], Root :> "header", headers = Headers :> Header[Int]('age)))
+        val a = compile(api(Get[User], Root / "header", headers = Headers add Header[Int]('age)))
         a(42).run[IO].unsafeRunSync() === User("foo", 42)
 
-        val b = compile(api(Get[User], Root :> "header" :> "raw", headers = Headers :> Header[Int]('age) :> RawHeaders))
+        val b = compile(api(Get[User], Root / "header" / "raw", headers = Headers add Header[Int]('age) add RawHeaders))
         b(42, Map("name" -> "jim")).run[IO].unsafeRunSync() === User("jim", 42)
       }
 
@@ -86,13 +86,13 @@ final class ApiRequestSpec extends Specification {
         a().run[IO].unsafeRunSync() === User("foo", 27)
         val b = compile(api(Put[User]))
         b().run[IO].unsafeRunSync() === User("foo", 27)
-        val c = compile(apiWithBody(Put[User], ReqBody[User], Root :> "body"))
+        val c = compile(apiWithBody(Put[User], ReqBody[User], Root / "body"))
         c(User("jim", 42)).run[IO].unsafeRunSync() === User("jim", 42)
         val d = compile(api(Post[User]))
         d().run[IO].unsafeRunSync() === User("foo", 27)
-        val e = compile(apiWithBody(Post[User], ReqBody[User], Root :> "body"))
+        val e = compile(apiWithBody(Post[User], ReqBody[User], Root / "body"))
         e(User("jim", 42)).run[IO].unsafeRunSync() === User("jim", 42)
-        val f = compile(api(Delete[User], Root, Queries :> Query[List[String]]('reasons)))
+        val f = compile(api(Delete[User], Root, Queries add Query[List[String]]('reasons)))
         f(List("because")).run[IO].unsafeRunSync() === User("foo", 27)
       }
     }

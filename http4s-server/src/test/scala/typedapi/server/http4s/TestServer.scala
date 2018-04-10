@@ -31,17 +31,17 @@ object TestServer {
   val ApiDef = {
     import typedapi._
 
-    api(Get[User], Root :> "path") :|:
-    api(Get[User], Root :> "segment" :> Segment[String]('name)) :|:
-    api(Get[User], Root :> "query", Queries :> Query[Int]('age)) :|:
-    api(Get[User], Root :> "header", headers = Headers :> Header[Int]('age)) :|:
-    api(Get[User], Root :> "header" :> "raw", headers = Headers :> Header[Int]('age) :> RawHeaders) :|:
+    api(Get[User], Root / "path") :|:
+    api(Get[User], Root / "segment" / Segment[String]('name)) :|:
+    api(Get[User], Root / "query", Queries add Query[Int]('age)) :|:
+    api(Get[User], Root / "header", headers = Headers add Header[Int]('age)) :|:
+    api(Get[User], Root / "header" / "raw", headers = Headers add Header[Int]('age) add RawHeaders) :|:
     api(Get[User]) :|:
     api(Put[User]) :|:
-    apiWithBody(Put[User], ReqBody[User], Root :> "body") :|:
+    apiWithBody(Put[User], ReqBody[User], Root / "body") :|:
     api(Post[User]) :|:
-    apiWithBody(Post[User], ReqBody[User], Root :> "body") :|:
-    api(Delete[User], Root, Queries :> Query[List[String]]('reasons))
+    apiWithBody(Post[User], ReqBody[User], Root / "body") :|:
+    api(Delete[User], Root, Queries add Query[List[String]]('reasons))
   }
 
   val path: () => IO[User] = () => IO.pure(User("joe", 27))
