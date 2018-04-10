@@ -69,7 +69,7 @@ server.unsafeRunSync()
 
 This is all you have to do to define an API with multiple endpoints and to create a working client and server for them.
 
-You can find the above code as a complete project [here](https://github.com/pheymann/typedapi/docs/example).
+You can find the above code as a complete project [here](https://github.com/pheymann/typedapi/tree/master/docs/example).
 
 ## Motivation
 This library is the result of the following questions:
