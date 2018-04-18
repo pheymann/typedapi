@@ -11,12 +11,13 @@ import scala.annotation.implicitNotFound
 @implicitNotFound("""Woops, you shouldn't be here. We cannot find an ApiCompiler.
 
 elements: ${El}
-inputs: ${In}""")
-trait ApiCompiler[El <: HList, In <: HList, O] {
+input keys: ${KIn}
+input values: ${VIn}""")
+trait ApiCompiler[El <: HList, KIn <: HList, VIn <: HList, O] {
 
   type Out <: HList
 
-  def apply(inputs: In, 
+  def apply(inputs: VIn, 
             uri: Builder[String, List[String]], 
             queries: Map[String, List[String]], 
             headers: Map[String, String]): Out
@@ -24,56 +25,56 @@ trait ApiCompiler[El <: HList, In <: HList, O] {
 
 object ApiCompiler {
 
-  type Aux[El <: HList, In <: HList, O, Out0 <: HList] = ApiCompiler[El, In, O] { type Out = Out0 }
+  type Aux[El <: HList, KIn <: HList, VIn <: HList, O, Out0 <: HList] = ApiCompiler[El, KIn, VIn, O] { type Out = Out0 }
 }
 
 trait ApiCompilerLowPrio {
 
-  implicit def pathCompiler[S, T <: HList, In <: HList, O](implicit wit: Witness.Aux[S], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[S :: T, In, O] {
+  implicit def pathCompiler[S, T <: HList, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[S], compiler: ApiCompiler[T, KIn, VIn, O]) = new ApiCompiler[S :: T, KIn, VIn, O] {
     type Out = compiler.Out
 
-    def apply(inputs: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+    def apply(inputs: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
       compiler(inputs, uri += wit.value.toString(), queries, headers)
     }
   }
   
-  implicit def segmentInputCompiler[T <: HList, K, V, In <: HList, O](implicit compiler: ApiCompiler[T, In, O]) = new ApiCompiler[SegmentInput :: T, FieldType[K, V] :: In, O] {
+  implicit def segmentInputCompiler[T <: HList, K, V, KIn <: HList, VIn <: HList, O](implicit compiler: ApiCompiler[T, KIn, VIn, O]) = new ApiCompiler[SegmentInput :: T, K :: KIn, V :: VIn, O] {
     type Out = compiler.Out
 
-    def apply(inputs: FieldType[K, V] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val segValue: V = inputs.head
+    def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val segValue = inputs.head
 
       compiler(inputs.tail, uri += segValue.toString(), queries, headers)
     }
   }
 
-  implicit def queryInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[QueryInput :: T, FieldType[K, V] :: In, O] {
+  implicit def queryInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, KIn, VIn, O]) = new ApiCompiler[QueryInput :: T, K :: KIn, V :: VIn, O] {
     type Out = compiler.Out
 
-    def apply(inputs: FieldType[K, V] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val queryName     = wit.value.name
-      val queryValue: V = inputs.head
+    def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val queryName  = wit.value.name
+      val queryValue = inputs.head
 
       compiler(inputs.tail, uri, Map((queryName, List(queryValue.toString()))) ++ queries, headers)
     }
   }
 
-  implicit def headerInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[HeaderInput :: T, FieldType[K, V] :: In, O] {
+  implicit def headerInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, KIn, VIn, O]) = new ApiCompiler[HeaderInput :: T, K :: KIn, V :: VIn, O] {
     type Out = compiler.Out
 
-    def apply(inputs: FieldType[K, V] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val headerName     = wit.value.name
-      val headerValue: V = inputs.head
+    def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val headerName  = wit.value.name
+      val headerValue = inputs.head
 
       compiler(inputs.tail, uri, queries, Map((headerName, headerValue.toString())) ++ headers)
     }
   }
 
-  implicit def rawHeadersInputCompiler[T <: HList, In <: HList, O](implicit compiler: ApiCompiler[T, In, O]) = new ApiCompiler[RawHeadersInput :: T, FieldType[RawHeadersField.T, Map[String, String]] :: In, O] {
+  implicit def rawHeadersInputCompiler[T <: HList, KIn <: HList, VIn <: HList, O](implicit compiler: ApiCompiler[T, KIn, VIn, O]) = new ApiCompiler[RawHeadersInput :: T, RawHeadersField.T :: KIn, Map[String, String] :: VIn, O] {
     type Out = compiler.Out
 
-    def apply(inputs: FieldType[RawHeadersField.T, Map[String, String]] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val headerMap: Map[String, String] = inputs.head
+    def apply(inputs: Map[String, String] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val headerMap = inputs.head
 
       compiler(inputs.tail, uri, queries, headerMap ++ headers)
     }
@@ -83,7 +84,7 @@ trait ApiCompilerLowPrio {
   type DataWithBody[Bd]           = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
   type RequestData[R, D <: HList] = FieldType[R, D] :: HNil
 
-  implicit def getCompiler[A] = new ApiCompiler[GetCall :: HNil, HNil, A] {
+  implicit def getCompiler[A] = new ApiCompiler[GetCall :: HNil, HNil, HNil, A] {
     type Out = RequestData[GetCall, Data]
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -91,7 +92,7 @@ trait ApiCompilerLowPrio {
     }
   }
 
-  implicit def putCompiler[A] = new ApiCompiler[PutCall :: HNil, HNil, A] {
+  implicit def putCompiler[A] = new ApiCompiler[PutCall :: HNil, HNil, HNil, A] {
     type Out = RequestData[PutCall, Data]
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -99,15 +100,15 @@ trait ApiCompilerLowPrio {
     }
   }
 
-  implicit def putWithBodyCompiler[Bd, A] = new ApiCompiler[PutWithBodyCall[Bd] :: HNil, FieldType[BodyField.T, Bd] :: HNil, A] {
+  implicit def putWithBodyCompiler[Bd, A] = new ApiCompiler[PutWithBodyCall[Bd] :: HNil, BodyField.T :: HNil, Bd :: HNil, A] {
     type Out = RequestData[PutWithBodyCall[Bd], DataWithBody[Bd]]
 
-    def apply(inputs: FieldType[BodyField.T, Bd] :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+    def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
       field[PutWithBodyCall[Bd]](uri.result() :: queries :: headers :: inputs.head :: HNil) :: HNil
     }
   }
 
-  implicit def postCompiler[A] = new ApiCompiler[PostCall :: HNil, HNil, A] {
+  implicit def postCompiler[A] = new ApiCompiler[PostCall :: HNil, HNil, HNil, A] {
     type Out = RequestData[PostCall, Data]
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -115,15 +116,15 @@ trait ApiCompilerLowPrio {
     }
   }
 
-  implicit def postWithBodyCompiler[Bd, A] = new ApiCompiler[PostWithBodyCall[Bd] :: HNil, FieldType[BodyField.T, Bd] :: HNil, A] {
+  implicit def postWithBodyCompiler[Bd, A] = new ApiCompiler[PostWithBodyCall[Bd] :: HNil, BodyField.T :: HNil, Bd :: HNil, A] {
     type Out = RequestData[PostWithBodyCall[Bd], DataWithBody[Bd]]
 
-    def apply(inputs: FieldType[BodyField.T, Bd] :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+    def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
       field[PostWithBodyCall[Bd]](uri.result() :: queries :: headers :: inputs.head :: HNil) :: HNil
     }
   }
 
-  implicit def deleteCompiler[A] = new ApiCompiler[DeleteCall :: HNil, HNil, A] {
+  implicit def deleteCompiler[A] = new ApiCompiler[DeleteCall :: HNil, HNil, HNil, A] {
     type Out = RequestData[DeleteCall, Data]
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -134,24 +135,24 @@ trait ApiCompilerLowPrio {
 
 trait ApiCompilerMediumPrio extends ApiCompilerLowPrio {
 
-  implicit def queryOptInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[QueryInput :: T, FieldType[K, Option[V]] :: In, O] {
+  implicit def queryOptInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, KIn, VIn, O]) = new ApiCompiler[QueryInput :: T, K :: KIn, Option[V] :: VIn, O] {
     type Out = compiler.Out
 
-    def apply(inputs: FieldType[K, Option[V]] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val queryName             = wit.value.name
-      val queryValue: Option[V] = inputs.head
-      val updatedQueries        = queryValue.fold(queries)(q => Map(queryName -> List(q.toString())) ++ queries)
+    def apply(inputs: Option[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val queryName      = wit.value.name
+      val queryValue     = inputs.head
+      val updatedQueries = queryValue.fold(queries)(q => Map(queryName -> List(q.toString())) ++ queries)
 
       compiler(inputs.tail, uri, updatedQueries, headers)
     }
   }
 
-  implicit def queryListInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[QueryInput :: T, FieldType[K, List[V]] :: In, O] {
+  implicit def queryListInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, KIn, VIn, O]) = new ApiCompiler[QueryInput :: T, K :: KIn, List[V] :: VIn, O] {
     type Out = compiler.Out
 
-    def apply(inputs: FieldType[K, List[V]] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val queryName           = wit.value.name
-      val queryValue: List[V] = inputs.head
+    def apply(inputs: List[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val queryName  = wit.value.name
+      val queryValue = inputs.head
 
       if (queryValue.isEmpty)
         compiler(inputs.tail, uri, queries, headers)
@@ -160,13 +161,13 @@ trait ApiCompilerMediumPrio extends ApiCompilerLowPrio {
     }
   }
 
-  implicit def headersOptInputCompiler[T <: HList, K <: Symbol, V, In <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, In, O]) = new ApiCompiler[HeaderInput :: T, FieldType[K, Option[V]] :: In, O] {
+  implicit def headersOptInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: ApiCompiler[T, KIn, VIn, O]) = new ApiCompiler[HeaderInput :: T, K :: KIn, Option[V] :: VIn, O] {
     type Out = compiler.Out
 
-    def apply(inputs: FieldType[K, Option[V]] :: In, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val headerName             = wit.value.name
-      val headerValue: Option[V] = inputs.head
-      val updatedHeaders         = headerValue.fold(headers)(h => Map(headerName -> h.toString()) ++ headers)
+    def apply(inputs: Option[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+      val headerName     = wit.value.name
+      val headerValue    = inputs.head
+      val updatedHeaders = headerValue.fold(headers)(h => Map(headerName -> h.toString()) ++ headers)
 
       compiler(inputs.tail, uri, queries, updatedHeaders)
     }
@@ -190,15 +191,16 @@ object ApiCompilerList {
 
 trait ApiCompilerListLowPrio {
 
-  implicit def lastCompilerList[El0 <: HList, In0 <: HList, O, D0 <: HList](implicit compiler0: ApiCompiler.Aux[El0, In0, O, D0]) = new ApiCompilerList[Transformed[El0, In0, O, D0] :: HNil] {
-    type Out = ApiCompiler.Aux[El0, In0, O, D0] :: HNil
+  implicit def lastCompilerList[El <: HList, KIn <: HList, VIn <: HList, O, D <: HList](implicit compiler: ApiCompiler.Aux[El, KIn, VIn, O, D]) = new ApiCompilerList[Transformed[El, KIn, VIn, O, D] :: HNil] {
+    type Out = ApiCompiler.Aux[El, KIn, VIn, O, D] :: HNil
 
-    val compilers = compiler0 :: HNil
+    val compilers = compiler :: HNil
   }
 
-  implicit def compilerList[El0 <: HList, In0 <: HList, O, D0 <: HList, T <: HList](implicit compiler0: ApiCompiler.Aux[El0, In0, O, D0], list: ApiCompilerList[T]) = new ApiCompilerList[Transformed[El0, In0, O, D0] :: T] {
-    type Out = ApiCompiler.Aux[El0, In0, O, D0] :: list.Out
+  implicit def compilerList[El <: HList, KIn <: HList, VIn <: HList, O, D <: HList, T <: HList](implicit compiler: ApiCompiler.Aux[El, KIn, VIn, O, D], next: ApiCompilerList[T]) = 
+    new ApiCompilerList[Transformed[El, KIn, VIn, O, D] :: T] {
+      type Out = ApiCompiler.Aux[El, KIn, VIn, O, D] :: next.Out
 
-    val compilers = compiler0 :: list.compilers
-  }
+      val compilers = compiler :: next.compilers
+    }
 }
