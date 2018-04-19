@@ -20,12 +20,12 @@ package object server extends TypeLevelFoldLeftLowPrio
                                                                                 (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
                                                                                           ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
                                                                                           extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
-                                                                                          funApply: FunctionApply[VIn, Out]): EndpointDefinition[El, KIn, ROut, VIn, funApply.Fun, Out] =
-    new EndpointDefinition[El, KIn, ROut, VIn, funApply.Fun, Out](extractor, funApply)
+                                                                                          funApply: FunctionApply[VIn, Out]): EndpointDefinition[El, KIn, VIn, ROut, funApply.Fun, Out] =
+    new EndpointDefinition[El, KIn, VIn, ROut, funApply.Fun, Out](extractor, funApply)
 
 
-  def mount[S, El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut, Req, Resp, Out](server: ServerManager[S], endpoint: Endpoint[El, In, ROut, CIn, F, FOut])
-                                                                     (implicit executor: EndpointExecutor.Aux[Req, El, In, ROut, CIn, F, FOut, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
+  def mount[S, El <: HList, KIn <: HList, VIn <: HList, ROut, F[_], FOut, Req, Resp, Out](server: ServerManager[S], endpoint: Endpoint[El, KIn, VIn, ROut, F, FOut])
+                                                                                         (implicit executor: EndpointExecutor.Aux[Req, El, KIn, VIn, ROut, F, FOut, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
     mounting(server, List(new Serve[executor.R, executor.Out] {
       def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
     }))
@@ -37,8 +37,8 @@ package object server extends TypeLevelFoldLeftLowPrio
 
   object endpointToServe extends Poly1 {
 
-    implicit def default[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut](implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]) = 
-      at[Endpoint[El, In, ROut, CIn, F, FOut]] { endpoint =>
+    implicit def default[El <: HList, KIn <: HList, VIn <: HList, ROut, F[_], FOut](implicit executor: EndpointExecutor[El, KIn, VIn, ROut, F, FOut]) = 
+      at[Endpoint[El, KIn, VIn, ROut, F, FOut]] { endpoint =>
         new Serve[executor.R, executor.Out] {
           def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
         }

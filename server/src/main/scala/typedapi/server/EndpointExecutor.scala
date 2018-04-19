@@ -9,37 +9,38 @@ import scala.annotation.implicitNotFound
 @implicitNotFound("""Cannot find EndpointExecutor. Do you miss some implicit values e.g. encoder/decoder?
 
 elements: ${El}
-inputs:   ${In}""")
-sealed trait EndpointExecutor[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut] {
+input keys: ${KIn}
+input values: ${VIn}""")
+sealed trait EndpointExecutor[El <: HList, KIn <: HList, VIn <: HList, ROut, F[_], FOut] {
 
   type R
   type Out
 
-  def extract(eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, F, FOut]): Either[ExtractionError, ROut] = 
+  def extract(eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, ROut, F, FOut]): Either[ExtractionError, ROut] = 
     endpoint.extractor(eReq, Set.empty, HNil)
 
-  def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, In, ROut, CIn, F, FOut]): Either[ExtractionError, Out]
+  def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, ROut, F, FOut]): Either[ExtractionError, Out]
 }
 
 object EndpointExecutor {
 
-  type Aux[R0, El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut, Out0] = EndpointExecutor[El, In, ROut, CIn, F, FOut] {
+  type Aux[R0, El <: HList, KIn <: HList, VIn <: HList, ROut, F[_], FOut, Out0] = EndpointExecutor[El, KIn, VIn, ROut, F, FOut] {
     type R = R0
     type Out = Out0
   }
 }
 
-trait NoReqBodyExecutor[El <: HList, In <: HList, CIn <: HList, F[_], FOut] extends EndpointExecutor[El, In, CIn, CIn, F, FOut] {
+trait NoReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, F[_], FOut] extends EndpointExecutor[El, KIn, VIn, VIn, F, FOut] {
 
-  protected def execute(input: CIn, endpoint: Endpoint[El, In, CIn, CIn, F, FOut]): F[FOut] = 
+  protected def execute(input: VIn, endpoint: Endpoint[El, KIn, VIn, VIn, F, FOut]): F[FOut] = 
     endpoint.apply(input)
 }
 
-trait ReqBodyExecutor[El <: HList, In <: HList, Bd, ROut <: HList, POut <: HList, CIn <: HList, F[_], FOut] extends EndpointExecutor[El, In, (BodyType[Bd], ROut), CIn, F, FOut] {
+trait ReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, Bd, ROut <: HList, POut <: HList, F[_], FOut] extends EndpointExecutor[El, KIn, VIn, (BodyType[Bd], ROut), F, FOut] {
 
   implicit def prepend: Prepend.Aux[ROut, Bd :: HNil, POut]
-  implicit def eqProof: POut =:= CIn
+  implicit def eqProof: POut =:= VIn
 
-  protected def execute(input: ROut, body: Bd, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, F, FOut]): F[FOut] = 
+  protected def execute(input: ROut, body: Bd, endpoint: Endpoint[El, KIn, VIn, (BodyType[Bd], ROut),  F, FOut]): F[FOut] = 
     endpoint.apply(input :+ body)
 }

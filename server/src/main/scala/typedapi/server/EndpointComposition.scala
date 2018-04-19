@@ -30,9 +30,9 @@ object PrecompileEndpoint {
 }
 
 /** Fuses RouteExtractor, FunApply and endpoint function fun into an Endpoint. */
-trait EndpointConstructor[F[_], Fun, El <: HList, In <: HList, ROut, CIn <: HList, Out] {
+trait EndpointConstructor[F[_], Fun, El <: HList, KIn <: HList, VIn <: HList, ROut, Out] {
 
-  def apply(fun: Fun): Endpoint[El, In, ROut, CIn, F, Out]
+  def apply(fun: Fun): Endpoint[El, KIn, VIn, ROut, F, Out]
 }
 
 trait PrecompileEndpointLowPrio {
@@ -48,10 +48,10 @@ trait PrecompileEndpointLowPrio {
                                                                                                                                                  val funApply: FunctionApply.Aux[VIn, Fun, Out0], 
                                                                                                                                                  val next: PrecompileEndpoint.Aux[T, CompT, OutT]) extends PrecompileEndpoint[(El, KIn, VIn, Out0) :: T] {
     type Comp[F[_]] = Fun[F] :: CompT[F]
-    type Out[F[_]]  = EndpointConstructor[F, Fun[F], El, KIn, ROut, VIn, Out0] :: OutT[F]
+    type Out[F[_]]  = EndpointConstructor[F, Fun[F], El, KIn, VIn, ROut, Out0] :: OutT[F]
 
-    def constructor[F[_]] = new EndpointConstructor[F, Fun[F], El, KIn, ROut, VIn, Out0] {
-      def apply(fun: Fun[F]): Endpoint[El, KIn, ROut, VIn, F, Out0] = new Endpoint[El, KIn, ROut, VIn, F, Out0](extractor) {
+    def constructor[F[_]] = new EndpointConstructor[F, Fun[F], El, KIn, VIn, ROut, Out0] {
+      def apply(fun: Fun[F]): Endpoint[El, KIn, VIn, ROut, F, Out0] = new Endpoint[El, KIn, VIn, ROut, F, Out0](extractor) {
         def apply(in: VIn): F[Out0] = funApply(in, fun)
       }
     }
@@ -100,12 +100,12 @@ trait MergeToEndpointLowPrio {
     def apply(precompiled: HNil, fun: HNil): Out = HNil
   }
 
-  implicit def mergeCase[F[_], El <: HList, In <: HList, Out0, ROut, CIn <: HList, PreT <: HList, Fun, FunT <: HList]
-    (implicit executor: EndpointExecutor[El, In, ROut, CIn, F, Out0], next: MergeToEndpoint[F, PreT, FunT]) =
-    new MergeToEndpoint[F, EndpointConstructor[F, Fun, El, In, ROut, CIn, Out0] :: PreT, Fun :: FunT] {
+  implicit def mergeCase[F[_], El <: HList, KIn <: HList, VIn <: HList, Out0, ROut, PreT <: HList, Fun, FunT <: HList]
+    (implicit executor: EndpointExecutor[El, KIn, VIn, ROut, F, Out0], next: MergeToEndpoint[F, PreT, FunT]) =
+    new MergeToEndpoint[F, EndpointConstructor[F, Fun, El, KIn, VIn, ROut, Out0] :: PreT, Fun :: FunT] {
       type Out = Serve[executor.R, executor.Out] :: next.Out
 
-      def apply(constructors: EndpointConstructor[F, Fun, El, In, ROut, CIn, Out0] :: PreT, fun: Fun :: FunT): Out =
+      def apply(constructors: EndpointConstructor[F, Fun, El, KIn, VIn, ROut, Out0] :: PreT, fun: Fun :: FunT): Out =
         new Serve[executor.R, executor.Out] {
           private val endpoint = constructors.head(fun.head)
 
