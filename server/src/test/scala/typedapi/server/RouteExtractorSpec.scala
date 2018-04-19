@@ -9,11 +9,11 @@ final class RouteExtractorSpec extends Specification {
 
   case class Foo(name: String)
 
-  def extract[H <: HList, Fold, El <: HList, In <: HList, ROut, Out]
+  def extract[H <: HList, Fold, El <: HList, KIn <: HList, VIn <: HList, ROut, Out]
     (api: ApiTypeCarrier[H])
-    (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Fold],
-              ev: FoldResultEvidence.Aux[Fold, El, In, Out],
-              extractor: RouteExtractor.Aux[El, In, HNil, ROut]): RouteExtractor.Aux[El, In, HNil, ROut] = extractor
+    (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
+              ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
+              extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut]): RouteExtractor.Aux[El, KIn, VIn, HNil, ROut] = extractor
 
   "determine routes defined by requests and extract included data (segments, queries, headers)" >> {
     "no data" >> {

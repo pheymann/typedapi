@@ -44,25 +44,25 @@ trait PrecompileEndpointLowPrio {
     def precompiled[F[_]] = HNil
   }
 
-  final class Precompiled[El <: HList, In <: HList, CIn <: HList, Fun[_[_]], Out0, ROut, CompT[_[_]] <: HList, OutT[_[_]] <: HList, T <: HList](val extractor: RouteExtractor.Aux[El, In, HNil, ROut], 
-                                                                                                                                          val funApply: FunctionApply.Aux[In, CIn, Fun, Out0], 
-                                                                                                                                          val next: PrecompileEndpoint.Aux[T, CompT, OutT]) extends PrecompileEndpoint[(El, In, Out0) :: T] {
+  final class Precompiled[El <: HList, KIn <: HList, VIn <: HList, Fun[_[_]], Out0, ROut, CompT[_[_]] <: HList, OutT[_[_]] <: HList, T <: HList](val extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
+                                                                                                                                                 val funApply: FunctionApply.Aux[VIn, Fun, Out0], 
+                                                                                                                                                 val next: PrecompileEndpoint.Aux[T, CompT, OutT]) extends PrecompileEndpoint[(El, KIn, VIn, Out0) :: T] {
     type Comp[F[_]] = Fun[F] :: CompT[F]
-    type Out[F[_]]  = EndpointConstructor[F, Fun[F], El, In, ROut, CIn, Out0] :: OutT[F]
+    type Out[F[_]]  = EndpointConstructor[F, Fun[F], El, KIn, ROut, VIn, Out0] :: OutT[F]
 
-    def constructor[F[_]] = new EndpointConstructor[F, Fun[F], El, In, ROut, CIn, Out0] {
-      def apply(fun: Fun[F]): Endpoint[El, In, ROut, CIn, F, Out0] = new Endpoint[El, In, ROut, CIn, F, Out0](extractor) {
-        def apply(in: CIn): F[Out0] = funApply(in, fun)
+    def constructor[F[_]] = new EndpointConstructor[F, Fun[F], El, KIn, ROut, VIn, Out0] {
+      def apply(fun: Fun[F]): Endpoint[El, KIn, ROut, VIn, F, Out0] = new Endpoint[El, KIn, ROut, VIn, F, Out0](extractor) {
+        def apply(in: VIn): F[Out0] = funApply(in, fun)
       }
     }
 
     def precompiled[F[_]] = constructor[F] :: next.precompiled[F]
   }
 
-  implicit def precompiledCase[El <: HList, In <: HList, Out, ROut, T <: HList](implicit extractor: RouteExtractor.Aux[El, In, HNil, ROut], 
-                                                                                         funApply: FunctionApply[In, Out], 
-                                                                                         next: PrecompileEndpoint[T]) = 
-    new Precompiled[El, In, funApply.CIn, funApply.Fun, Out, ROut, next.Comp, next.Out, T](extractor, funApply, next)
+  implicit def precompiledCase[El <: HList, KIn <: HList, VIn <: HList, Out, ROut, T <: HList](implicit extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
+                                                                                                        funApply: FunctionApply[VIn, Out], 
+                                                                                                        next: PrecompileEndpoint[T]) = 
+    new Precompiled[El, KIn, VIn, funApply.Fun, Out, ROut, next.Comp, next.Out, T](extractor, funApply, next)
 }
 
 final case class FunctionComposition[Comp <: HList](funs: Comp) {

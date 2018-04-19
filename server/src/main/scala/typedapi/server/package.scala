@@ -16,12 +16,12 @@ package object server extends TypeLevelFoldLeftLowPrio
                       with PrecompileEndpointLowPrio
                       with MergeToEndpointLowPrio {
 
-  def link[H <: HList, Fold, El <: HList, In <: HList, ROut, Out](apiList: ApiTypeCarrier[H])
-                                                                 (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil), Fold],
-                                                                           ev: FoldResultEvidence.Aux[Fold, El, In, Out],
-                                                                           extractor: RouteExtractor.Aux[El, In, HNil, ROut], 
-                                                                           funApply: FunctionApply[In, Out]): EndpointDefinition[El, In, ROut, funApply.CIn, funApply.Fun, Out] =
-    new EndpointDefinition[El, In, ROut, funApply.CIn, funApply.Fun, Out](extractor, funApply)
+  def link[H <: HList, Fold, El <: HList, KIn <: HList, VIn <: HList, ROut, Out](apiList: ApiTypeCarrier[H])
+                                                                                (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
+                                                                                          ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
+                                                                                          extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
+                                                                                          funApply: FunctionApply[VIn, Out]): EndpointDefinition[El, KIn, ROut, VIn, funApply.Fun, Out] =
+    new EndpointDefinition[El, KIn, ROut, VIn, funApply.Fun, Out](extractor, funApply)
 
 
   def mount[S, El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut, Req, Resp, Out](server: ServerManager[S], endpoint: Endpoint[El, In, ROut, CIn, F, FOut])
