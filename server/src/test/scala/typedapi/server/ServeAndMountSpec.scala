@@ -2,7 +2,7 @@ package typedapi.server
 
 import typedapi.dsl._
 import shapeless.{HList, HNil, ::}
-import shapeless.ops.hlist.Prepend
+import shapeless.ops.hlist.{Prepend, Mapper}
 import org.specs2.mutable.Specification
 
 import scala.language.higherKinds
@@ -48,8 +48,8 @@ final class ServeAndMountSpec extends Specification {
       def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
     })
 
-  def toList[End <: HList](end: End)(implicit s: ServeToList[End, Req, TestResponse]): List[Serve[Req, TestResponse]] =
-    s(end)
+  def toList[End <: HList, Serv <: HList](end: End)(implicit mapper: Mapper.Aux[endpointToServe.type, End, Serv], s: ServeToList[Serv, Req, TestResponse]): List[Serve[Req, TestResponse]] =
+    s(end.map(endpointToServe))
 
   "serve endpoints as simple Request -> Response functions and mount them into a server" >> {
     "serve single endpoint and no body" >> {

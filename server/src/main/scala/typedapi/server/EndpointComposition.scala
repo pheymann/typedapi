@@ -76,7 +76,7 @@ object =: {
 the executor, e.g. encoders/decoders.
 
 constructors: ${Consts}
-functions:   ${Fns}""")
+functions: ${Fns}""")
 sealed trait MergeToEndpoint[F[_], Consts <: HList, Fns <: HList] {
 
   type Out <: HList
@@ -98,16 +98,15 @@ trait MergeToEndpointLowPrio {
   }
 
   implicit def mergeCase[F[_], El <: HList, KIn <: HList, VIn <: HList, Out0, ROut, Consts <: HList, Fn, Fns <: HList]
-    (implicit executor: EndpointExecutor[El, KIn, VIn, ROut, F, Out0], next: MergeToEndpoint[F, Consts, Fns]) =
+    (implicit next: MergeToEndpoint[F, Consts, Fns]) =
     new MergeToEndpoint[F, EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out0] :: Consts, Fn :: Fns] {
-      type Out = Serve[executor.R, executor.Out] :: next.Out
+      type Out = Endpoint[El, KIn, VIn, ROut, F, Out0] :: next.Out
 
-      def apply(constructors: EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out0] :: Consts, fn: Fn :: Fns): Out =
-        new Serve[executor.R, executor.Out] {
-          private val endpoint = constructors.head(fn.head)
+      def apply(constructors: EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out0] :: Consts, fns: Fn :: Fns): Out = {
+        val endpoint = constructors.head(fns.head)
 
-          def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
-        } :: next(constructors.tail, fn.tail)
+        endpoint :: next(constructors.tail, fns.tail)
+      }
     }
 }
 

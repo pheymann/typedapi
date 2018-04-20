@@ -2,6 +2,7 @@ package typedapi
 
 import typedapi.shared._
 import shapeless._
+import shapeless.ops.hlist.Mapper
 
 import scala.language.higherKinds
 
@@ -37,6 +38,6 @@ package object server extends TypeLevelFoldLeftLowPrio
       }
   }
 
-  def mount[S, End <: HList, Req, Resp, Out](server: ServerManager[S], end: End)(implicit toList: ServeToList[End, Req, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
-    mounting(server, toList(end))
+  def mount[S, End <: HList, Serv <: HList, Req, Resp, Out](server: ServerManager[S], end: End)(implicit mapper: Mapper.Aux[endpointToServe.type, End, Serv], toList: ServeToList[Serv, Req, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
+    mounting(server, toList(end.map(endpointToServe)))
 }
