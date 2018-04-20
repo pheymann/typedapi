@@ -54,7 +54,7 @@ final class ServeAndMountSpec extends Specification {
   "serve endpoints as simple Request -> Response functions and mount them into a server" >> {
     "serve single endpoint and no body" >> {
       val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[List[Foo]]
-      val endpoint = typedapi.server.link(Api).to[Id]((name, sortByAge) => List(Foo(name)))
+      val endpoint = derive(Api).from[Id]((name, sortByAge) => List(Foo(name)))
       val served   = toList(endpoint)
 
       val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
@@ -65,7 +65,7 @@ final class ServeAndMountSpec extends Specification {
 
     "serve single endpoint and with body" >> {
       val Api      = := :> "find" :> "user" :> Segment[String]('name) :> ReqBody[Foo] :> Post[List[Foo]]
-      val endpoint = typedapi.server.link(Api).to[Id]((name, body) => List(Foo(name), body))
+      val endpoint = derive(Api).from[Id]((name, body) => List(Foo(name), body))
       val served   = toList(endpoint)
 
       val req  = TestRequestWithBody(List("find", "user", "joe"), Map.empty, Map.empty, Foo("jim"))
@@ -82,7 +82,7 @@ final class ServeAndMountSpec extends Specification {
       def find(name: String, age: Int): Id[List[Foo]] = List(Foo(name))
       def create(foo: Foo): Id[Foo] = foo
 
-      val endpoints = typedapi.server.link(Api).to[Id] {
+      val endpoints = derive(Api).from[Id] {
         find _ :|:
         create _ :|: =:
       }

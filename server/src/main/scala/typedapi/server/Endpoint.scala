@@ -29,7 +29,7 @@ final class EndpointDefinition[El <: HList, KIn <: HList, VIn <: HList, ROut, Fu
     * 
     * Generates an `Endpoint` from `f`, the extractor and `FunctionApply` instance.
     */
-  def to[F[_]](f: Fun[F]): Endpoint[El, KIn, VIn, ROut, F, Out] = 
+  def from[F[_]](f: Fun[F]): Endpoint[El, KIn, VIn, ROut, F, Out] = 
     new Endpoint[El, KIn, VIn, ROut, F, Out](extractor) {
       def apply(in: VIn): F[Out] = funApply(in, f)
     }

@@ -16,11 +16,11 @@ package object server extends TypeLevelFoldLeftLowPrio
                       with PrecompileEndpointLowPrio
                       with MergeToEndpointLowPrio {
 
-  def link[H <: HList, Fold, El <: HList, KIn <: HList, VIn <: HList, ROut, Out](apiList: ApiTypeCarrier[H])
-                                                                                (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
-                                                                                          ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
-                                                                                          extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
-                                                                                          funApply: FunctionApply[VIn, Out]): EndpointDefinition[El, KIn, VIn, ROut, funApply.Fun, Out] =
+  def derive[H <: HList, Fold, El <: HList, KIn <: HList, VIn <: HList, ROut, Out](apiList: ApiTypeCarrier[H])
+                                                                                  (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
+                                                                                            ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
+                                                                                            extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
+                                                                                            funApply: FunctionApply[VIn, Out]): EndpointDefinition[El, KIn, VIn, ROut, funApply.Fun, Out] =
     new EndpointDefinition[El, KIn, VIn, ROut, funApply.Fun, Out](extractor, funApply)
 
 
@@ -30,9 +30,9 @@ package object server extends TypeLevelFoldLeftLowPrio
       def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
     }))
 
-  def link[H <: HList, Fold <: HList](apiLists: CompositionCons[H])
-                                     (implicit folder: TypeLevelFoldLeftList.Aux[H, Fold],
-                                               pre: PrecompileEndpoint[Fold]): EndpointCompositionDefinition[Fold, pre.Comp, pre.Out] =
+  def derive[H <: HList, Fold <: HList](apiLists: CompositionCons[H])
+                                       (implicit folder: TypeLevelFoldLeftList.Aux[H, Fold],
+                                                 pre: PrecompileEndpoint[Fold]): EndpointCompositionDefinition[Fold, pre.Comp, pre.Out] =
     new EndpointCompositionDefinition[Fold, pre.Comp, pre.Out](pre)
 
   object endpointToServe extends Poly1 {

@@ -128,6 +128,6 @@ final class EndpointCompositionDefinition[H <: HList, Comp[_[_]] <: HList, Pre[_
     * link(Api).to[IO](f0 _ :|: f1 _ :|: =:)
     * }}}
     */
-  def to[F[_]](comp: FunctionComposition[Comp[F]])(implicit merge: MergeToEndpoint[F, Pre[F], Comp[F]]): merge.Out =
+  def from[F[_]](comp: FunctionComposition[Comp[F]])(implicit merge: MergeToEndpoint[F, Pre[F], Comp[F]]): merge.Out =
     merge(pre.precompiled[F], comp.funs)
 }

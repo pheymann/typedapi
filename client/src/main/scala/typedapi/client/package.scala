@@ -14,16 +14,16 @@ package object client extends HListToCompositionLowPrio
 
   type Transformed[El <: HList, KIn <: HList, VIn <: HList, Out, D <: HList] = (El, KIn, VIn, Out)
 
-  def compile[H <: HList, Fold, El <: HList, KIn <: HList, VIn <: HList, Out, D <: HList](apiList: ApiTypeCarrier[H])
-                                                                                         (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
-                                                                                                   ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
-                                                                                                   compiler: ApiCompiler.Aux[El, KIn, VIn, Out, D],
-                                                                                                   inToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, Out, D]]): inToFn.Out = 
+  def derive[H <: HList, Fold, El <: HList, KIn <: HList, VIn <: HList, Out, D <: HList](apiList: ApiTypeCarrier[H])
+                                                                                        (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
+                                                                                                  ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
+                                                                                                  compiler: ApiCompiler.Aux[El, KIn, VIn, Out, D],
+                                                                                                  inToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, Out, D]]): inToFn.Out = 
     inToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, Out, D](compiler, input))
 
-  def compile[H <: HList, In <: HList, Fold <: HList, HL <: HList, Out <: HList](apiLists: CompositionCons[H])
-                                                                                (implicit folders: TypeLevelFoldLeftList.Aux[H, Fold],
-                                                                                          compilers: ApiCompilerList.Aux[Fold, HL], 
-                                                                                          composition: HListToComposition[HL]): composition.Out =
+  def derive[H <: HList, In <: HList, Fold <: HList, HL <: HList, Out <: HList](apiLists: CompositionCons[H])
+                                                                               (implicit folders: TypeLevelFoldLeftList.Aux[H, Fold],
+                                                                                         compilers: ApiCompilerList.Aux[Fold, HL], 
+                                                                                         composition: HListToComposition[HL]): composition.Out =
     composition(compilers.compilers)
 }
