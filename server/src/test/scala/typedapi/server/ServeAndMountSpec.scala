@@ -1,7 +1,7 @@
 package typedapi.server
 
 import typedapi.dsl._
-import shapeless.{HList, HNil, Id, ::}
+import shapeless.{HList, HNil, ::}
 import shapeless.ops.hlist.Prepend
 import org.specs2.mutable.Specification
 
@@ -18,25 +18,25 @@ final class ServeAndMountSpec extends Specification {
   case class TestResponse(raw: String)
 
   implicit def execNoBodyId[El <: HList, KIn <: HList, VIn <: HList, FOut] = 
-    new NoReqBodyExecutor[El, KIn, VIn, Id, FOut] {
+    new NoReqBodyExecutor[El, KIn, VIn, Option, FOut] {
       type R = Req
       type Out = TestResponse
 
-      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, VIn, Id, FOut]): Either[ExtractionError, Out] =
+      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, VIn, Option, FOut]): Either[ExtractionError, Out] =
         extract(eReq, endpoint).right.map { extracted => 
           TestResponse(execute(extracted, endpoint).toString())
         }
     }
 
-  implicit def execWithBody[El <: HList, KIn <: HList, VIn <: HList, Bd , ROut <: HList, POut <: HList, FOut](implicit _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], _eqProof: POut =:= VIn) = 
-    new ReqBodyExecutor[El, KIn, VIn, Bd, ROut, POut, Id, FOut] {
+  implicit def execWithBody[El <: HList, KIn <: HList, VIn <: HList, Bd, ROut <: HList, POut <: HList, FOut](implicit _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], _eqProof: POut =:= VIn) = 
+    new ReqBodyExecutor[El, KIn, VIn, Bd, ROut, POut, Option, FOut] {
       type R = Req
       type Out = TestResponse
 
       implicit val prepend = _prepend
       implicit def eqProof = _eqProof
 
-      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, (BodyType[Bd], ROut), Id, FOut]): Either[ExtractionError, Out] =
+      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, (BodyType[Bd], ROut), Option, FOut]): Either[ExtractionError, Out] =
         extract(eReq, endpoint).right.map { case (_, extracted) => 
           TestResponse(execute(extracted, req.asInstanceOf[TestRequestWithBody[Bd]].body, endpoint).toString())
         }
@@ -54,24 +54,24 @@ final class ServeAndMountSpec extends Specification {
   "serve endpoints as simple Request -> Response functions and mount them into a server" >> {
     "serve single endpoint and no body" >> {
       val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[List[Foo]]
-      val endpoint = derive(Api).from[Id]((name, sortByAge) => List(Foo(name)))
+      val endpoint = derive[Option](Api).from((name, sortByAge) => Some(List(Foo(name))))
       val served   = toList(endpoint)
 
       val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq = EndpointRequest("GET", req.uri, req.queries, req.headers)
 
-      served.head(req, eReq) === Right(TestResponse("List(Foo(joe))"))
+      served.head(req, eReq) === Right(TestResponse("Some(List(Foo(joe)))"))
     }
 
     "serve single endpoint and with body" >> {
       val Api      = := :> "find" :> "user" :> Segment[String]('name) :> ReqBody[Foo] :> Post[List[Foo]]
-      val endpoint = derive(Api).from[Id]((name, body) => List(Foo(name), body))
+      val endpoint = derive[Option](Api).from((name, body) => Some(List(Foo(name), body)))
       val served   = toList(endpoint)
 
       val req  = TestRequestWithBody(List("find", "user", "joe"), Map.empty, Map.empty, Foo("jim"))
       val eReq = EndpointRequest("POST", req.uri, req.queries, req.headers)
 
-      served.head(req, eReq) === Right(TestResponse("List(Foo(joe), Foo(jim))"))
+      served.head(req, eReq) === Right(TestResponse("Some(List(Foo(joe), Foo(jim)))"))
     }
 
     "serve multiple endpoints" >> {
@@ -79,10 +79,10 @@ final class ServeAndMountSpec extends Specification {
         (:= :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[List[Foo]]) :|:
         (:= :> "create" :> "user" :> ReqBody[Foo] :> Post[Foo])
 
-      def find(name: String, age: Int): Id[List[Foo]] = List(Foo(name))
-      def create(foo: Foo): Id[Foo] = foo
+      def find(name: String, age: Int): Option[List[Foo]] = Some(List(Foo(name)))
+      def create(foo: Foo): Option[Foo] = Some(foo)
 
-      val endpoints = derive(Api).from[Id] {
+      val endpoints = deriveAll[Option](Api).from {
         find _ :|:
         create _ :|: =:
       }
@@ -92,7 +92,7 @@ final class ServeAndMountSpec extends Specification {
       val req  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq = EndpointRequest("GET", req.uri, req.queries, req.headers)
 
-      served.head(req, eReq) === Right(TestResponse("List(Foo(joe))"))
+      served.head(req, eReq) === Right(TestResponse("Some(List(Foo(joe)))"))
     }
   }
 }

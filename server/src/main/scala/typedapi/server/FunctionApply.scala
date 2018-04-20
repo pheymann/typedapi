@@ -5,124 +5,106 @@ import shapeless._
 import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("""Could not find FunctionApply instance. Support max arity is 8. If you need more implement this type-class.
+@implicitNotFound("""Could not find FunctionApply instance. Support max arity is 8. If you need more implement an instance for this type-class.
 
 input: ${VIn}
 out: ${Out}""")
-trait FunctionApply[VIn <: HList, Out] {
+trait FunctionApply[VIn <: HList, F[_], Out] {
 
-  type Fun[_[_]]
+  type Fn
 
-  def apply[F[_]](in: VIn, f: Fun[F]): F[Out]
+  def apply(in: VIn, f: Fn): F[Out]
 }
 
 object FunctionApply {
 
-  type Aux[VIn <: HList, Fun0[_[_]], Out] = FunctionApply[VIn, Out] {
-    type Fun[F[_]] = Fun0[F]
+  type Aux[VIn <: HList, Fn0, F[_], Out] = FunctionApply[VIn, F, Out] {
+    type Fn = Fn0
   }
 
 }
 
 trait FunctionApplyLowPrio {
 
-  final class Function0[Out] extends FunctionApply[HNil, Out] {
-    type Fun[F[_]] = () => F[Out]
+  implicit def funApply0[F[_], Out] = new FunctionApply[HNil, F, Out] {
+    type Fn = () => F[Out]
 
-    def apply[F[_]](in: HNil, f: Fun[F]): F[Out] = f()
+    def apply(in: HNil, fn: Fn): F[Out] = fn()
   }
 
-  implicit def funApply0[Out] = new Function0[Out]
+  implicit def funApply1[A, F[_], Out] = new FunctionApply[A :: HNil, F, Out] {
+    type Fn = A => F[Out]
 
-  final class Function1[A, Out] extends FunctionApply[A :: HNil, Out] {
-    type Fun[F[_]] = A => F[Out]
-
-    def apply[F[_]](in: A :: HNil, f: Fun[F]): F[Out] = f(in.head)
+    def apply(in: A :: HNil, fn: Fn): F[Out] = fn(in.head)
   }
 
-  implicit def funApply1[A, Out] = new Function1[A, Out]
+  implicit def funApply2[A, B, F[_], Out] = new FunctionApply[A :: B :: HNil, F, Out] {
+    type Fn = (A, B) => F[Out]
 
-  final class Function2[A, B, Out] extends FunctionApply[A :: B :: HNil, Out] {
-    type Fun[F[_]] = (A, B) => F[Out]
-
-    def apply[F[_]](in: A :: B :: HNil, f: Fun[F]): F[Out] = {
+    def apply(in: A :: B :: HNil, fn: Fn): F[Out] = {
       val a :: b :: HNil = in
 
-      f(a, b)
+      fn(a, b)
     }
   }
 
-  implicit def funApply2[A, B, Out] = new Function2[A, B, Out]
+  implicit def funApply3[A, B, C, F[_], Out] = new FunctionApply[A :: B :: C :: HNil, F, Out] {
+    type Fn = (A, B, C) => F[Out]
 
-  final class Function3[A, B, C, Out] extends FunctionApply[A :: B :: C :: HNil, Out] {
-    type Fun[F[_]] = (A, B, C) => F[Out]
-
-    def apply[F[_]](in: A :: B :: C :: HNil, f: Fun[F]): F[Out] = {
+    def apply(in: A :: B :: C :: HNil, fn: Fn): F[Out] = {
       val a :: b :: c :: HNil = in
 
-      f(a, b, c)
+      fn(a, b, c)
     }
   }
 
-  implicit def funApply3[A, B, C, Out] = new Function3[A, B, C, Out]
+  implicit def funApply4[A, B, C, D, F[_], Out] = new FunctionApply[A :: B :: C :: D :: HNil, F, Out] {
+    type Fn = (A, B, C, D) => F[Out]
 
-  final class Function4[A, B, C, D, Out] extends FunctionApply[A :: B :: C :: D :: HNil, Out] {
-    type Fun[F[_]] = (A, B, C, D) => F[Out]
-
-    def apply[F[_]](in: A :: B :: C :: D :: HNil, f: Fun[F]): F[Out] = {
+    def apply(in: A :: B :: C :: D :: HNil, fn: Fn): F[Out] = {
       val a :: b :: c :: d :: HNil = in
 
-      f(a, b, c, d)
+      fn(a, b, c, d)
     }
   }
 
-  implicit def funApply4[A, B, C, D, Out] = new Function4[A, B, C, D, Out]
+  implicit def funApply5[A, B, C, D, E, F[_], Out] = new FunctionApply[A :: B :: C :: D :: E :: HNil, F, Out] {
+    type Fn = (A, B, C, D, E) => F[Out]
 
-  final class Function5[A, B, C, D, E, Out] extends FunctionApply[A :: B :: C :: D :: E :: HNil, Out] {
-    type Fun[F[_]] = (A, B, C, D, E) => F[Out]
-
-    def apply[F[_]](in: A :: B :: C :: D :: E :: HNil, f: Fun[F]): F[Out] = {
+    def apply(in: A :: B :: C :: D :: E :: HNil, fn: Fn): F[Out] = {
       val a :: b :: c :: d :: e :: HNil = in
 
-      f(a, b, c, d, e)
+      fn(a, b, c, d, e)
     }
   }
 
-  implicit def funApply5[A, B, C, D, E, Out] = new Function5[A, B, C, D, E, Out]
+  implicit def funApply6[A, B, C, D, E, F, _F[_], Out] = new FunctionApply[A :: B :: C :: D :: E :: F :: HNil, _F, Out] {
+    type Fn = (A, B, C, D, E, F) => _F[Out]
 
-  final class Function6[A, B, C, D, E, F, Out] extends FunctionApply[A :: B :: C :: D :: E :: F :: HNil, Out] {
-    type Fun[M[_]] = (A, B, C, D, E, F) => M[Out]
-
-    def apply[M[_]](in: A :: B :: C :: D :: E :: F :: HNil, _f: Fun[M]): M[Out] = {
+    def apply(in: A :: B :: C :: D :: E :: F :: HNil, fn: Fn): _F[Out] = {
       val a :: b :: c :: d :: e :: f :: HNil = in
 
-      _f(a, b, c, d, e, f)
+      fn(a, b, c, d, e, f)
     }
   }
 
-  implicit def funApply6[A, B, C, D, E, F, Out] = new Function6[A, B, C, D, E, F, Out]
+  implicit def funApply7[A, B, C, D, E, F, G, _F[_], Out] = new FunctionApply[A :: B :: C :: D :: E :: F :: G :: HNil, _F, Out] {
+    type Fn = (A, B, C, D, E, F, G) => _F[Out]
 
-  final class Function7[A, B, C, D, E, F, G, Out] extends FunctionApply[A :: B :: C :: D :: E :: F :: G :: HNil, Out] {
-    type Fun[M[_]] = (A, B, C, D, E, F, G) => M[Out]
+    def apply(in: A :: B :: C :: D :: E :: F :: G :: HNil, fn: Fn): _F[Out] = {
+      val a :: b :: c :: d :: e :: f :: g :: HNil = in
 
-    def apply[M[_]](in: A :: B :: C :: D :: E :: F :: G :: HNil, f: Fun[M]): M[Out] = {
-      val a :: b :: c :: d :: e :: _f :: g :: HNil = in
-
-      f(a, b, c, d, e, _f, g)
+      fn(a, b, c, d, e, f, g)
     }
   }
 
-  implicit def funApply7[A, B, C, D, E, F, G, Out] = new Function7[A, B, C, D, E, F, G, Out]
+  implicit def funApply8[A, B, C, D, E, F, G, H, _F[_], Out] = new FunctionApply[A :: B :: C :: D :: E :: F :: G :: H :: HNil, _F, Out] {
+    type Fn = (A, B, C, D, E, F, G, H) => _F[Out]
 
-  final class Function8[A, B, C, D, E, F, G, H, Out] extends FunctionApply[A :: B :: C :: D :: E :: F :: G :: H :: HNil, Out] {
-    type Fun[M[_]] = (A, B, C, D, E, F, G, H) => M[Out]
-
-    def apply[M[_]](in: A :: B :: C :: D :: E :: F :: G :: H :: HNil, f: Fun[M]): M[Out] = {
+    def apply(in: A :: B :: C :: D :: E :: F :: G :: H :: HNil, fn: Fn): _F[Out] = {
       val a :: b :: c :: d :: e :: _f :: g :: h :: HNil = in
 
-      f(a, b, c, d, e, _f, g, h)
+      fn(a, b, c, d, e, _f, g, h)
     }
   }
-
-  implicit def funApply8[A, B, C, D, E, F, G, H, Out] = new Function8[A, B, C, D, E, F, G, H, Out]
 }

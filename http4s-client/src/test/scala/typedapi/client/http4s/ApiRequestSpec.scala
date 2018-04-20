@@ -100,7 +100,7 @@ final class ApiRequestSpec extends Specification {
     "composed api" >> {
       import typedapi.dsl._
 
-      val (a :|: b :|: =:) = derive(
+      val (a :|: b :|: =:) = deriveAll(
         (:= :> "path" :> Get[User]) :|:
         (:= :> "segment" :> Segment[String]('name) :> Get[User])
       )

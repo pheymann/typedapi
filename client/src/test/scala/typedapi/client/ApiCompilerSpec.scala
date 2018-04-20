@@ -86,7 +86,7 @@ final class ApiCompilerSpec extends Specification {
         (:= :> "fetch" :> Segment[String]('type) :> Get[ReqInput]) :|:
         (:= :> "store" :> ReqBody[Int] :> Post[ReqInputWithBody[Int]])
 
-      val (find :|: fetch :|: store :|: =:) = derive(api)
+      val (find :|: fetch :|: store :|: =:) = deriveAll(api)
 
       find().run[Id](cm) === ReqInput("GET", "find" :: Nil, Map(), Map())
       fetch("all").run[Id](cm) === ReqInput("GET", "fetch" :: "all" :: Nil, Map(), Map())

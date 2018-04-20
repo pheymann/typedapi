@@ -21,9 +21,9 @@ package object client extends HListToCompositionLowPrio
                                                                                                   inToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, Out, D]]): inToFn.Out = 
     inToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, Out, D](compiler, input))
 
-  def derive[H <: HList, In <: HList, Fold <: HList, HL <: HList, Out <: HList](apiLists: CompositionCons[H])
-                                                                               (implicit folders: TypeLevelFoldLeftList.Aux[H, Fold],
-                                                                                         compilers: ApiCompilerList.Aux[Fold, HL], 
-                                                                                         composition: HListToComposition[HL]): composition.Out =
+  def deriveAll[H <: HList, In <: HList, Fold <: HList, HL <: HList, Out <: HList](apiLists: CompositionCons[H])
+                                                                                  (implicit folders: TypeLevelFoldLeftList.Aux[H, Fold],
+                                                                                            compilers: ApiCompilerList.Aux[Fold, HL], 
+                                                                                            composition: HListToComposition[HL]): composition.Out =
     composition(compilers.compilers)
 }
