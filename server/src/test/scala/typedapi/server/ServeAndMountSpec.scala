@@ -17,33 +17,33 @@ final class ServeAndMountSpec extends Specification {
 
   case class TestResponse(raw: String)
 
-  implicit def execNoBodyId[El <: HList, In <: HList, CIn <: HList, FOut] = 
-    new NoReqBodyExecutor[El, In, CIn, Id, FOut] {
+  implicit def execNoBodyId[El <: HList, KIn <: HList, VIn <: HList, FOut] = 
+    new NoReqBodyExecutor[El, KIn, VIn, Id, FOut] {
       type R = Req
       type Out = TestResponse
 
-      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, In, CIn, CIn, Id, FOut]): Either[ExtractionError, Out] =
+      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, VIn, Id, FOut]): Either[ExtractionError, Out] =
         extract(eReq, endpoint).right.map { extracted => 
           TestResponse(execute(extracted, endpoint).toString())
         }
     }
 
-  implicit def execWithBody[El <: HList, In <: HList, Bd , ROut <: HList, POut <: HList, CIn <: HList, FOut](implicit _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], _eqProof: POut =:= CIn) = 
-    new ReqBodyExecutor[El, In, Bd, ROut, POut, CIn, Id, FOut] {
+  implicit def execWithBody[El <: HList, KIn <: HList, VIn <: HList, Bd , ROut <: HList, POut <: HList, FOut](implicit _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], _eqProof: POut =:= VIn) = 
+    new ReqBodyExecutor[El, KIn, VIn, Bd, ROut, POut, Id, FOut] {
       type R = Req
       type Out = TestResponse
 
       implicit val prepend = _prepend
       implicit def eqProof = _eqProof
 
-      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, In, (BodyType[Bd], ROut), CIn, Id, FOut]): Either[ExtractionError, Out] =
+      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, (BodyType[Bd], ROut), Id, FOut]): Either[ExtractionError, Out] =
         extract(eReq, endpoint).right.map { case (_, extracted) => 
           TestResponse(execute(extracted, req.asInstanceOf[TestRequestWithBody[Bd]].body, endpoint).toString())
         }
     }
 
-  def toList[El <: HList, In <: HList, ROut, CIn <: HList, F[_], FOut](endpoint: Endpoint[El, In, ROut, CIn, F, FOut])
-                                                                      (implicit executor: EndpointExecutor[El, In, ROut, CIn, F, FOut]): List[Serve[executor.R, executor.Out]] = 
+  def toList[El <: HList, KIn <: HList, VIn <: HList, ROut, F[_], FOut](endpoint: Endpoint[El, KIn, VIn, ROut, F, FOut])
+                                                                       (implicit executor: EndpointExecutor[El, KIn, VIn, ROut, F, FOut]): List[Serve[executor.R, executor.Out]] = 
     List(new Serve[executor.R, executor.Out] {
       def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
     })
