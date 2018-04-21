@@ -25,4 +25,4 @@
  val endpoints = deriveAll[IO](ApiList).from(...)
  ```
  
- - major changes were applied to the internal code to reach a stable state (see #13)
+ - major changes were applied to the internal code to reach a stable state (see [this PR](https://github.com/pheymann/typedapi/pull/13))
