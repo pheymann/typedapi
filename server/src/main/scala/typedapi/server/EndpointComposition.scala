@@ -2,6 +2,7 @@ package typedapi.server
 
 import typedapi.shared._
 import shapeless._
+import shapeless.ops.function._
 
 import scala.language.higherKinds
 import scala.annotation.implicitNotFound
@@ -45,21 +46,25 @@ trait PrecompileEndpointLowPrio {
     val constructors = HNil
   }
 
-  implicit def constructorsCase[F[_], El <: HList, KIn <: HList, VIn <: HList, Out, ROut, T <: HList](implicit extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
-                                                                                                              fnApply: FunctionApply[VIn, F, Out], 
-                                                                                                              next: PrecompileEndpoint[F, T]) = new PrecompileEndpoint[F, (El, KIn, VIn, Out) :: T] {
-    type Fn    = fnApply.Fn
-    type Fns   = Fn :: next.Fns
-    type Consts = EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out] :: next.Consts
+  implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, Out, ROut, T <: HList]
+    (implicit extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut],
+              inToFn: FnFromProduct.Aux[VIn => F[Out], Fn],
+              fnToIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]],
+              next: PrecompileEndpoint[F, T]) =
+    new PrecompileEndpoint[F, (El, KIn, VIn, Out) :: T] {
+      type Fns    = Fn :: next.Fns
+      type Consts = EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out] :: next.Consts
 
-    val constructor = new EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out] {
-      def apply(fn: Fn): Endpoint[El, KIn, VIn, ROut, F, Out] = new Endpoint[El, KIn, VIn, ROut, F, Out](extractor) {
-        def apply(in: VIn): F[Out] = fnApply(in, fn)
+      val constructor = new EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out] {
+        def apply(fn: Fn): Endpoint[El, KIn, VIn, ROut, F, Out] = new Endpoint[El, KIn, VIn, ROut, F, Out](extractor) {
+          private val fin = fnToIn.value(fn)
+
+          def apply(in: VIn): F[Out] = fin(in)
+        }
       }
-    }
 
-    val constructors = constructor :: next.constructors
-  }
+      val constructors = constructor :: next.constructors
+    }
 }
 
 final case class FunctionComposition[Fns <: HList](fns: Fns) {

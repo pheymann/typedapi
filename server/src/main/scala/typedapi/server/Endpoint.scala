@@ -2,6 +2,7 @@ package typedapi.server
 
 import typedapi.shared._
 import shapeless._
+import shapeless.ops.function._
 
 import scala.language.higherKinds
 
@@ -20,7 +21,7 @@ final case class EndpointRequest(method: String,
 final class ExecutableDerivation[F[_]] {
 
   final class Derivation[El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, Out](extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
-                                                                                 fnApply: FunctionApply.Aux[VIn, Fn, F, Out]) {
+                                                                                 fnToIn: FnToProduct.Aux[Fn, VIn => F[Out]]) {
 
     /** Restricts type of parameter `f` to a function defined by the given API:
       * 
@@ -32,15 +33,19 @@ final class ExecutableDerivation[F[_]] {
       * 
       * Generates an `Endpoint` from `f`, the extractor and `FunctionApply` instance.
       */
-    def from(f: Fn): Endpoint[El, KIn, VIn, ROut, F, Out] =
+    def from(fn: Fn): Endpoint[El, KIn, VIn, ROut, F, Out] =
       new Endpoint[El, KIn, VIn, ROut, F, Out](extractor) {
-        def apply(in: VIn): F[Out] = fnApply(in, f)
+        private val fin = fnToIn(fn)
+
+        def apply(in: VIn): F[Out] = fin(in)
       }
   }
 
   def apply[H <: HList, Fold, El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, Out](apiList: ApiTypeCarrier[H])
-                                                                                 (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
-                                                                                           ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
-                                                                                           extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut],
-                                                                                           fnApply: Lazy[FunctionApply.Aux[VIn, Fn, F, Out]]): Derivation[El, KIn, VIn, ROut, Fn, Out] = new Derivation[El, KIn, VIn, ROut, Fn, Out](extractor, fnApply.value)
+                                                                                     (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
+                                                                                               ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
+                                                                                               extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut],
+                                                                                               inToFn: Lazy[FnFromProduct.Aux[VIn => F[Out], Fn]],
+                                                                                               fnToIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, ROut, Fn, Out] = 
+    new Derivation[El, KIn, VIn, ROut, Fn, Out](extractor, fnToIn.value)
 }

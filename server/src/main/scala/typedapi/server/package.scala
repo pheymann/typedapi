@@ -9,7 +9,6 @@ import scala.language.higherKinds
 package object server extends TypeLevelFoldLeftLowPrio 
                       with TypeLevelFoldLeftListLowPrio 
                       with ApiTransformer 
-                      with FunctionApplyLowPrio 
                       with ValueExtractorInstances 
                       with RouteExtractorMediumPrio
                       with FoldResultEvidenceLowPrio
