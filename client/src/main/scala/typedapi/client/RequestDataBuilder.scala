@@ -87,13 +87,15 @@ trait RequestDataBuilderLowPrio {
 
   type Data                       = List[String] :: Map[String, List[String]] :: Map[String, String] :: HNil
   type DataWithBody[Bd]           = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
-  type RequestData[R, D <: HList] = FieldType[R, D] :: HNil
+  type RequestData[R, D <: HList] = FieldType[R, D]
 
   implicit def getCompiler[A] = new RequestDataBuilder[GetCall :: HNil, HNil, HNil, A] {
     type Out = RequestData[GetCall, Data]
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      field[GetCall](uri.result() :: queries :: headers :: HNil) :: HNil
+      val out = field[GetCall](uri.result() :: queries :: headers :: HNil)
+
+      out
     }
   }
 
@@ -101,7 +103,9 @@ trait RequestDataBuilderLowPrio {
     type Out = RequestData[PutCall, Data]
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      field[PutCall](uri.result() :: queries :: headers :: HNil) :: HNil
+      val out = field[PutCall](uri.result() :: queries :: headers :: HNil)
+
+      out
     }
   }
 
@@ -109,7 +113,9 @@ trait RequestDataBuilderLowPrio {
     type Out = RequestData[PutWithBodyCall[Bd], DataWithBody[Bd]]
 
     def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      field[PutWithBodyCall[Bd]](uri.result() :: queries :: headers :: inputs.head :: HNil) :: HNil
+      val out = field[PutWithBodyCall[Bd]](uri.result() :: queries :: headers :: inputs.head :: HNil)
+
+      out
     }
   }
 
@@ -117,7 +123,9 @@ trait RequestDataBuilderLowPrio {
     type Out = RequestData[PostCall, Data]
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      field[PostCall](uri.result() :: queries :: headers :: HNil) :: HNil
+      val out = field[PostCall](uri.result() :: queries :: headers :: HNil)
+
+      out
     }
   }
 
@@ -125,7 +133,9 @@ trait RequestDataBuilderLowPrio {
     type Out = RequestData[PostWithBodyCall[Bd], DataWithBody[Bd]]
 
     def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      field[PostWithBodyCall[Bd]](uri.result() :: queries :: headers :: inputs.head :: HNil) :: HNil
+      val out = field[PostWithBodyCall[Bd]](uri.result() :: queries :: headers :: inputs.head :: HNil)
+
+      out
     }
   }
 
@@ -133,7 +143,9 @@ trait RequestDataBuilderLowPrio {
     type Out = RequestData[DeleteCall, Data]
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      field[DeleteCall](uri.result() :: queries :: headers :: HNil) :: HNil
+      val out = field[DeleteCall](uri.result() :: queries :: headers :: HNil)
+
+      out
     }
   }
 }
