@@ -27,7 +27,7 @@ trait RouteExtractor[El <: HList, KIn <: HList, VIn <: HList, EIn <: HList] {
   def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Either[ExtractionError, Out]
 }
 
-object RouteExtractor {
+object RouteExtractor extends RouteExtractorMediumPrio {
 
   type Aux[El <: HList, KIn <: HList, VIn <: HList, EIn <: HList, Out0] = RouteExtractor[El, KIn, VIn, EIn] { type Out = Out0 }
 
@@ -230,6 +230,8 @@ sealed trait ValueExtractor[A] extends (String => Option[A]) {
 
   def typeDesc: String
 }
+
+object ValueExtractor extends ValueExtractorInstances
 
 trait ValueExtractorInstances {
 

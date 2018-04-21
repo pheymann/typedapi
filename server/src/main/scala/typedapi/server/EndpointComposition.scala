@@ -15,7 +15,6 @@ trait EndpointConstructor[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, ROu
 
 /** Compiles RouteExtractor and FunApply for every API endpoint and generates expected list of endpoint functions. */
 @implicitNotFound("""Could not precompile your API. This can happen when:
-  - you defined an endpoint function with an arity larger than the biggest supported one (FunctionApply.scala)
   - you try to extract an value from the route which is not supported (ValueExtractor in RouteExtractor.scala)
  
 transformed: ${H}""")
@@ -29,7 +28,7 @@ sealed trait PrecompileEndpoint[F[_], H <: HList] {
   def constructors: Consts
 }
 
-object PrecompileEndpoint {
+object PrecompileEndpoint extends PrecompileEndpointLowPrio {
 
   type Aux[F[_], H <: HList, Fns0 <: HList, Consts0 <: HList] = PrecompileEndpoint[F, H] {
     type Fns   = Fns0
@@ -48,8 +47,8 @@ trait PrecompileEndpointLowPrio {
 
   implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, Out, ROut, T <: HList]
     (implicit extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut],
-              inToFn: FnFromProduct.Aux[VIn => F[Out], Fn],
-              fnToIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]],
+              vinToFn: FnFromProduct.Aux[VIn => F[Out], Fn],
+              fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]],
               next: PrecompileEndpoint[F, T]) =
     new PrecompileEndpoint[F, (El, KIn, VIn, Out) :: T] {
       type Fns    = Fn :: next.Fns
@@ -57,7 +56,7 @@ trait PrecompileEndpointLowPrio {
 
       val constructor = new EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out] {
         def apply(fn: Fn): Endpoint[El, KIn, VIn, ROut, F, Out] = new Endpoint[El, KIn, VIn, ROut, F, Out](extractor) {
-          private val fin = fnToIn.value(fn)
+          private val fin = fnToVIn.value(fn)
 
           def apply(in: VIn): F[Out] = fin(in)
         }
@@ -77,8 +76,7 @@ object =: {
   def :|:[Fn](fn: Fn): FunctionComposition[Fn :: HNil] = FunctionComposition(fn :: HNil)
 }
 
-@implicitNotFound("""Could not merge constructors API with your endpoint functions. This can happen when you forget to provide implicits needed by
-the executor, e.g. encoders/decoders.
+@implicitNotFound("""Whoops, you should not be here. This seems to be a bug.
 
 constructors: ${Consts}
 functions: ${Fns}""")
@@ -89,7 +87,7 @@ sealed trait MergeToEndpoint[F[_], Consts <: HList, Fns <: HList] {
   def apply(constructors: Consts, fns: Fns): Out
 }
 
-object MergeToEndpoint {
+object MergeToEndpoint extends MergeToEndpointLowPrio {
 
   type Aux[F[_], Consts <: HList, Fns <: HList, Out0 <: HList] = MergeToEndpoint[F, Consts, Fns] { type Out = Out0 }
 }
@@ -119,7 +117,7 @@ final class ExecutableCompositionDerivation[F[_]] {
 
   final class Derivation[H <: HList, Fns <: HList, Consts <: HList](pre: PrecompileEndpoint.Aux[F, H, Fns, Consts]) {
 
-    /** Restricts type of input parameter to a composition of functions defined by the precompile.
+    /** Restricts type of input parameter to a composition of functions defined by the precompile-stage.
       *
       * {{{
       * val Api =
@@ -128,7 +126,7 @@ final class ExecutableCompositionDerivation[F[_]] {
       * 
       * val f0: String => IO[User] = name => IO.pure(User(name))
       * val f1: String => IO[User] = name => IO.pure(User(name))
-      * link(Api).to[IO](f0 _ :|: f1 _ :|: =:)
+      * deriveAll[IO](Api).from(f0 _ :|: f1 _ :|: =:)
       * }}}
       */
     def from(comp: FunctionComposition[Fns])(implicit merge: MergeToEndpoint[F, Consts, Fns]): merge.Out =

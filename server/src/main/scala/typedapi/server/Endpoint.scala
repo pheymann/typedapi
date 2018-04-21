@@ -21,21 +21,19 @@ final case class EndpointRequest(method: String,
 final class ExecutableDerivation[F[_]] {
 
   final class Derivation[El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, Out](extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut], 
-                                                                                 fnToIn: FnToProduct.Aux[Fn, VIn => F[Out]]) {
+                                                                                 fnToVIn: FnToProduct.Aux[Fn, VIn => F[Out]]) {
 
-    /** Restricts type of parameter `f` to a function defined by the given API:
+    /** Restricts type of parameter `fn` to a function defined by the given API:
       * 
       * {{{
       * val Api = := :> Segment[String]('name) :> Get[User]
       * 
-      * link(Api).to[IO](name: String => IO.pure(User(name)))
+      * derive[IO](Api).from(name: String => IO.pure(User(name)))
       * }}}
-      * 
-      * Generates an `Endpoint` from `f`, the extractor and `FunctionApply` instance.
       */
     def from(fn: Fn): Endpoint[El, KIn, VIn, ROut, F, Out] =
       new Endpoint[El, KIn, VIn, ROut, F, Out](extractor) {
-        private val fin = fnToIn(fn)
+        private val fin = fnToVIn(fn)
 
         def apply(in: VIn): F[Out] = fin(in)
       }
@@ -46,6 +44,6 @@ final class ExecutableDerivation[F[_]] {
                                                                                                ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
                                                                                                extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut],
                                                                                                inToFn: Lazy[FnFromProduct.Aux[VIn => F[Out], Fn]],
-                                                                                               fnToIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, ROut, Fn, Out] = 
-    new Derivation[El, KIn, VIn, ROut, Fn, Out](extractor, fnToIn.value)
+                                                                                               fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, ROut, Fn, Out] = 
+    new Derivation[El, KIn, VIn, ROut, Fn, Out](extractor, fnToVIn.value)
 }
