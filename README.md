@@ -37,9 +37,7 @@ import typedapi.client._
 
 val (fetch :|: create :|: =:) = deriveAll(MyApi)
 
-import typedapi.client.http4s._
-import cats.effect.IO
-import org.http4s.client.blaze.Http1Client
+import typedapi.client.http4s._; import cats.effect.IO; import org.http4s.client.blaze.Http1Client
 
 val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://my-host", 8080)
 
