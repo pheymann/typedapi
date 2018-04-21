@@ -1,5 +1,6 @@
 package typedapi.client
 
+import RequestDataBuilder.{RequestData, Data, DataWithBody}
 import typedapi.shared._
 import shapeless._
 

@@ -25,6 +25,8 @@ sealed trait HListToComposition[H <: HList] {
   def apply(h: H): Out
 }
 
+object HListToComposition extends HListToCompositionLowPrio
+
 trait HListToCompositionLowPrio {
 
   implicit val hnilComposition = new HListToComposition[HNil] {
@@ -34,12 +36,12 @@ trait HListToCompositionLowPrio {
   }
 
   implicit def consComposition[El <: HList, KIn <: HList, VIn <: HList, O, D <: HList, T <: HList](implicit next: HListToComposition[T],
-                                                                                                            inToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, O, D]]) = 
-    new HListToComposition[ApiCompiler.Aux[El, KIn, VIn, O, D] :: T] {
-      type Out = :|:[inToFn.Out, next.Out]
+                                                                                                            vinToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, O, D]]) = 
+    new HListToComposition[RequestDataBuilder.Aux[El, KIn, VIn, O, D] :: T] {
+      type Out = :|:[vinToFn.Out, next.Out]
 
-      def apply(comps: ApiCompiler.Aux[El, KIn, VIn, O, D] :: T): Out = {
-        val fn = inToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, O, D](comps.head, input))
+      def apply(comps: RequestDataBuilder.Aux[El, KIn, VIn, O, D] :: T): Out = {
+        val fn = vinToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, O, D](comps.head, input))
 
         :|:(fn, next(comps.tail))
       }

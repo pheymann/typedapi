@@ -6,7 +6,7 @@ import typedapi.client.test._
 import shapeless.Id
 import org.specs2.mutable.Specification
 
-final class ApiCompilerSpec extends Specification {
+final class RequestDataBuilderSpec extends Specification {
 
   case class Foo()
 
