@@ -1,6 +1,7 @@
 package typedapi.client
 
 import shapeless._
+import shapeless.ops.function.FnFromProduct
 
 /** Syntactic sugar to enable:
   *   val api = (:= "foo" :> Get[Foo]) :|: (:= "bar" :> Get[Bar])
@@ -9,11 +10,11 @@ import shapeless._
   */
 sealed trait ApiComposition
 
-final case class :|:[El <: HList, In <: HList, O, D <: HList, T <: ApiComposition](compiler: ApiCompiler.Aux[El, In, O, D], tail: T) extends ApiComposition
+final case class :|:[Fn, T <: ApiComposition](fn: Fn, tail: T) extends ApiComposition
 
 case object =: extends ApiComposition {
 
-  def :|:[El <: HList, In <: HList, O, D <: HList](compiler: ApiCompiler.Aux[El, In, O, D]) = typedapi.client.:|:(compiler, this)
+  def :|:[Fn](fn: Fn) = typedapi.client.:|:(fn, this)
 }
 
 /** Transform apis composed in a HList into ApiComposition representation. */
@@ -24,6 +25,8 @@ sealed trait HListToComposition[H <: HList] {
   def apply(h: H): Out
 }
 
+object HListToComposition extends HListToCompositionLowPrio
+
 trait HListToCompositionLowPrio {
 
   implicit val hnilComposition = new HListToComposition[HNil] {
@@ -32,10 +35,15 @@ trait HListToCompositionLowPrio {
     def apply(h: HNil): Out = =:
   }
 
-  implicit def consComposition[El <: HList, In <: HList, O, D <: HList, T <: HList](implicit next: HListToComposition[T]) = new HListToComposition[ApiCompiler.Aux[El, In, O, D] :: T] {
+  implicit def consComposition[El <: HList, KIn <: HList, VIn <: HList, O, D <: HList, T <: HList](implicit next: HListToComposition[T],
+                                                                                                            vinToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, O, D]]) = 
+    new HListToComposition[RequestDataBuilder.Aux[El, KIn, VIn, O, D] :: T] {
+      type Out = :|:[vinToFn.Out, next.Out]
 
-    type Out = :|:[El, In, O, D, next.Out]
+      def apply(comps: RequestDataBuilder.Aux[El, KIn, VIn, O, D] :: T): Out = {
+        val fn = vinToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, O, D](comps.head, input))
 
-    def apply(h: ApiCompiler.Aux[El, In, O, D] :: T): Out = :|:(h.head, next(h.tail))
-  }
+        :|:(fn, next(comps.tail))
+      }
+    }
 }

@@ -35,15 +35,13 @@ val MyApi =
 ```Scala
 import typedapi.client._
 
-val (fetch :|: create :|: =:) = compile(MyApi)
+val (fetch :|: create :|: =:) = deriveAll(MyApi)
 
-import typedapi.client.http4s._
-import cats.effect.IO
-import org.http4s.client.blaze.Http1Client
+import typedapi.client.http4s._; import cats.effect.IO; import org.http4s.client.blaze.Http1Client
 
-implicit val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://my-host", 8080)
+val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://my-host", 8080)
 
-fetch("joe").run[IO]: IO[User]
+fetch("joe").run[IO](cm): IO[User]
 ```
 
 ### Server side
@@ -53,11 +51,9 @@ import typedapi.server._
 val fetch: String => IO[User] = name => ???
 val create: User => IO[User] = user => ???
 
-val endpoints = link(MyApi).to[IO](fetch :|: create :|: =:)
+val endpoints = deriveAll(MyApi).from[IO](fetch :|: create :|: =:)
 
-import typedapi.server.http4s._
-import cats.effect.IO
-import org.http4s.server.blaze.BlazeBuilder
+import typedapi.server.http4s._; import cats.effect.IO; import org.http4s.server.blaze.BlazeBuilder
 
 val sm     = ServerManager(BlazeBuilder[IO], "http://my-host", 8080)
 val server = mount(sm, endpoints)

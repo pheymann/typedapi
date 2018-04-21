@@ -14,6 +14,8 @@ sealed trait ServeToList[H <: HList, Req, Resp] {
   def apply(h: H): List[Serve[Req, Resp]]
 }
 
+object ServeToList extends ServeToListLowPrio
+
 trait ServeToListLowPrio {
 
   implicit def hnilToList[Req, Resp] = new ServeToList[HNil, Req, Resp] {

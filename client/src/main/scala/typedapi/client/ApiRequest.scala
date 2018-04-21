@@ -1,5 +1,6 @@
 package typedapi.client
 
+import RequestDataBuilder.{RequestData, Data, DataWithBody}
 import typedapi.shared._
 import shapeless._
 
@@ -19,7 +20,7 @@ context: ${F}""")
 trait GetRequest[C, F[_], A] extends ApiRequest[RequestData[GetCall, Data], C, F, A] {
 
   def apply(data: RequestData[GetCall, Data], cm: ClientManager[C]): F[A] = {
-    val ((uri :: queries :: headers :: HNil) :: HNil): Data :: HNil = data
+    val (uri :: queries :: headers :: HNil): Data = data
 
     apply(uri, queries, headers, cm)
   }
@@ -33,7 +34,7 @@ context: ${F}""")
 trait PutRequest[C, F[_], A] extends ApiRequest[RequestData[PutCall, Data], C, F, A] {
 
   def apply(data: RequestData[PutCall, Data], cm: ClientManager[C]): F[A] = {
-    val ((uri :: queries :: headers :: HNil) :: HNil): Data :: HNil = data
+    val (uri :: queries :: headers :: HNil): Data = data
 
     apply(uri, queries, headers, cm)
   }
@@ -48,7 +49,7 @@ context: ${F}""")
 trait PutWithBodyRequest[C, F[_], Bd, A] extends ApiRequest[RequestData[PutWithBodyCall[Bd], DataWithBody[Bd]], C, F, A] {
 
   def apply(data: RequestData[PutWithBodyCall[Bd], DataWithBody[Bd]], cm: ClientManager[C]): F[A] = {
-    val ((uri :: queries :: headers :: body :: HNil) :: HNil): DataWithBody[Bd] :: HNil = data
+    val (uri :: queries :: headers :: body :: HNil): DataWithBody[Bd] = data
 
     apply(uri, queries, headers, body, cm)
   }
@@ -62,7 +63,7 @@ context: ${F}""")
 trait PostRequest[C, F[_], A] extends ApiRequest[RequestData[PostCall, Data], C, F, A] {
 
   def apply(data: RequestData[PostCall, Data], cm: ClientManager[C]): F[A] = {
-    val ((uri :: queries :: headers :: HNil) :: HNil): Data :: HNil = data
+    val (uri :: queries :: headers :: HNil): Data = data
 
     apply(uri, queries, headers, cm)
   }
@@ -77,7 +78,7 @@ context: ${F}""")
 trait PostWithBodyRequest[C, F[_], Bd, A] extends ApiRequest[RequestData[PostWithBodyCall[Bd], DataWithBody[Bd]], C, F, A] {
 
   def apply(data: RequestData[PostWithBodyCall[Bd], DataWithBody[Bd]], cm: ClientManager[C]): F[A] = {
-    val ((uri :: queries :: headers :: body :: HNil) :: HNil): DataWithBody[Bd] :: HNil = data
+    val (uri :: queries :: headers :: body :: HNil): DataWithBody[Bd] = data
 
     apply(uri, queries, headers, body, cm)
   }
@@ -91,7 +92,7 @@ context: ${F}""")
 trait DeleteRequest[C, F[_], A] extends ApiRequest[RequestData[DeleteCall, Data], C, F, A] {
 
   def apply(data: RequestData[DeleteCall, Data], cm: ClientManager[C]): F[A] = {
-    val ((uri :: queries :: headers :: HNil) :: HNil): Data :: HNil = data
+    val (uri :: queries :: headers :: HNil): Data = data
 
     apply(uri, queries, headers, cm)
   }

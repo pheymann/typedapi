@@ -21,10 +21,3 @@ To write your own server backend you have to implement the [EndpointExecutor](ht
 Take a look into [http4s-server](https://github.com/pheymann/typedapi/blob/master/http4s-server/src/main/scala/typedapi/server/http4s/package.scala) to get an idea how to do it.
 
 You can implement all type-classes or just a subset to override implementations provided by TypedApi.
-
-### Define APIs with more than 10 input elements
-Right Typedapi is only able to support API definitions with at most 10 input elements. This is because [ApiCompilerOps](https://github.com/pheymann/typedapi/blob/master/client/src/main/scala/typedapi/client/ops/ApiCompilerOps.scala) and [FunctionApply](https://github.com/pheymann/typedapi/blob/master/server/src/main/scala/typedapi/server/FunctionApply.scala) only provide instances up to arity 10.
-
-If you need more you just have to provide an instance of these type-classes and you are good to go.
-
-**Note**: I will consider adding a codegen macro in the future to generate `ApiCompilerOps` and `FunctionApply` with arity `n`.
