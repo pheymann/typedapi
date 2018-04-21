@@ -1,9 +1,7 @@
 ## Create a server from your API
-After we [defined](https://github.com/pheymann/typedapi/blob/master/docs/ApiDefinition.md) our API we have to compile it to an endpoint/set of endpoints we can mount and serve to the world.
+After we [defined](https://github.com/pheymann/typedapi/blob/master/docs/ApiDefinition.md) our API we have to derive the endpoint/set of endpoints we can mount and serve to the world.
 
-When I say "compile" I mean "let the Scala compiler connect the API to functions which reflect the API description".
-
-### First things first, link your API
+### First things first, derive the endpoints
 ```Scala
 import typedapi.server._
 
@@ -11,7 +9,7 @@ final case class User(name: String)
 
 val Api = := :> "my" :> "awesome" :> "api" :> Segment[String]('name) :> Get[User]
 
-val endpoint = link(Api).to[IO](name => ???)
+val endpoint = derive[IO](Api).from(name => ???)
 ```
 
 ### Http4s
@@ -50,7 +48,7 @@ val Api =
 def find(name: String): IO[User] = ???
 def create(user: User): IO[User] = ???
 
-val endpoints = link(Api).to(find _ :|: create _ :|: =:)
+val endpoints = deriveAll[IO](Api).from(find _ :|: create _ :|: =:)
 
 val builder = BlazeBuilder[IO]
 val cm      = ServerManager(builder, "http://my-host", myPort)
