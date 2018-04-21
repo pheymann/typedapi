@@ -55,9 +55,7 @@ val create: User => IO[User] = user => ???
 
 val endpoints = deriveAll(MyApi).from[IO](fetch :|: create :|: =:)
 
-import typedapi.server.http4s._
-import cats.effect.IO
-import org.http4s.server.blaze.BlazeBuilder
+import typedapi.server.http4s._; import cats.effect.IO; import org.http4s.server.blaze.BlazeBuilder
 
 val sm     = ServerManager(BlazeBuilder[IO], "http://my-host", 8080)
 val server = mount(sm, endpoints)
