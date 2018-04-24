@@ -51,7 +51,7 @@ import typedapi.server._
 val fetch: String => IO[User] = name => ???
 val create: User => IO[User] = user => ???
 
-val endpoints = deriveAll(MyApi).from[IO](fetch :|: create :|: =:)
+val endpoints = deriveAll[IO](MyApi).from(fetch :|: create :|: =:)
 
 import typedapi.server.http4s._; import cats.effect.IO; import org.http4s.server.blaze.BlazeBuilder
 
