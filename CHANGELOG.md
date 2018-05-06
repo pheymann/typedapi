@@ -1,3 +1,20 @@
+### 0.1.0-RC5 / Almost there
+ - changes to the client API:
+ ```Scala
+ val ApiList =
+   (:= :> Get[Foo]) :|:
+   (:= :> RequestBody[Foo] :> Put[Foo])
+   
+ // `:|:` removed for API compositions
+ val (get, put) = deriveAll(ApiList)
+ ```
+ 
+ - changes to the server API:
+ ```Scala
+ // same for endpoint compositions
+ val e = deriveAll[IO](ApiList).from(get, put)
+ ```
+
 ### 0.1.0-RC4 / Towards a stable API
  - changes to the client API:
  ```Scala
@@ -6,7 +23,7 @@
    (:= :> Get[Foo]) :|:
    (:= :> RequestBody[Foo] :> Put[Foo])
  
- // not compile, but
+ // not `compile`, but
  val foo = derive(Api)
  
  val (foo2 :|: bar :|: =:) = deriveAll(ApiList)
@@ -19,7 +36,7 @@
  
  - changes to the server API
  ```Scala
- // not link to, but
+ // not `link.to`, but
  val endpoint = derive[IO](Api).from(...)
  
  val endpoints = deriveAll[IO](ApiList).from(...)
