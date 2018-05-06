@@ -46,7 +46,7 @@ val Api =
   (:= :> "user" :> Segment[String]('name) :> Get[User]) :|:
   (:= :> "user" :> ReqBody[User] :> Put[User])
 
-val (find :|: create :|: =:) = deriveAll(Api)
+val (find, create) = deriveAll(Api)
 
 val client = Http1Client[IO]().unsafeRunSync
 val cm     = ClientManager(client, "http://my-host", myPort)

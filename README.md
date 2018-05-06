@@ -26,16 +26,16 @@ import typedapi._
 
 val MyApi =
   // GET /fetch/user?name=<>
-  (api(method = Get[User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name))) :|:
+  api(method = Get[User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name)) :|:
   // POST /create/user
-  (apiWithBody(method = Post[User], body = ReqBody[User], path = Root / "create" / "user"))
+  apiWithBody(method = Post[User], body = ReqBody[User], path = Root / "create" / "user")
 ```
 
 ### Client side
 ```Scala
 import typedapi.client._
 
-val (fetch :|: create :|: =:) = deriveAll(MyApi)
+val (fetch, create) = deriveAll(MyApi)
 
 import typedapi.client.http4s._; import cats.effect.IO; import org.http4s.client.blaze.Http1Client
 
@@ -51,7 +51,7 @@ import typedapi.server._
 val fetch: String => IO[User] = name => ???
 val create: User => IO[User] = user => ???
 
-val endpoints = deriveAll[IO](MyApi).from(fetch :|: create :|: =:)
+val endpoints = deriveAll[IO](MyApi).from(fetch, create)
 
 import typedapi.server.http4s._; import cats.effect.IO; import org.http4s.server.blaze.BlazeBuilder
 
