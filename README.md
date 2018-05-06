@@ -3,6 +3,8 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-shared_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-shared_2.12)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pheymann/Lobby)
 
+**RC5 should be available soon via Maven**
+
 # Typedapi
 Define type safe APIs and let the Scala compiler do the rest:
 
