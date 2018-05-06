@@ -4,7 +4,7 @@ import typedapi.client.http4s._
 
 object Client {
 
-  val (fetch :|: create :|: =:) = deriveAll(FromDsl.MyApi)
+  val (fetch, create) = deriveAll(FromDsl.MyApi)
 
   def main(args: Array[String]): Unit = {
     import User._

@@ -62,8 +62,8 @@ object TestServer {
   implicit val decoder = jsonOf[IO, User]
   implicit val encoder = jsonEncoderOf[IO, User]
 
-  val endpointsDsl = deriveAll[IO](ApiDsl).from((path, segment, query, header, raw, get, put, putB, post, postB, delete))
-  val endpointsDef = deriveAll[IO](ApiDef).from((path, segment, query, header, raw, get, put, putB, post, postB, delete))
+  val endpointsDsl = deriveAll[IO](ApiDsl).from(path, segment, query, header, raw, get, put, putB, post, postB, delete)
+  val endpointsDef = deriveAll[IO](ApiDef).from(path, segment, query, header, raw, get, put, putB, post, postB, delete)
 
   def startDsl(blaze: BlazeBuilder[IO]): IO[Server[IO]] = {
     val sm = ServerManager(blaze, "localhost", 9000)

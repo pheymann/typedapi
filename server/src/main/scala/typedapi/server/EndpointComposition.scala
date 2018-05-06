@@ -2,7 +2,6 @@ package typedapi.server
 
 import typedapi.shared._
 import shapeless._
-import shapeless.ops.hlist.Tupler
 import shapeless.ops.function._
 
 import scala.language.higherKinds
@@ -106,8 +105,9 @@ trait MergeToEndpointLowPrio {
 
 final class ExecutableCompositionDerivation[F[_]] {
 
-  final class Derivation[H <: HList, Fns <: HList, FnsTup, Consts <: HList](pre: PrecompileEndpoint.Aux[F, H, Fns, Consts], 
-                                                                            gen: Generic.Aux[FnsTup, Fns]) {
+  final class Derivation[H <: HList, Fns <: HList, Consts <: HList, Out <: HList, Drv](pre: PrecompileEndpoint.Aux[F, H, Fns, Consts], 
+                                                                                       merge: MergeToEndpoint.Aux[F, Consts, Fns, Out],
+                                                                                       derived: FnFromProduct.Aux[Fns => Out, Drv]) {
 
     /** Restricts type of input parameter to a composition of functions defined by the precompile-stage.
       *
@@ -118,17 +118,16 @@ final class ExecutableCompositionDerivation[F[_]] {
       * 
       * val f0: String => IO[User] = name => IO.pure(User(name))
       * val f1: String => IO[User] = name => IO.pure(User(name))
-      * deriveAll[IO](Api).from(f0 _ :|: f1 _ :|: =:)
+      * deriveAll[IO](Api).from(f0 _, f1 _)
       * }}}
       */
-    def from(fns: FnsTup)(implicit merge: MergeToEndpoint[F, Consts, Fns]): merge.Out =
-      merge(pre.constructors, gen.to(fns))
+    val from: Drv = derived.apply(fns => merge(pre.constructors, fns))
   }
 
-  def apply[H <: HList, Fold <: HList, Fns <: HList, FnsTup, Consts <: HList](apiLists: CompositionCons[H])
+  def apply[H <: HList, Fold <: HList, Fns <: HList, FnsTup, Consts <: HList, Out <: HList, Drv](apiLists: CompositionCons[H])
                                       (implicit folder: TypeLevelFoldLeftList.Aux[H, Fold],
                                                 pre: PrecompileEndpoint.Aux[F, Fold, Fns, Consts],
-                                                fnsTupled: Tupler.Aux[Fns, FnsTup],
-                                                gen: Generic.Aux[FnsTup, Fns]): Derivation[Fold, Fns, FnsTup, Consts] =
-    new Derivation[Fold, Fns, FnsTup, Consts](pre, gen)
+                                                merge: MergeToEndpoint.Aux[F, Consts, Fns, Out],
+                                                derived: FnFromProduct.Aux[Fns => Out, Drv]): Derivation[Fold, Fns, Consts, Out, Drv] =
+    new Derivation[Fold, Fns, Consts, Out, Drv](pre, merge, derived)
 }
