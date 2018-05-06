@@ -8,7 +8,7 @@ object Server {
   val fetch: String => IO[User] = name => IO.pure(User(name, 27))
   val create: User => IO[User] = user => IO.pure(user)
 
-  val endpoints = deriveAll[IO](FromDefinition.MyApi).from(fetch :|: create :|: =:)
+  val endpoints = deriveAll[IO](FromDefinition.MyApi).from(fetch, create)
 
   def main(args: Array[String]): Unit = {
     import org.http4s.server.blaze.BlazeBuilder

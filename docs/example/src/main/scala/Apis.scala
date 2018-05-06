@@ -16,7 +16,7 @@ object FromDefinition {
 
   val MyApi =
     // GET /fetch/user?name=<>
-    (api(method = Get[User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name))) :|:
+    api(method = Get[User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name)) :|:
     // POST /create/user
-    (apiWithBody(method = Post[User], body = ReqBody[User], path = Root / "create" / "user"))
+    apiWithBody(method = Post[User], body = ReqBody[User], path = Root / "create" / "user")
 }

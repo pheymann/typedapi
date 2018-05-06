@@ -82,10 +82,7 @@ final class ServeAndMountSpec extends Specification {
       def find(name: String, age: Int): Option[List[Foo]] = Some(List(Foo(name)))
       def create(foo: Foo): Option[Foo] = Some(foo)
 
-      val endpoints = deriveAll[Option](Api).from {
-        find _ :|:
-        create _ :|: =:
-      }
+      val endpoints = deriveAll[Option](Api).from(find _, create _)
 
       val served = toList(endpoints)
 

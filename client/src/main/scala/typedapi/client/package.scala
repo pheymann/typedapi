@@ -2,6 +2,7 @@ package typedapi
 
 import typedapi.shared._
 import shapeless._
+import shapeless.ops.hlist.Tupler
 import shapeless.ops.function.FnFromProduct
 
 package object client extends TypeLevelFoldLeftLowPrio 
@@ -18,9 +19,10 @@ package object client extends TypeLevelFoldLeftLowPrio
                                                                                                   inToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, Out, D]]): inToFn.Out = 
     inToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, Out, D](builder, input))
 
-  def deriveAll[H <: HList, In <: HList, Fold <: HList, HL <: HList, Out <: HList](apiLists: CompositionCons[H])
-                                                                                  (implicit folders: TypeLevelFoldLeftList.Aux[H, Fold],
-                                                                                            builderList: RequestDataBuilderList.Aux[Fold, HL], 
-                                                                                            composition: HListToComposition[HL]): composition.Out =
-    composition(builderList.builders)
+  def deriveAll[H <: HList, In <: HList, Fold <: HList, B <: HList, Ex <: HList](apiLists: CompositionCons[H])
+                                                                                (implicit folders: TypeLevelFoldLeftList.Aux[H, Fold],
+                                                                                          builderList: RequestDataBuilderList.Aux[Fold, B],
+                                                                                          executables: ExecutablesFromHList.Aux[B, Ex],
+                                                                                          tupler: Tupler[Ex]): tupler.Out =
+    executables(builderList.builders).tupled
 }

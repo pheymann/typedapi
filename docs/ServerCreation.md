@@ -48,7 +48,7 @@ val Api =
 def find(name: String): IO[User] = ???
 def create(user: User): IO[User] = ???
 
-val endpoints = deriveAll[IO](Api).from(find _ :|: create _ :|: =:)
+val endpoints = deriveAll[IO](Api).from(find, create)
 
 val builder = BlazeBuilder[IO]
 val cm      = ServerManager(builder, "http://my-host", myPort)

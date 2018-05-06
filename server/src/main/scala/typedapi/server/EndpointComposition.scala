@@ -66,16 +66,6 @@ trait PrecompileEndpointLowPrio {
     }
 }
 
-final case class FunctionComposition[Fns <: HList](fns: Fns) {
-
-  def :|:[Fn](fn: Fn): FunctionComposition[Fn :: Fns] = FunctionComposition(fn :: fns)
-}
-
-object =: {
-
-  def :|:[Fn](fn: Fn): FunctionComposition[Fn :: HNil] = FunctionComposition(fn :: HNil)
-}
-
 @implicitNotFound("""Whoops, you should not be here. This seems to be a bug.
 
 constructors: ${Consts}
@@ -115,7 +105,9 @@ trait MergeToEndpointLowPrio {
 
 final class ExecutableCompositionDerivation[F[_]] {
 
-  final class Derivation[H <: HList, Fns <: HList, Consts <: HList](pre: PrecompileEndpoint.Aux[F, H, Fns, Consts]) {
+  final class Derivation[H <: HList, Fns <: HList, Consts <: HList, Out <: HList, Drv](pre: PrecompileEndpoint.Aux[F, H, Fns, Consts], 
+                                                                                       merge: MergeToEndpoint.Aux[F, Consts, Fns, Out],
+                                                                                       derived: FnFromProduct.Aux[Fns => Out, Drv]) {
 
     /** Restricts type of input parameter to a composition of functions defined by the precompile-stage.
       *
@@ -126,15 +118,16 @@ final class ExecutableCompositionDerivation[F[_]] {
       * 
       * val f0: String => IO[User] = name => IO.pure(User(name))
       * val f1: String => IO[User] = name => IO.pure(User(name))
-      * deriveAll[IO](Api).from(f0 _ :|: f1 _ :|: =:)
+      * deriveAll[IO](Api).from(f0 _, f1 _)
       * }}}
       */
-    def from(comp: FunctionComposition[Fns])(implicit merge: MergeToEndpoint[F, Consts, Fns]): merge.Out =
-      merge(pre.constructors, comp.fns)
+    val from: Drv = derived.apply(fns => merge(pre.constructors, fns))
   }
 
-  def apply[H <: HList, Fold <: HList](apiLists: CompositionCons[H])
+  def apply[H <: HList, Fold <: HList, Fns <: HList, FnsTup, Consts <: HList, Out <: HList, Drv](apiLists: CompositionCons[H])
                                       (implicit folder: TypeLevelFoldLeftList.Aux[H, Fold],
-                                                pre: PrecompileEndpoint[F, Fold]): Derivation[Fold, pre.Fns, pre.Consts] =
-    new Derivation[Fold, pre.Fns, pre.Consts](pre)
+                                                pre: PrecompileEndpoint.Aux[F, Fold, Fns, Consts],
+                                                merge: MergeToEndpoint.Aux[F, Consts, Fns, Out],
+                                                derived: FnFromProduct.Aux[Fns => Out, Drv]): Derivation[Fold, Fns, Consts, Out, Drv] =
+    new Derivation[Fold, Fns, Consts, Out, Drv](pre, merge, derived)
 }
