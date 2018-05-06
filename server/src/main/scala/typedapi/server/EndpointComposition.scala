@@ -2,6 +2,7 @@ package typedapi.server
 
 import typedapi.shared._
 import shapeless._
+import shapeless.ops.hlist.Tupler
 import shapeless.ops.function._
 
 import scala.language.higherKinds
@@ -66,16 +67,6 @@ trait PrecompileEndpointLowPrio {
     }
 }
 
-final case class FunctionComposition[Fns <: HList](fns: Fns) {
-
-  def :|:[Fn](fn: Fn): FunctionComposition[Fn :: Fns] = FunctionComposition(fn :: fns)
-}
-
-object =: {
-
-  def :|:[Fn](fn: Fn): FunctionComposition[Fn :: HNil] = FunctionComposition(fn :: HNil)
-}
-
 @implicitNotFound("""Whoops, you should not be here. This seems to be a bug.
 
 constructors: ${Consts}
@@ -115,7 +106,8 @@ trait MergeToEndpointLowPrio {
 
 final class ExecutableCompositionDerivation[F[_]] {
 
-  final class Derivation[H <: HList, Fns <: HList, Consts <: HList](pre: PrecompileEndpoint.Aux[F, H, Fns, Consts]) {
+  final class Derivation[H <: HList, Fns <: HList, FnsTup, Consts <: HList](pre: PrecompileEndpoint.Aux[F, H, Fns, Consts], 
+                                                                            gen: Generic.Aux[FnsTup, Fns]) {
 
     /** Restricts type of input parameter to a composition of functions defined by the precompile-stage.
       *
@@ -129,12 +121,14 @@ final class ExecutableCompositionDerivation[F[_]] {
       * deriveAll[IO](Api).from(f0 _ :|: f1 _ :|: =:)
       * }}}
       */
-    def from(comp: FunctionComposition[Fns])(implicit merge: MergeToEndpoint[F, Consts, Fns]): merge.Out =
-      merge(pre.constructors, comp.fns)
+    def from(fns: FnsTup)(implicit merge: MergeToEndpoint[F, Consts, Fns]): merge.Out =
+      merge(pre.constructors, gen.to(fns))
   }
 
-  def apply[H <: HList, Fold <: HList](apiLists: CompositionCons[H])
+  def apply[H <: HList, Fold <: HList, Fns <: HList, FnsTup, Consts <: HList](apiLists: CompositionCons[H])
                                       (implicit folder: TypeLevelFoldLeftList.Aux[H, Fold],
-                                                pre: PrecompileEndpoint[F, Fold]): Derivation[Fold, pre.Fns, pre.Consts] =
-    new Derivation[Fold, pre.Fns, pre.Consts](pre)
+                                                pre: PrecompileEndpoint.Aux[F, Fold, Fns, Consts],
+                                                fnsTupled: Tupler.Aux[Fns, FnsTup],
+                                                gen: Generic.Aux[FnsTup, Fns]): Derivation[Fold, Fns, FnsTup, Consts] =
+    new Derivation[Fold, Fns, FnsTup, Consts](pre, gen)
 }
