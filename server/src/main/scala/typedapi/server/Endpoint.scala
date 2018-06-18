@@ -39,11 +39,10 @@ final class ExecutableDerivation[F[_]] {
       }
   }
 
-  def apply[H <: HList, Fold, El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, Out](apiList: ApiTypeCarrier[H])
-                                                                                     (implicit folder: TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), Fold],
-                                                                                               ev: FoldResultEvidence.Aux[Fold, El, KIn, VIn, Out],
-                                                                                               extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut],
-                                                                                               inToFn: Lazy[FnFromProduct.Aux[VIn => F[Out], Fn]],
-                                                                                               fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, ROut, Fn, Out] = 
+  def apply[H <: HList, El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, Out](apiList: ApiTypeCarrier[H])
+                                                                               (implicit folder: Lazy[TypeLevelFoldLeft.Aux[H, (HNil, HNil, HNil), (El, KIn, VIn, Out)]],
+                                                                                         extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut],
+                                                                                         inToFn: Lazy[FnFromProduct.Aux[VIn => F[Out], Fn]],
+                                                                                         fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, ROut, Fn, Out] = 
     new Derivation[El, KIn, VIn, ROut, Fn, Out](extractor, fnToVIn.value)
 }
