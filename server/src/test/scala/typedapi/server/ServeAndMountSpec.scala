@@ -1,7 +1,7 @@
 package typedapi.server
 
 import typedapi.dsl._
-import typedapi.shared.MethodCall
+import typedapi.shared.MethodType
 import shapeless.{HList, HNil, ::}
 import shapeless.ops.hlist.{Prepend, Mapper}
 import org.specs2.mutable.Specification
@@ -18,7 +18,7 @@ final class ServeAndMountSpec extends Specification {
 
   case class TestResponse(raw: String)
 
-  implicit def execNoBodyId[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, FOut] = 
+  implicit def execNoBodyId[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, FOut] = 
     new NoReqBodyExecutor[El, KIn, VIn, M, Option, FOut] {
       type R = Req
       type Out = TestResponse
@@ -29,7 +29,7 @@ final class ServeAndMountSpec extends Specification {
         }
     }
 
-  implicit def execWithBody[El <: HList, KIn <: HList, VIn <: HList, Bd, M <: MethodCall, ROut <: HList, POut <: HList, FOut](implicit _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], _eqProof: POut =:= VIn) = 
+  implicit def execWithBody[El <: HList, KIn <: HList, VIn <: HList, Bd, M <: MethodType, ROut <: HList, POut <: HList, FOut](implicit _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], _eqProof: POut =:= VIn) = 
     new ReqBodyExecutor[El, KIn, VIn, Bd, M, ROut, POut, Option, FOut] {
       type R = Req
       type Out = TestResponse
@@ -43,7 +43,7 @@ final class ServeAndMountSpec extends Specification {
         }
     }
 
-  def toList[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, ROut, F[_], FOut](endpoint: Endpoint[El, KIn, VIn, M, ROut, F, FOut])
+  def toList[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut](endpoint: Endpoint[El, KIn, VIn, M, ROut, F, FOut])
                                                                                         (implicit executor: EndpointExecutor[El, KIn, VIn, M, ROut, F, FOut]): List[Serve[executor.R, executor.Out]] = 
     List(new Serve[executor.R, executor.Out] {
       def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)

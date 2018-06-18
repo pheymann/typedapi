@@ -9,7 +9,7 @@ package object client extends TypeLevelFoldLeftLowPrio
                       with TypeLevelFoldLeftListLowPrio 
                       with ApiTransformer {
 
-  def derive[H <: HList, El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, Out, D <: HList](apiList: ApiTypeCarrier[H])
+  def derive[H <: HList, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out, D <: HList](apiList: ApiTypeCarrier[H])
                                                                                                    (implicit folder: Lazy[TypeLevelFoldLeft.Aux[H, Unit, (El, KIn, VIn, M, Out)]],
                                                                                                              builder: RequestDataBuilder.Aux[El, KIn, VIn, M, Out, D],
                                                                                                              inToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, M, Out, D]]): inToFn.Out = 

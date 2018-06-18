@@ -8,7 +8,7 @@ import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
 /** Fuses RouteExtractor, FunApply and endpoint function fun into an Endpoint. */
-trait EndpointConstructor[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, ROut, Out] {
+trait EndpointConstructor[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, Out] {
 
   def apply(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out]
 }
@@ -45,7 +45,7 @@ trait PrecompileEndpointLowPrio {
     val constructors = HNil
   }
 
-  implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, Out, M <: MethodCall, ROut, T <: HList]
+  implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, Out, M <: MethodType, ROut, T <: HList]
     (implicit extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
               vinToFn: FnFromProduct.Aux[VIn => F[Out], Fn],
               fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]],
@@ -90,7 +90,7 @@ trait MergeToEndpointLowPrio {
     def apply(constructors: HNil, fns: HNil): Out = HNil
   }
 
-  implicit def mergeCase[F[_], El <: HList, KIn <: HList, VIn <: HList, Out0, M <: MethodCall, ROut, Consts <: HList, Fn, Fns <: HList]
+  implicit def mergeCase[F[_], El <: HList, KIn <: HList, VIn <: HList, Out0, M <: MethodType, ROut, Consts <: HList, Fn, Fns <: HList]
     (implicit next: MergeToEndpoint[F, Consts, Fns]) =
     new MergeToEndpoint[F, EndpointConstructor[F, Fn, El, KIn, VIn, M, ROut, Out0] :: Consts, Fn :: Fns] {
       type Out = Endpoint[El, KIn, VIn, M, ROut, F, Out0] :: next.Out

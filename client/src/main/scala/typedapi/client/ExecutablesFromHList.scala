@@ -1,6 +1,6 @@
 package typedapi.client
 
-import typedapi.shared.MethodCall
+import typedapi.shared.MethodType
 import shapeless._
 import shapeless.ops.function.FnFromProduct
 
@@ -25,7 +25,7 @@ trait ExecutablesFromHListLowPrio {
     def apply(h: HNil): Out = HNil
   }
 
-  implicit def deriveExcutable[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, O, D <: HList, T <: HList](implicit next: ExecutablesFromHList[T],
+  implicit def deriveExcutable[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O, D <: HList, T <: HList](implicit next: ExecutablesFromHList[T],
                                                                                                                              vinToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, M, O, D]]) = 
     new ExecutablesFromHList[RequestDataBuilder.Aux[El, KIn, VIn, M, O, D] :: T] {
       type Out = vinToFn.Out :: next.Out

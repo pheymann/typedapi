@@ -8,7 +8,7 @@ import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
 /** Basic api request structure. Expected input data and return-type are defined for each method. */
-trait ApiRequest[M <: MethodCall, D <: HList, C, F[_], Out] {
+trait ApiRequest[M <: MethodType, D <: HList, C, F[_], Out] {
 
   def apply(data: D, cm: ClientManager[C]): F[Out]
 }

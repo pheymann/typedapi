@@ -21,7 +21,7 @@ elements: ${El}
 input keys: ${KIn}
 inout values: ${VIn}
 method: ${M}""")
-trait RouteExtractor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList] {
+trait RouteExtractor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList] {
 
   type Out
 
@@ -30,7 +30,7 @@ trait RouteExtractor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, E
 
 object RouteExtractor extends RouteExtractorMediumPrio {
 
-  type Aux[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList, Out0] = RouteExtractor[El, KIn, VIn, M, EIn] { type Out = Out0 }
+  type Aux[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList, Out0] = RouteExtractor[El, KIn, VIn, M, EIn] { type Out = Out0 }
 
   type Extract[Out] = Either[ExtractionError, Out]
 
@@ -42,7 +42,7 @@ trait RouteExtractorLowPrio {
 
   import RouteExtractor._
 
-  implicit def pathExtractor[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList](implicit wit: Witness.Aux[S], next: RouteExtractor[El, KIn, VIn, M, EIn]) = 
+  implicit def pathExtractor[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList](implicit wit: Witness.Aux[S], next: RouteExtractor[El, KIn, VIn, M, EIn]) = 
     new RouteExtractor[shapeless.::[S, El], KIn, VIn, M, EIn] {
     type Out = next.Out
 
@@ -68,7 +68,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     else
       NotFoundE
 
-  implicit def segmentExtractor[El <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList](implicit value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[V, EIn]]) = 
+  implicit def segmentExtractor[El <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList](implicit value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[V, EIn]]) = 
     new RouteExtractor[shapeless.::[SegmentInput, El], shapeless.::[K, KIn], shapeless.::[V, VIn], M, EIn] {
       type Out = next.Out
 
@@ -78,7 +78,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def queryExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[V, EIn]]) = 
+  implicit def queryExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[V, EIn]]) = 
     new RouteExtractor[shapeless.::[QueryInput, El], shapeless.::[K, KIn], shapeless.::[V, VIn], M, EIn] {
       type Out = next.Out
 
@@ -91,7 +91,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def queryOptListExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Option[V], EIn]]) = 
+  implicit def queryOptListExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Option[V], EIn]]) = 
     new RouteExtractor[shapeless.::[QueryInput, El], shapeless.::[K, KIn], shapeless.::[Option[V], VIn], M, EIn] {
       type Out = next.Out
 
@@ -104,7 +104,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def queryListExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[List[V], EIn]]) = 
+  implicit def queryListExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[List[V], EIn]]) = 
     new RouteExtractor[shapeless.::[QueryInput, El], shapeless.::[K, KIn], shapeless.::[List[V], VIn], M, EIn] {
       type Out = next.Out
 
@@ -120,7 +120,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def headerExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[V, EIn]]) = 
+  implicit def headerExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[V, EIn]]) = 
     new RouteExtractor[shapeless.::[HeaderInput, El], shapeless.::[K, KIn], shapeless.::[V, VIn], M, EIn] {
       type Out = next.Out
 
@@ -133,7 +133,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def headerOptExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Option[V], EIn]]) = 
+  implicit def headerOptExtractor[El <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList](implicit wit: Witness.Aux[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Option[V], EIn]]) = 
     new RouteExtractor[shapeless.::[HeaderInput, El], shapeless.::[K, KIn], shapeless.::[Option[V], VIn], M, EIn] {
       type Out = next.Out
 
@@ -146,7 +146,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def rawHeaderExtractor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, EIn <: HList](implicit next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Map[String, String], EIn]]) = 
+  implicit def rawHeaderExtractor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList](implicit next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Map[String, String], EIn]]) = 
     new RouteExtractor[shapeless.::[RawHeadersInput, El], shapeless.::[RawHeadersField.T, KIn], shapeless.::[Map[String, String], VIn], M, EIn] {
       type Out = next.Out
 

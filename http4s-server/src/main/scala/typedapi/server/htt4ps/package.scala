@@ -1,6 +1,6 @@
 package typedapi.server
 
-import typedapi.shared.MethodCall
+import typedapi.shared.MethodType
 import cats.Monad
 import cats.implicits._
 import cats.effect.IO
@@ -15,7 +15,7 @@ import scala.language.higherKinds
 
 package object http4s {
 
-  implicit def noReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, F[_]: Monad, FOut](implicit encoder: EntityEncoder[F, FOut]) = new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
+  implicit def noReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, F[_]: Monad, FOut](implicit encoder: EntityEncoder[F, FOut]) = new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
     type R   = Request[F]
     type Out = F[Response[F]]
 
@@ -33,7 +33,7 @@ package object http4s {
     }
   }
 
-  implicit def withReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, Bd, M <: MethodCall, ROut <: HList, POut <: HList, F[_]: Monad, FOut]
+  implicit def withReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, Bd, M <: MethodType, ROut <: HList, POut <: HList, F[_]: Monad, FOut]
     (implicit encoder: EntityEncoder[F, FOut], 
               decoder: EntityDecoder[F, Bd],
               _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], 
