@@ -1,5 +1,6 @@
 package typedapi.server
 
+import typedapi.shared.MethodCall
 import cats.Monad
 import cats.implicits._
 import cats.effect.IO
@@ -14,14 +15,14 @@ import scala.language.higherKinds
 
 package object http4s {
 
-  implicit def noReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, F[_]: Monad, FOut](implicit encoder: EntityEncoder[F, FOut]) = new NoReqBodyExecutor[El, KIn, VIn, F, FOut] {
+  implicit def noReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, F[_]: Monad, FOut](implicit encoder: EntityEncoder[F, FOut]) = new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
     type R   = Request[F]
     type Out = F[Response[F]]
 
     private val dsl = Http4sDsl[F]
     import dsl._
 
-    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, VIn, F, FOut]): Either[ExtractionError, Out] = {
+    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, VIn, F, FOut]): Either[ExtractionError, Out] = {
       extract(eReq, endpoint).map { extracted =>
         Monad[F].flatMap(execute(extracted, endpoint)) { response =>
           val resp: F[Response[F]] = Ok.apply(response)(Monad[F], encoder)
@@ -32,11 +33,11 @@ package object http4s {
     }
   }
 
-  implicit def withReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, Bd, ROut <: HList, POut <: HList, F[_]: Monad, FOut]
+  implicit def withReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, Bd, M <: MethodCall, ROut <: HList, POut <: HList, F[_]: Monad, FOut]
     (implicit encoder: EntityEncoder[F, FOut], 
               decoder: EntityDecoder[F, Bd],
               _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], 
-              _eqProof: POut =:= VIn) = new ReqBodyExecutor[El, KIn, VIn, Bd, ROut, POut, F, FOut] {
+              _eqProof: POut =:= VIn) = new ReqBodyExecutor[El, KIn, VIn, Bd, M, ROut, POut, F, FOut] {
     type R   = Request[F]
     type Out = F[Response[F]]
 
@@ -46,7 +47,7 @@ package object http4s {
     private val dsl = Http4sDsl[F]
     import dsl._
 
-    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, (BodyType[Bd], ROut), F, FOut]): Either[ExtractionError, Out] = {
+    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, (BodyType[Bd], ROut), F, FOut]): Either[ExtractionError, Out] = {
       extract(eReq, endpoint).map { case (_, extracted) =>
         for {
           body     <- req.as[Bd]

@@ -2,7 +2,6 @@ package typedapi.client
 
 import typedapi.shared._
 import shapeless._
-import shapeless.labelled.{FieldType, field}
 
 import scala.collection.mutable.Builder
 import scala.annotation.implicitNotFound
@@ -12,8 +11,10 @@ import scala.annotation.implicitNotFound
 
 elements: ${El}
 input keys: ${KIn}
-input values: ${VIn}""")
-trait RequestDataBuilder[El <: HList, KIn <: HList, VIn <: HList, O] {
+input values: ${VIn}
+method: ${M}
+expected result: ${O}""")
+trait RequestDataBuilder[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, O] {
 
   type Out <: HList
 
@@ -25,13 +26,13 @@ trait RequestDataBuilder[El <: HList, KIn <: HList, VIn <: HList, O] {
 
 object RequestDataBuilder extends RequestDataBuilderMediumPrio {
 
-  type Aux[El <: HList, KIn <: HList, VIn <: HList, O, Out0 <: HList] = RequestDataBuilder[El, KIn, VIn, O] { type Out = Out0 }
+  type Aux[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, O, Out0 <: HList] = RequestDataBuilder[El, KIn, VIn, M, O] { type Out = Out0 }
 }
 
 trait RequestDataBuilderLowPrio {
 
-  implicit def pathCompiler[S, T <: HList, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[S], compiler: RequestDataBuilder[T, KIn, VIn, O]) = 
-    new RequestDataBuilder[S :: T, KIn, VIn, O] {
+  implicit def pathCompiler[S, T <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, O](implicit wit: Witness.Aux[S], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[S :: T, KIn, VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -39,8 +40,8 @@ trait RequestDataBuilderLowPrio {
       }
     }
   
-  implicit def segmentInputCompiler[T <: HList, K, V, KIn <: HList, VIn <: HList, O](implicit compiler: RequestDataBuilder[T, KIn, VIn, O]) = 
-    new RequestDataBuilder[SegmentInput :: T, K :: KIn, V :: VIn, O] {
+  implicit def segmentInputCompiler[T <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodCall, O](implicit compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[SegmentInput :: T, K :: KIn, V :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -50,8 +51,8 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def queryInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, O]) = 
-    new RequestDataBuilder[QueryInput :: T, K :: KIn, V :: VIn, O] {
+  implicit def queryInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[QueryInput :: T, K :: KIn, V :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -62,8 +63,8 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def headerInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, O]) = 
-    new RequestDataBuilder[HeaderInput :: T, K :: KIn, V :: VIn, O] {
+  implicit def headerInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[HeaderInput :: T, K :: KIn, V :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -74,8 +75,8 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def rawHeadersInputCompiler[T <: HList, KIn <: HList, VIn <: HList, O](implicit compiler: RequestDataBuilder[T, KIn, VIn, O]) = 
-    new RequestDataBuilder[RawHeadersInput :: T, RawHeadersField.T :: KIn, Map[String, String] :: VIn, O] {
+  implicit def rawHeadersInputCompiler[T <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, O](implicit compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[RawHeadersInput :: T, RawHeadersField.T :: KIn, Map[String, String] :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: Map[String, String] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -85,65 +86,64 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
-  type Data                       = List[String] :: Map[String, List[String]] :: Map[String, String] :: HNil
-  type DataWithBody[Bd]           = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
-  type RequestData[R, D <: HList] = FieldType[R, D]
+  type Data             = List[String] :: Map[String, List[String]] :: Map[String, String] :: HNil
+  type DataWithBody[Bd] = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
 
-  implicit def getCompiler[A] = new RequestDataBuilder[GetCall :: HNil, HNil, HNil, A] {
-    type Out = RequestData[GetCall, Data]
+  implicit def getCompiler[A] = new RequestDataBuilder[HNil, HNil, HNil, GetCall, A] {
+    type Out = Data
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = field[GetCall](uri.result() :: queries :: headers :: HNil)
+      val out = uri.result() :: queries :: headers :: HNil
 
       out
     }
   }
 
-  implicit def putCompiler[A] = new RequestDataBuilder[PutCall :: HNil, HNil, HNil, A] {
-    type Out = RequestData[PutCall, Data]
+  implicit def putCompiler[A] = new RequestDataBuilder[HNil, HNil, HNil, PutCall, A] {
+    type Out = Data
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = field[PutCall](uri.result() :: queries :: headers :: HNil)
+      val out = uri.result() :: queries :: headers :: HNil
 
       out
     }
   }
 
-  implicit def putWithBodyCompiler[Bd, A] = new RequestDataBuilder[PutWithBodyCall[Bd] :: HNil, BodyField.T :: HNil, Bd :: HNil, A] {
-    type Out = RequestData[PutWithBodyCall[Bd], DataWithBody[Bd]]
+  implicit def putWithBodyCompiler[Bd, A] = new RequestDataBuilder[HNil, BodyField.T :: HNil, Bd :: HNil, PutWithBodyCall, A] {
+    type Out = DataWithBody[Bd]
 
     def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = field[PutWithBodyCall[Bd]](uri.result() :: queries :: headers :: inputs.head :: HNil)
+      val out = uri.result() :: queries :: headers :: inputs.head :: HNil
 
       out
     }
   }
 
-  implicit def postCompiler[A] = new RequestDataBuilder[PostCall :: HNil, HNil, HNil, A] {
-    type Out = RequestData[PostCall, Data]
+  implicit def postCompiler[A] = new RequestDataBuilder[HNil, HNil, HNil, PostCall, A] {
+    type Out = Data
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = field[PostCall](uri.result() :: queries :: headers :: HNil)
+      val out = uri.result() :: queries :: headers :: HNil
 
       out
     }
   }
 
-  implicit def postWithBodyCompiler[Bd, A] = new RequestDataBuilder[PostWithBodyCall[Bd] :: HNil, BodyField.T :: HNil, Bd :: HNil, A] {
-    type Out = RequestData[PostWithBodyCall[Bd], DataWithBody[Bd]]
+  implicit def postWithBodyCompiler[Bd, A] = new RequestDataBuilder[HNil, BodyField.T :: HNil, Bd :: HNil, PostWithBodyCall, A] {
+    type Out = DataWithBody[Bd]
 
     def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = field[PostWithBodyCall[Bd]](uri.result() :: queries :: headers :: inputs.head :: HNil)
+      val out = uri.result() :: queries :: headers :: inputs.head :: HNil
 
       out
     }
   }
 
-  implicit def deleteCompiler[A] = new RequestDataBuilder[DeleteCall :: HNil, HNil, HNil, A] {
-    type Out = RequestData[DeleteCall, Data]
+  implicit def deleteCompiler[A] = new RequestDataBuilder[HNil, HNil, HNil, DeleteCall, A] {
+    type Out = Data
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = field[DeleteCall](uri.result() :: queries :: headers :: HNil)
+      val out = uri.result() :: queries :: headers :: HNil
 
       out
     }
@@ -152,8 +152,8 @@ trait RequestDataBuilderLowPrio {
 
 trait RequestDataBuilderMediumPrio extends RequestDataBuilderLowPrio {
 
-  implicit def queryOptInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, O]) = 
-    new RequestDataBuilder[QueryInput :: T, K :: KIn, Option[V] :: VIn, O] {
+  implicit def queryOptInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[QueryInput :: T, K :: KIn, Option[V] :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: Option[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -165,8 +165,8 @@ trait RequestDataBuilderMediumPrio extends RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def queryListInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, O]) = 
-    new RequestDataBuilder[QueryInput :: T, K :: KIn, List[V] :: VIn, O] {
+  implicit def queryListInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[QueryInput :: T, K :: KIn, List[V] :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: List[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -180,8 +180,8 @@ trait RequestDataBuilderMediumPrio extends RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def headersOptInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, O]) = 
-    new RequestDataBuilder[HeaderInput :: T, K :: KIn, Option[V] :: VIn, O] {
+  implicit def headersOptInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodCall, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[HeaderInput :: T, K :: KIn, Option[V] :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: Option[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
@@ -211,16 +211,16 @@ object RequestDataBuilderList extends RequestDataBuilderListLowPrio {
 
 trait RequestDataBuilderListLowPrio {
 
-  implicit def lastCompilerList[El <: HList, KIn <: HList, VIn <: HList, O, D <: HList](implicit builder: RequestDataBuilder.Aux[El, KIn, VIn, O, D]) = 
-    new RequestDataBuilderList[Transformed[El, KIn, VIn, O, D] :: HNil] {
-      type Out = RequestDataBuilder.Aux[El, KIn, VIn, O, D] :: HNil
+  implicit def lastCompilerList[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, O, D <: HList](implicit builder: RequestDataBuilder.Aux[El, KIn, VIn, M, O, D]) = 
+    new RequestDataBuilderList[(El, KIn, VIn, M, O) :: HNil] {
+      type Out = RequestDataBuilder.Aux[El, KIn, VIn, M, O, D] :: HNil
 
       val builders = builder :: HNil
     }
 
-  implicit def builderList[El <: HList, KIn <: HList, VIn <: HList, O, D <: HList, T <: HList](implicit builder: RequestDataBuilder.Aux[El, KIn, VIn, O, D], next: RequestDataBuilderList[T]) = 
-    new RequestDataBuilderList[Transformed[El, KIn, VIn, O, D] :: T] {
-      type Out = RequestDataBuilder.Aux[El, KIn, VIn, O, D] :: next.Out
+  implicit def builderList[El <: HList, KIn <: HList, VIn <: HList, M <: MethodCall, O, D <: HList, T <: HList](implicit builder: RequestDataBuilder.Aux[El, KIn, VIn, M, O, D], next: RequestDataBuilderList[T]) = 
+    new RequestDataBuilderList[(El, KIn, VIn, M, O) :: T] {
+      type Out = RequestDataBuilder.Aux[El, KIn, VIn, M, O, D] :: next.Out
 
       val builders = builder :: next.builders
     }
