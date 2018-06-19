@@ -8,9 +8,9 @@ import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
 /** Fuses RouteExtractor, FunApply and endpoint function fun into an Endpoint. */
-trait EndpointConstructor[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, ROut, Out] {
+trait EndpointConstructor[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, Out] {
 
-  def apply(fn: Fn): Endpoint[El, KIn, VIn, ROut, F, Out]
+  def apply(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out]
 }
 
 /** Compiles RouteExtractor and FunApply for every API endpoint and generates expected list of endpoint functions. */
@@ -31,7 +31,7 @@ sealed trait PrecompileEndpoint[F[_], H <: HList] {
 object PrecompileEndpoint extends PrecompileEndpointLowPrio {
 
   type Aux[F[_], H <: HList, Fns0 <: HList, Consts0 <: HList] = PrecompileEndpoint[F, H] {
-    type Fns   = Fns0
+    type Fns    = Fns0
     type Consts = Consts0
   }
 }
@@ -45,17 +45,17 @@ trait PrecompileEndpointLowPrio {
     val constructors = HNil
   }
 
-  implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, Out, ROut, T <: HList]
-    (implicit extractor: RouteExtractor.Aux[El, KIn, VIn, HNil, ROut],
+  implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, Out, M <: MethodType, ROut, T <: HList]
+    (implicit extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
               vinToFn: FnFromProduct.Aux[VIn => F[Out], Fn],
               fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]],
               next: PrecompileEndpoint[F, T]) =
-    new PrecompileEndpoint[F, (El, KIn, VIn, Out) :: T] {
+    new PrecompileEndpoint[F, (El, KIn, VIn, M, Out) :: T] {
       type Fns    = Fn :: next.Fns
-      type Consts = EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out] :: next.Consts
+      type Consts = EndpointConstructor[F, Fn, El, KIn, VIn, M, ROut, Out] :: next.Consts
 
-      val constructor = new EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out] {
-        def apply(fn: Fn): Endpoint[El, KIn, VIn, ROut, F, Out] = new Endpoint[El, KIn, VIn, ROut, F, Out](extractor) {
+      val constructor = new EndpointConstructor[F, Fn, El, KIn, VIn, M, ROut, Out] {
+        def apply(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out] = new Endpoint[El, KIn, VIn, M, ROut, F, Out](extractor) {
           private val fin = fnToVIn.value(fn)
 
           def apply(in: VIn): F[Out] = fin(in)
@@ -90,12 +90,12 @@ trait MergeToEndpointLowPrio {
     def apply(constructors: HNil, fns: HNil): Out = HNil
   }
 
-  implicit def mergeCase[F[_], El <: HList, KIn <: HList, VIn <: HList, Out0, ROut, Consts <: HList, Fn, Fns <: HList]
+  implicit def mergeCase[F[_], El <: HList, KIn <: HList, VIn <: HList, Out0, M <: MethodType, ROut, Consts <: HList, Fn, Fns <: HList]
     (implicit next: MergeToEndpoint[F, Consts, Fns]) =
-    new MergeToEndpoint[F, EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out0] :: Consts, Fn :: Fns] {
-      type Out = Endpoint[El, KIn, VIn, ROut, F, Out0] :: next.Out
+    new MergeToEndpoint[F, EndpointConstructor[F, Fn, El, KIn, VIn, M, ROut, Out0] :: Consts, Fn :: Fns] {
+      type Out = Endpoint[El, KIn, VIn, M, ROut, F, Out0] :: next.Out
 
-      def apply(constructors: EndpointConstructor[F, Fn, El, KIn, VIn, ROut, Out0] :: Consts, fns: Fn :: Fns): Out = {
+      def apply(constructors: EndpointConstructor[F, Fn, El, KIn, VIn, M, ROut, Out0] :: Consts, fns: Fn :: Fns): Out = {
         val endpoint = constructors.head(fns.head)
 
         endpoint :: next(constructors.tail, fns.tail)

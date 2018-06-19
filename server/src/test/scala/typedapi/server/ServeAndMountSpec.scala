@@ -1,6 +1,7 @@
 package typedapi.server
 
 import typedapi.dsl._
+import typedapi.shared.MethodType
 import shapeless.{HList, HNil, ::}
 import shapeless.ops.hlist.{Prepend, Mapper}
 import org.specs2.mutable.Specification
@@ -17,33 +18,33 @@ final class ServeAndMountSpec extends Specification {
 
   case class TestResponse(raw: String)
 
-  implicit def execNoBodyId[El <: HList, KIn <: HList, VIn <: HList, FOut] = 
-    new NoReqBodyExecutor[El, KIn, VIn, Option, FOut] {
+  implicit def execNoBodyId[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, FOut] = 
+    new NoReqBodyExecutor[El, KIn, VIn, M, Option, FOut] {
       type R = Req
       type Out = TestResponse
 
-      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, VIn, Option, FOut]): Either[ExtractionError, Out] =
+      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, VIn, Option, FOut]): Either[ExtractionError, Out] =
         extract(eReq, endpoint).right.map { extracted => 
           TestResponse(execute(extracted, endpoint).toString())
         }
     }
 
-  implicit def execWithBody[El <: HList, KIn <: HList, VIn <: HList, Bd, ROut <: HList, POut <: HList, FOut](implicit _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], _eqProof: POut =:= VIn) = 
-    new ReqBodyExecutor[El, KIn, VIn, Bd, ROut, POut, Option, FOut] {
+  implicit def execWithBody[El <: HList, KIn <: HList, VIn <: HList, Bd, M <: MethodType, ROut <: HList, POut <: HList, FOut](implicit _prepend: Prepend.Aux[ROut, Bd :: HNil, POut], _eqProof: POut =:= VIn) = 
+    new ReqBodyExecutor[El, KIn, VIn, Bd, M, ROut, POut, Option, FOut] {
       type R = Req
       type Out = TestResponse
 
       implicit val prepend = _prepend
       implicit def eqProof = _eqProof
 
-      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, (BodyType[Bd], ROut), Option, FOut]): Either[ExtractionError, Out] =
+      def apply(req: Req, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, (BodyType[Bd], ROut), Option, FOut]): Either[ExtractionError, Out] =
         extract(eReq, endpoint).right.map { case (_, extracted) => 
           TestResponse(execute(extracted, req.asInstanceOf[TestRequestWithBody[Bd]].body, endpoint).toString())
         }
     }
 
-  def toList[El <: HList, KIn <: HList, VIn <: HList, ROut, F[_], FOut](endpoint: Endpoint[El, KIn, VIn, ROut, F, FOut])
-                                                                       (implicit executor: EndpointExecutor[El, KIn, VIn, ROut, F, FOut]): List[Serve[executor.R, executor.Out]] = 
+  def toList[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut](endpoint: Endpoint[El, KIn, VIn, M, ROut, F, FOut])
+                                                                                        (implicit executor: EndpointExecutor[El, KIn, VIn, M, ROut, F, FOut]): List[Serve[executor.R, executor.Out]] = 
     List(new Serve[executor.R, executor.Out] {
       def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
     })

@@ -1,5 +1,6 @@
 package typedapi.client
 
+import typedapi.shared.MethodType
 import shapeless._
 import shapeless.ops.function.FnFromProduct
 
@@ -24,13 +25,13 @@ trait ExecutablesFromHListLowPrio {
     def apply(h: HNil): Out = HNil
   }
 
-  implicit def deriveExcutable[El <: HList, KIn <: HList, VIn <: HList, O, D <: HList, T <: HList](implicit next: ExecutablesFromHList[T],
-                                                                                                            vinToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, O, D]]) = 
-    new ExecutablesFromHList[RequestDataBuilder.Aux[El, KIn, VIn, O, D] :: T] {
+  implicit def deriveExcutable[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O, D <: HList, T <: HList](implicit next: ExecutablesFromHList[T],
+                                                                                                                             vinToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, M, O, D]]) = 
+    new ExecutablesFromHList[RequestDataBuilder.Aux[El, KIn, VIn, M, O, D] :: T] {
       type Out = vinToFn.Out :: next.Out
 
-      def apply(comps: RequestDataBuilder.Aux[El, KIn, VIn, O, D] :: T): Out = {
-        val fn = vinToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, O, D](comps.head, input))
+      def apply(comps: RequestDataBuilder.Aux[El, KIn, VIn, M, O, D] :: T): Out = {
+        val fn = vinToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, M, O, D](comps.head, input))
 
         fn :: next(comps.tail)
       }

@@ -9,12 +9,13 @@ sealed trait QueryInput extends ApiOp
 sealed trait HeaderInput extends ApiOp
 sealed trait RawHeadersInput extends ApiOp
 
-sealed trait GetCall extends ApiOp
-sealed trait PutCall extends ApiOp
-sealed trait PutWithBodyCall[Bd] extends ApiOp
-sealed trait PostCall extends ApiOp
-sealed trait PostWithBodyCall[Bd] extends ApiOp
-sealed trait DeleteCall extends ApiOp
+sealed trait MethodType extends ApiOp
+sealed trait GetCall extends MethodType
+sealed trait PutCall extends MethodType
+sealed trait PutWithBodyCall extends MethodType
+sealed trait PostCall extends MethodType
+sealed trait PostWithBodyCall extends MethodType
+sealed trait DeleteCall extends MethodType
 
 /** Separates uri, input description and out type from `ApiList`. 
   *   Example:
@@ -25,33 +26,33 @@ trait ApiTransformer {
 
   import TypeLevelFoldFunction.at
 
-  implicit def pathElementTransformer[S, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[PathElement[S], (El, KIn, VIn, Out), (S :: El, KIn, VIn, Out)]
+  implicit def pathElementTransformer[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[PathElement[S], (El, KIn, VIn, M, Out), (S :: El, KIn, VIn, M, Out)]
 
-  implicit def segmentElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[SegmentParam[S, A], (El, KIn, VIn, Out), (SegmentInput :: El, S :: KIn, A :: VIn, Out)]
+  implicit def segmentElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[SegmentParam[S, A], (El, KIn, VIn, M, Out), (SegmentInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def queryElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[QueryParam[S, A], (El, KIn, VIn, Out), (QueryInput :: El, S :: KIn, A :: VIn, Out)]
+  implicit def queryElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[QueryParam[S, A], (El, KIn, VIn, M, Out), (QueryInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def queryListElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[QueryParam[S, List[A]], (El, KIn, VIn, Out), (QueryInput :: El, S :: KIn, List[A] :: VIn, Out)]
+  implicit def queryListElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[QueryParam[S, List[A]], (El, KIn, VIn, M, Out), (QueryInput :: El, S :: KIn, List[A] :: VIn, M, Out)]
 
-  implicit def headerElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[HeaderParam[S, A], (El, KIn, VIn, Out), (HeaderInput :: El, S :: KIn, A :: VIn, Out)]
+  implicit def headerElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[HeaderParam[S, A], (El, KIn, VIn, M, Out), (HeaderInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def rawHeadersElementTransformer[El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[RawHeadersParam.type, (El, KIn, VIn, Out), (RawHeadersInput :: El, RawHeadersField.T :: KIn, Map[String, String] :: VIn, Out)]
+  implicit def rawHeadersElementTransformer[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[RawHeadersParam.type, (El, KIn, VIn, M, Out), (RawHeadersInput :: El, RawHeadersField.T :: KIn, Map[String, String] :: VIn, M, Out)]
 
-  implicit def getTransformer[A] = at[GetElement[A], (HNil, HNil, HNil), (GetCall :: HNil, HNil, HNil, A)]
+  implicit def getTransformer[A] = at[GetElement[A], Unit, (HNil, HNil, HNil, GetCall, A)]
 
-  implicit def putTransformer[A] = at[PutElement[A], (HNil, HNil, HNil), (PutCall :: HNil, HNil, HNil, A)]
+  implicit def putTransformer[A] = at[PutElement[A], Unit, (HNil, HNil, HNil, PutCall, A)]
 
-  implicit def putWithBodyTransformer[Bd, A] = at[PutWithBodyElement[Bd, A], (HNil, HNil, HNil), (PutWithBodyCall[Bd] :: HNil, BodyField.T :: HNil, Bd :: HNil, A)]
+  implicit def putWithBodyTransformer[Bd, A] = at[PutWithBodyElement[Bd, A], Unit, (HNil, BodyField.T :: HNil, Bd :: HNil, PutWithBodyCall, A)]
 
-  implicit def postTransformer[A] = at[PostElement[A], (HNil, HNil, HNil), (PostCall :: HNil, HNil, HNil, A)]
+  implicit def postTransformer[A] = at[PostElement[A], Unit, (HNil, HNil, HNil, PostCall, A)]
 
-  implicit def postWithBodyTransformer[Bd, A] = at[PostWithBodyElement[Bd, A], (HNil, HNil, HNil), (PostWithBodyCall[Bd] :: HNil, BodyField.T :: HNil, Bd :: HNil, A)]
+  implicit def postWithBodyTransformer[Bd, A] = at[PostWithBodyElement[Bd, A], Unit, (HNil, BodyField.T :: HNil, Bd :: HNil, PostWithBodyCall, A)]
 
-  implicit def deleteTransformer[A] = at[DeleteElement[A], (HNil, HNil, HNil), (DeleteCall :: HNil, HNil, HNil, A)]
+  implicit def deleteTransformer[A] = at[DeleteElement[A], Unit, (HNil, HNil, HNil, DeleteCall, A)]
 }

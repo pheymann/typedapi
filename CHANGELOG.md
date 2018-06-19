@@ -1,3 +1,14 @@
+### 0.1.0
+ - changes to the server API:
+   - `NoReqBodyExecutor` and `ReqBodyExecutor` now expect a `MethodType`:
+ ```Scala
+ new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
+ ____________________________________^
+ 
+ new ReqBodyExecutor[El, KIn, VIn, Bd, M, ROut, POut, F, FOut] {
+ ______________________________________^
+ ```
+
 ### 0.1.0-RC5 / Almost there
  - changes to the client API:
  ```Scala
