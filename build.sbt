@@ -87,9 +87,9 @@ lazy val mavenSettings = Seq(
 lazy val typedapi = project
   .in(file("."))
   .settings(commonSettings: _*)
-  .aggregate(shared, client, server, `http4s-client`, `http4s-server`)
+  .aggregate(`shared-js`, `shared-jvm`, `client-js`, `client-jvm`, server, `http4s-client-js`, `http4s-client-jvm` , `http4s-server`)
 
-lazy val shared = project
+lazy val shared = crossProject.crossType(CrossType.Pure)
   .in(file("shared"))
   .settings(
     commonSettings,
@@ -98,7 +98,10 @@ lazy val shared = project
     libraryDependencies ++= Dependencies.shared
   )
 
-lazy val client = project
+val `shared-js` = shared.js
+val `shared-jvm` = shared.jvm
+
+lazy val client = crossProject.crossType(CrossType.Pure)
   .in(file("client"))
   .settings(
     commonSettings,
@@ -108,6 +111,9 @@ lazy val client = project
   )
   .dependsOn(shared)
 
+val `client-js` = client.js
+val `client-jvm` = client.jvm
+
 lazy val server = project
   .in(file("server"))
   .settings(
@@ -116,9 +122,10 @@ lazy val server = project
     name := "typedapi-server",
     libraryDependencies ++= Dependencies.server
   )
-  .dependsOn(shared)
+  .dependsOn(`shared-jvm`)
 
-lazy val `http4s-client` = project
+
+lazy val `http4s-client` = crossProject.crossType(CrossType.Pure)
   .in(file("http4s-client"))
   .configs(IntegrationTest)
   .settings(
@@ -131,6 +138,9 @@ lazy val `http4s-client` = project
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(client)
+
+val `http4s-client-js` = `http4s-client`.js
+val `http4s-client-jvm` = `http4s-client`.jvm
 
 lazy val `http4s-server` = project
   .in(file("http4s-server"))
