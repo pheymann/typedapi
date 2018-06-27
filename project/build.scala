@@ -2,18 +2,20 @@ import sbt._
 
 object Dependencies {
 
+  val specs2V = "3.9.4"
+
   val shared = Seq(
     "com.chuusai" %% "shapeless" % "2.3.3" % Compile,
 
-    "org.specs2"  %% "specs2-core" % "3.9.4" % Test
+    "org.specs2"  %% "specs2-core" % specs2V % Test
   )
 
   val client = Seq(
-    "org.specs2"  %% "specs2-core" % "3.9.4" % Test
+    "org.specs2"  %% "specs2-core" % specs2V % Test
   )
 
   val server = Seq(
-    "org.specs2"  %% "specs2-core" % "3.9.4" % Test
+    "org.specs2"  %% "specs2-core" % specs2V % Test
   )
 
   private val http4sV = "0.18.0"
@@ -28,7 +30,7 @@ object Dependencies {
     "io.circe"   %% "circe-core" % circeV    % Test,
     "io.circe"   %% "circe-parser" % circeV  % Test,
     "io.circe"   %% "circe-generic" % circeV % Test,
-    "org.specs2" %% "specs2-core" % "3.9.4" % Test
+    "org.specs2" %% "specs2-core" % specs2V % Test
   )
 
   val http4sServer = Seq(

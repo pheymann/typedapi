@@ -9,6 +9,8 @@ package object client extends TypeLevelFoldLeftLowPrio
                       with TypeLevelFoldLeftListLowPrio 
                       with ApiTransformer {
 
+  def deriveUriString(cm: ClientManager[_], uri: List[String]): String = cm.base + "/" + uri.mkString("/")
+
   def derive[H <: HList, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out, D <: HList](apiList: ApiTypeCarrier[H])
                                                                                                    (implicit folder: Lazy[TypeLevelFoldLeft.Aux[H, Unit, (El, KIn, VIn, M, Out)]],
                                                                                                              builder: RequestDataBuilder.Aux[El, KIn, VIn, M, Out, D],

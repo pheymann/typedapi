@@ -87,7 +87,7 @@ lazy val mavenSettings = Seq(
 lazy val typedapi = project
   .in(file("."))
   .settings(commonSettings: _*)
-  .aggregate(shared, client, server, `http4s-client`, `http4s-server`)
+  .aggregate(shared, client, server, `http4s-client`, `http4s-server`, `akka-http-client`)
 
 lazy val shared = project
   .in(file("shared"))
@@ -156,4 +156,4 @@ lazy val `akka-http-client` = project
 
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
-  .dependsOn(`internal-tests` % "test -> test", client)
+  .dependsOn(client)
