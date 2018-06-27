@@ -40,6 +40,13 @@ object Dependencies {
     "io.circe"   %% "circe-core" % circeV    % Test,
     "io.circe"   %% "circe-parser" % circeV  % Test,
     "io.circe"   %% "circe-generic" % circeV % Test,
-    "org.specs2" %% "specs2-core" % "3.9.4" % Test
+    "org.specs2" %% "specs2-core" % specs2V % Test
+  )
+
+  private val akkaHttpV = "10.0.13"
+
+  val akkaHttpClient = Seq(
+    "com.typesafe.akka" %% "akka-http" % akkaHttpV %  Provided,
+    "com.typesafe.akka" %% "akka-http-core" % akkaHttpV %  Provided
   )
 }

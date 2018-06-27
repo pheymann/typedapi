@@ -145,3 +145,15 @@ lazy val `http4s-server` = project
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(server)
+
+lazy val `akka-http-client` = project
+  .in(file("akka-http-client"))
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-akka-http-client",
+    libraryDependencies ++= Dependencies.akkaHttpClient,
+
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+  )
+  .dependsOn(`internal-tests` % "test -> test", client)
