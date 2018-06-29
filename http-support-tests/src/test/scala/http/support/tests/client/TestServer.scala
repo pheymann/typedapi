@@ -1,15 +1,13 @@
-package typedapi.client.http4s
+package http.support.tests.client
 
+import http.support.tests.{User, UserCoding}
 import cats.effect.IO
 import io.circe.syntax._
-import io.circe.generic.JsonCodec
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.io._
 import org.http4s.server.Server
 import org.http4s.server.blaze._
-
-@JsonCodec case class User(name: String, age: Int)
 
 object Age extends QueryParamDecoderMatcher[Int]("age")
 
@@ -20,8 +18,7 @@ object Reasons {
 
 object TestServer {
 
-  implicit val decoder = jsonOf[IO, User]
-  implicit val encoder = jsonEncoderOf[IO, User]
+  import UserCoding._
    
   val service = HttpService[IO] {
     case GET -> Root / "path" => Ok(User("foo", 27))

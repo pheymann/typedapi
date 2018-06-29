@@ -9,3 +9,5 @@ jdk:
 
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean test it:compile
+  - sbt "project sharedJS" "fastOptJS"
+  - sbt "project http4s-clientJS" "fastOptJS"
