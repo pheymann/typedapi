@@ -40,6 +40,12 @@ package object akkahttp {
     }
   }
 
+
+  implicit def getRequestImpl[A](implicit bodyConsumerTimeout: FiniteDuration,
+                                          decoder: FromEntityUnmarshaller[A],
+                                          ec: ExecutionContext,
+                                          mat: Materializer): GetRequest[HttpExt, Future, A] = getRequest(bodyConsumerTimeout)
+
   def putRequest[A](bodyConsumerTimeout: FiniteDuration)(implicit decoder: FromEntityUnmarshaller[A],
                                                                   ec: ExecutionContext, 
                                                                   mat: Materializer) = new PutRequest[HttpExt, Future, A] {
@@ -51,6 +57,11 @@ package object akkahttp {
       }
     }
   }
+
+  implicit def putRequestImpl[A](implicit bodyConsumerTimeout: FiniteDuration,
+                                          decoder: FromEntityUnmarshaller[A],
+                                          ec: ExecutionContext,
+                                          mat: Materializer): PutRequest[HttpExt, Future, A] = putRequest(bodyConsumerTimeout)
 
   def putBodyRequest[Bd, A](bodyConsumerTimeout: FiniteDuration)(implicit encoder: ToEntityMarshaller[Bd],
                                                                           decoder: FromEntityUnmarshaller[A],
@@ -67,6 +78,12 @@ package object akkahttp {
     }
   }
 
+  implicit def putBodyRequestImpl[Bd, A](implicit bodyConsumerTimeout: FiniteDuration,
+                                                  encoder: ToEntityMarshaller[Bd],
+                                                  decoder: FromEntityUnmarshaller[A],
+                                                  ec: ExecutionContext,
+                                                  mat: Materializer): PutWithBodyRequest[HttpExt, Future, Bd, A] = putBodyRequest(bodyConsumerTimeout)
+
   def postRequest[A](bodyConsumerTimeout: FiniteDuration)(implicit decoder: FromEntityUnmarshaller[A],
                                                                    ec: ExecutionContext, 
                                                                    mat: Materializer) = new PostRequest[HttpExt, Future, A] {
@@ -78,6 +95,11 @@ package object akkahttp {
       }
     }
   }
+
+  implicit def postRequestImpl[A](implicit bodyConsumerTimeout: FiniteDuration,
+                                           decoder: FromEntityUnmarshaller[A],
+                                           ec: ExecutionContext,
+                                           mat: Materializer): PostRequest[HttpExt, Future, A] = postRequest(bodyConsumerTimeout)
 
   def postBodyRequest[Bd, A](bodyConsumerTimeout: FiniteDuration)(implicit encoder: ToEntityMarshaller[Bd],
                                                                            decoder: FromEntityUnmarshaller[A],
@@ -94,9 +116,15 @@ package object akkahttp {
     }
   }
 
+  implicit def postBodyRequestImpl[Bd, A](implicit bodyConsumerTimeout: FiniteDuration,
+                                                   encoder: ToEntityMarshaller[Bd],
+                                                   decoder: FromEntityUnmarshaller[A],
+                                                   ec: ExecutionContext,
+                                                   mat: Materializer): PostWithBodyRequest[HttpExt, Future, Bd, A] = postBodyRequest(bodyConsumerTimeout)
+
   def deleteRequest[A](bodyConsumerTimeout: FiniteDuration)(implicit decoder: FromEntityUnmarshaller[A],
                                                                      ec: ExecutionContext, 
-                                                                     mat: Materializer) = new GetRequest[HttpExt, Future, A] {
+                                                                     mat: Materializer) = new DeleteRequest[HttpExt, Future, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] = {
       val request = mkRequest(deriveUriString(cm, uri), queries, headers).copy(HttpMethods.DELETE)
 
@@ -105,4 +133,9 @@ package object akkahttp {
       }
     }
   }
+
+  implicit def deleteRequestImpl[A](implicit bodyConsumerTimeout: FiniteDuration,
+                                             decoder: FromEntityUnmarshaller[A],
+                                             ec: ExecutionContext,
+                                             mat: Materializer): DeleteRequest[HttpExt, Future, A] = deleteRequest(bodyConsumerTimeout)
 }
