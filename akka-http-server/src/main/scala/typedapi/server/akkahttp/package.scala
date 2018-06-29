@@ -74,16 +74,16 @@ package object akkahttp {
 
         @tailrec
         def toListPath(path: Uri.Path, agg: Builder[String, List[String]]): List[String] = path match {
-          case Uri.Path.Slash(tail) => toListPath(tail, agg)
+          case Uri.Path.Slash(tail)      => toListPath(tail, agg)
           case Uri.Path.Segment(p, tail) => toListPath(tail, agg += p)
-          case Uri.Path.Empty => agg.result()
+          case Uri.Path.Empty            => agg.result()
         }
 
         val eReq = EndpointRequest(
           request.method.name,
           toListPath(request.uri.path, List.newBuilder),
           request.uri.query().toMultiMap,
-          request.headers.toList.map(header => header.name.toString -> header.value)(collection.breakOut)
+          request.headers.map(header => header.lowercaseName -> header.value)(collection.breakOut)
         )
         execute(endpoints, eReq)
       }

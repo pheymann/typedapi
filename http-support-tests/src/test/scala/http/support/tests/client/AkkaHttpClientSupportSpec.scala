@@ -20,7 +20,7 @@ final class AkkaHttpClientSupportSpec(implicit ee: ExecutionEnv) extends Specifi
   sequential
 
   implicit val timeout = 1.second
-  implicit val system  = ActorSystem("akka-http-client-spec")
+  implicit val system  = ActorSystem("akka-http-client-spec", defaultExecutionContext = Some(ee.ec))
   implicit val mat     = ActorMaterializer()
 
   import system.dispatcher

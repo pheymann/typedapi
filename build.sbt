@@ -200,4 +200,4 @@ lazy val `http-support-tests` = project
 
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
-  .dependsOn(`http4s-client-jvm`, `http4s-server`, `akka-http-client`)
+  .dependsOn(`http4s-client-jvm`, `http4s-server`, `akka-http-client`, `akka-http-server`)
