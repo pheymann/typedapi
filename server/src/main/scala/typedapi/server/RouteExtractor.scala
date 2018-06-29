@@ -48,7 +48,7 @@ trait RouteExtractorLowPrio {
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = request.uri match {
       case p :: tail => 
-        if (p == wit.value.toString()) 
+        if (p == wit.value.toString())
           next(request.copy(uri = tail), extractedHeaderKeys, inAgg)
         else
           NotFoundE
