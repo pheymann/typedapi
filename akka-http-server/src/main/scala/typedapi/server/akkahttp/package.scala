@@ -22,7 +22,7 @@ package object akkahttp {
       type Out = Future[HttpResponse]
 
       def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, VIn, Future, FOut]): Either[ExtractionError, Out] = {
-        extract(eReq, endpoint).map { extracted =>
+        extract(eReq, endpoint).right.map { extracted =>
           execute(extracted, endpoint).flatMap { response =>
             Marshal(response).to[ResponseEntity].map { marshalledBody =>
               HttpResponse(entity = marshalledBody)
@@ -46,7 +46,7 @@ package object akkahttp {
     implicit val eqProof = _eqProof
 
     def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, (BodyType[Bd], ROut), Future, FOut]): Either[ExtractionError, Out] = {
-      extract(eReq, endpoint).map { case (_, extracted) =>
+      extract(eReq, endpoint).right.map { case (_, extracted) =>
         for {
           body     <- Unmarshal(req.entity).to[Bd]
           response <- execute(extracted, body, endpoint)

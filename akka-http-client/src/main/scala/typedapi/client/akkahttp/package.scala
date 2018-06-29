@@ -24,7 +24,6 @@ package object akkahttp {
                                    mat: Materializer): Future[HttpResponse] =
     client.singleRequest(request)
       .flatMap { response =>
-        // always consume response to prevent memory leak
         response.toStrict(bodyConsumerTimeout)
       }
 
