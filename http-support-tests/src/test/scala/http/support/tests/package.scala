@@ -8,8 +8,8 @@ package object tests {
     (:= :> "path" :> Get[User]) :|:
     (:= :> "segment" :> Segment[String]('name) :> Get[User]) :|:
     (:= :> "query" :> Query[Int]('age) :> Get[User]) :|:
-    (:= :> "header" :> typedapi.Header[Int]('age) :> Get[User]) :|:
-    (:= :> "header" :> "raw" :> typedapi.Header[Int]('age) :> RawHeaders :> Get[User]) :|:
+    (:= :> "header" :> Header[Int]('age) :> Get[User]) :|:
+    (:= :> "header" :> "raw" :> Header[Int]('age) :> RawHeaders :> Get[User]) :|:
     (:= :> Get[User]) :|:
     (:= :> Put[User]) :|:
     (:= :> "body" :> ReqBody[User] :> Put[User]) :|:

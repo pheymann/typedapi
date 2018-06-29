@@ -32,7 +32,7 @@ package object http4s {
 
   implicit def getRequest[F[_], A](implicit decoder: EntityDecoder[F, A], F: MonadError[F, Throwable]) = new GetRequest[Client[F], F, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[Client[F]]): F[A] = {
-      val request = Request[F](Method.GET, Uri.unsafeFromString(cm.base + "/" + uri.mkString("/")))
+      val request = Request[F](Method.GET, Uri.unsafeFromString(deriveUriString(cm, uri)))
         .withQuery(queries)
         .withHeaders(headers)
 
@@ -42,7 +42,7 @@ package object http4s {
 
   implicit def putRequest[F[_], A](implicit decoder: EntityDecoder[F, A], F: MonadError[F, Throwable]) = new PutRequest[Client[F], F, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[Client[F]]): F[A] = {
-      val request = Request[F](Method.PUT, Uri.unsafeFromString(cm.base + "/" + uri.mkString("/")))
+      val request = Request[F](Method.PUT, Uri.unsafeFromString(deriveUriString(cm, uri)))
         .withQuery(queries)
         .withHeaders(headers)
 
@@ -54,7 +54,7 @@ package object http4s {
                                                     decoder: EntityDecoder[F, A], 
                                                     F: MonadError[F, Throwable]) = new PutWithBodyRequest[Client[F], F, Bd, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[Client[F]]): F[A] = {
-      val request = Request[F](Method.PUT, Uri.unsafeFromString(cm.base + "/" + uri.mkString("/")))
+      val request = Request[F](Method.PUT, Uri.unsafeFromString(deriveUriString(cm, uri)))
         .withQuery(queries)
         .withHeaders(headers)
         .withBody(body)
@@ -65,7 +65,7 @@ package object http4s {
 
   implicit def postRequest[F[_], A](implicit decoder: EntityDecoder[F, A], F: MonadError[F, Throwable]) = new PostRequest[Client[F], F, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[Client[F]]): F[A] = {
-      val request = Request[F](Method.POST, Uri.unsafeFromString(cm.base + "/" + uri.mkString("/")))
+      val request = Request[F](Method.POST, Uri.unsafeFromString(deriveUriString(cm, uri)))
         .withQuery(queries)
         .withHeaders(headers)
 
@@ -77,7 +77,7 @@ package object http4s {
                                                      decoder: EntityDecoder[F, A], 
                                                      F: MonadError[F, Throwable]) = new PostWithBodyRequest[Client[F], F, Bd, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[Client[F]]): F[A] = {
-      val request = Request[F](Method.POST, Uri.unsafeFromString(cm.base + "/" + uri.mkString("/")))
+      val request = Request[F](Method.POST, Uri.unsafeFromString(deriveUriString(cm, uri)))
         .withQuery(queries)
         .withHeaders(headers)
         .withBody(body)
@@ -88,7 +88,7 @@ package object http4s {
 
   implicit def deleteRequest[F[_], A](implicit decoder: EntityDecoder[F, A], F: MonadError[F, Throwable]) = new DeleteRequest[Client[F], F, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[Client[F]]): F[A] = {
-      val request = Request[F](Method.DELETE, Uri.unsafeFromString(cm.base + "/" + uri.mkString("/")))
+      val request = Request[F](Method.DELETE, Uri.unsafeFromString(deriveUriString(cm, uri)))
         .withQuery(queries)
         .withHeaders(headers)
 
