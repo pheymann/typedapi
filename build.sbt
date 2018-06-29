@@ -98,8 +98,8 @@ lazy val shared = crossProject.crossType(CrossType.Pure)
     libraryDependencies ++= Dependencies.shared
   )
 
-val `shared-js` = shared.js
-val `shared-jvm` = shared.jvm
+lazy val `shared-js` = shared.js
+lazy val `shared-jvm` = shared.jvm
 
 lazy val client = crossProject.crossType(CrossType.Pure)
   .in(file("client"))
@@ -111,8 +111,8 @@ lazy val client = crossProject.crossType(CrossType.Pure)
   )
   .dependsOn(shared)
 
-val `client-js` = client.js
-val `client-jvm` = client.jvm
+lazy val `client-js` = client.js
+lazy val `client-jvm` = client.jvm
 
 lazy val server = project
   .in(file("server"))
@@ -139,8 +139,8 @@ lazy val `http4s-client` = crossProject.crossType(CrossType.Pure)
   )
   .dependsOn(client)
 
-val `http4s-client-js` = `http4s-client`.js
-val `http4s-client-jvm` = `http4s-client`.jvm
+lazy val `http4s-client-js` = `http4s-client`.js
+lazy val `http4s-client-jvm` = `http4s-client`.jvm
 
 lazy val `http4s-server` = project
   .in(file("http4s-server"))
@@ -155,3 +155,14 @@ lazy val `http4s-server` = project
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(server)
+
+lazy val `http-support-tests` = project
+  .in(file("http-support-tests"))
+  .settings(
+    commonSettings,
+    parallelExecution in Test := false,
+    libraryDependencies ++= Dependencies.httpSupportTests,
+
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+  )
+  .dependsOn(`http4s-client-jvm`, `http4s-server`)
