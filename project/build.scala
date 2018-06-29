@@ -36,6 +36,11 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-http-core" % akkaHttpV % Provided
   )
 
+  val akkaHttpServer = Seq(
+    "com.typesafe.akka" %% "akka-http" % akkaHttpV % Provided,
+    "com.typesafe.akka" %% "akka-http-core" % akkaHttpV % Provided
+  )
+
   private val circeV = "0.9.1"
 
   val httpSupportTests = Seq(

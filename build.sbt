@@ -87,7 +87,18 @@ lazy val mavenSettings = Seq(
 lazy val typedapi = project
   .in(file("."))
   .settings(commonSettings: _*)
-  .aggregate(`shared-js`, `shared-jvm`, `client-js`, `client-jvm`, server, `http4s-client-js`, `http4s-client-jvm` , `http4s-server`, `akka-http-client`)
+  .aggregate(
+    `shared-js`, 
+    `shared-jvm`, 
+    `client-js`, 
+    `client-jvm`, 
+    server, 
+    `http4s-client-js`, 
+    `http4s-client-jvm` , 
+    `http4s-server`, 
+    `akka-http-client`,
+    `akka-http-server`
+  )
 
 lazy val shared = crossProject.crossType(CrossType.Pure)
   .in(file("shared"))
@@ -167,6 +178,18 @@ lazy val `akka-http-client` = project
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(`client-jvm`)
+
+lazy val `akka-http-server` = project
+  .in(file("akka-http-server"))
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-akka-http-server",
+    libraryDependencies ++= Dependencies.akkaHttpServer,
+
+    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+  )
+  .dependsOn(server)
 
 lazy val `http-support-tests` = project
   .in(file("http-support-tests"))
