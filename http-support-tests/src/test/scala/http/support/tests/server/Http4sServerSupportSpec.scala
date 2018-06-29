@@ -1,6 +1,6 @@
 package http.support.tests.server
 
-import http.support.tests.UserCoding
+import http.support.tests.{UserCoding, Api}
 import typedapi.server._
 import typedapi.server.http4s._
 import cats.effect.IO

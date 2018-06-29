@@ -1,14 +1,15 @@
 package http.support.tests.client
 
-import http.support.tests.{UserCoding, User}
+import http.support.tests.{UserCoding, User, Api}
 import typedapi.client._
-import typedapi.dsl._
 import typedapi.client.http4s._
 import cats.effect.IO
 import org.http4s.client.blaze.Http1Client
 import org.specs2.mutable.Specification
 
 final class Http4sClientSupportSpec extends Specification {
+
+  import UserCoding._
 
   sequential
 
@@ -17,42 +18,29 @@ final class Http4sClientSupportSpec extends Specification {
   val server = TestServer.start()
 
   "http4s client support" >> {
-    import UserCoding._
+    val (p, s, q, h0, h1, m0, m1, m2, m3, m4, m5) = deriveAll(Api)
 
     "paths and segments" >> {
-      val a = derive(:= :> "path" :> Get[User])
-      a().run[IO](cm).unsafeRunSync() === User("foo", 27)
-      
-      val b = derive(:= :> "segment" :> Segment[String]('name) :> Get[User])
-      b("jim").run[IO](cm).unsafeRunSync() === User("jim", 27)
+      p().run[IO](cm).unsafeRunSync() === User("foo", 27)
+      s("jim").run[IO](cm).unsafeRunSync() === User("jim", 27)
     }
     
     "queries" >> {
-      val a = derive(:= :> "query" :> Query[Int]('age) :> Get[User])
-      a(42).run[IO](cm).unsafeRunSync() === User("foo", 42)
+      q(42).run[IO](cm).unsafeRunSync() === User("foo", 42)
     }
     
     "headers" >> {
-      val a = derive(:= :> "header" :> Header[Int]('age) :> Get[User])
-      a(42).run[IO](cm).unsafeRunSync() === User("foo", 42)
-
-      val b = derive(:= :> "header" :> "raw" :> Header[Int]('age) :> RawHeaders :> Get[User])
-      b(42, Map("name" -> "jim")).run[IO](cm).unsafeRunSync() === User("jim", 42)
+      h0(42).run[IO](cm).unsafeRunSync() === User("foo", 42)
+      h1(42, Map("name" -> "jim")).run[IO](cm).unsafeRunSync() === User("jim", 42)
     }
 
     "methods" >> {
-      val a = derive(:= :> Get[User])
-      a().run[IO](cm).unsafeRunSync() === User("foo", 27)
-      val b = derive(:= :> Put[User])
-      b().run[IO](cm).unsafeRunSync() === User("foo", 27)
-      val c = derive(:= :> "body" :> ReqBody[User] :> Put[User])
-      c(User("jim", 42)).run[IO](cm).unsafeRunSync() === User("jim", 42)
-      val d = derive(:= :> Post[User])
-      d().run[IO](cm).unsafeRunSync() === User("foo", 27)
-      val e = derive(:= :> "body" :> ReqBody[User] :> Post[User])
-      e(User("jim", 42)).run[IO](cm).unsafeRunSync() === User("jim", 42)
-      val f = derive(:= :> Query[List[String]]('reasons) :> Delete[User])
-      f(List("because")).run[IO](cm).unsafeRunSync() === User("foo", 27)
+      m0().run[IO](cm).unsafeRunSync() === User("foo", 27)
+      m1().run[IO](cm).unsafeRunSync() === User("foo", 27)
+      m2(User("jim", 42)).run[IO](cm).unsafeRunSync() === User("jim", 42)
+      m3().run[IO](cm).unsafeRunSync() === User("foo", 27)
+      m4(User("jim", 42)).run[IO](cm).unsafeRunSync() === User("jim", 42)
+      m5(List("because")).run[IO](cm).unsafeRunSync() === User("foo", 27)
     }
 
     step {
