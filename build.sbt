@@ -166,7 +166,7 @@ lazy val `akka-http-client` = project
 
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
-  .dependsOn(client)
+  .dependsOn(`client-jvm`)
 
 lazy val `http-support-tests` = project
   .in(file("http-support-tests"))
