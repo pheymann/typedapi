@@ -93,11 +93,12 @@ lazy val typedapi = project
     `client-js`, 
     `client-jvm`, 
     server, 
-    `http4s-client-js`, 
-    `http4s-client-jvm` , 
+    `http4s-client`, 
     `http4s-server`, 
     `akka-http-client`,
-    `akka-http-server`
+    `akka-http-server`,
+    `js-client`,
+    `http-support-tests`
   )
 
 lazy val shared = crossProject.crossType(CrossType.Pure)
@@ -136,30 +137,23 @@ lazy val server = project
   .dependsOn(`shared-jvm`)
 
 
-lazy val `http4s-client` = crossProject.crossType(CrossType.Pure)
+lazy val `http4s-client` = project
   .in(file("http4s-client"))
-  .configs(IntegrationTest)
   .settings(
     commonSettings,
     mavenSettings,
-    Defaults.itSettings,
     name := "typedapi-http4s-client",
     libraryDependencies ++= Dependencies.http4sClient,
 
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
-  .dependsOn(client)
-
-lazy val `http4s-client-js` = `http4s-client`.js
-lazy val `http4s-client-jvm` = `http4s-client`.jvm
+  .dependsOn(`client-jvm`)
 
 lazy val `http4s-server` = project
   .in(file("http4s-server"))
-  .configs(IntegrationTest)
   .settings(
     commonSettings,
     mavenSettings,
-    Defaults.itSettings,
     name := "typedapi-http4s-server",
     libraryDependencies ++= Dependencies.http4sServer,
 
@@ -173,9 +167,7 @@ lazy val `akka-http-client` = project
     commonSettings,
     mavenSettings,
     name := "typedapi-akka-http-client",
-    libraryDependencies ++= Dependencies.akkaHttpClient,
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+    libraryDependencies ++= Dependencies.akkaHttpClient
   )
   .dependsOn(`client-jvm`)
 
@@ -185,19 +177,28 @@ lazy val `akka-http-server` = project
     commonSettings,
     mavenSettings,
     name := "typedapi-akka-http-server",
-    libraryDependencies ++= Dependencies.akkaHttpServer,
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+    libraryDependencies ++= Dependencies.akkaHttpServer
   )
   .dependsOn(server)
+
+lazy val `js-client` = project
+  .in(file("js-client"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-js-client",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "0.9.6" % Compile
+    )
+  )
+  .dependsOn(`client-js`)
 
 lazy val `http-support-tests` = project
   .in(file("http-support-tests"))
   .settings(
     commonSettings,
     parallelExecution in Test := false,
-    libraryDependencies ++= Dependencies.httpSupportTests,
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+    libraryDependencies ++= Dependencies.httpSupportTests
   )
-  .dependsOn(`http4s-client-jvm`, `http4s-server`, `akka-http-client`, `akka-http-server`)
+  .dependsOn(`http4s-client`, `http4s-server`, `akka-http-client`, `akka-http-server`)
