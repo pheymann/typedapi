@@ -1,12 +1,12 @@
 package typedapi.client.js
 
-import scala.concurrent.Future
+import scala.language.higherKinds
 
-trait Decoder[A] extends (String => Future[A])
+trait Decoder[F[_], A] extends (String => F[Either[Exception, A]])
 
 object Decoder {
 
-  def apply[A](decoder: String => Future[A]): Decoder[A] = new Decoder[A] {
-    def apply(raw: String): Future[A] = decoder(raw)
+  def apply[F[_], A](decoder: String => F[Either[Exception, A]]): Decoder[F, A] = new Decoder[F, A] {
+    def apply(raw: String): F[Either[Exception, A]] = decoder(raw)
   }
 }

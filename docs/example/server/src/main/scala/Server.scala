@@ -2,8 +2,13 @@
 import typedapi.server._
 import typedapi.server.http4s._
 import cats.effect.IO
+import org.http4s._
+import org.http4s.circe._
 
 object Server {
+
+  implicit val decoder = jsonOf[IO, User]
+  implicit val encoder = jsonEncoderOf[IO, User]
 
   val fetch: String => IO[User] = name => IO.pure(User(name, 27))
   val create: User => IO[User] = user => IO.pure(user)

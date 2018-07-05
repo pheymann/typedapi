@@ -17,10 +17,9 @@ lazy val shared = crossProject.crossType(CrossType.Pure)
     libraryDependencies ++= Seq(
       "com.github.pheymann" %%% "typedapi-shared" % typedapiVersion,
 
-
-      "io.circe"   %%% "circe-core" % "0.9.1",
-      "io.circe"   %%% "circe-parser" % "0.9.1",
-      "io.circe"   %%% "circe-generic" % "0.9.1"
+      "io.circe" %%% "circe-core" % "0.9.1",
+      "io.circe" %%% "circe-parser" % "0.9.1",
+      "io.circe" %%% "circe-generic" % "0.9.1"
     )
   )
 
@@ -34,27 +33,35 @@ lazy val server = project
     libraryDependencies ++= Seq(
       "com.github.pheymann" %% "typedapi-http4s-server" % typedapiVersion,
 
+      "org.http4s" %% "http4s-circe" % http4sVersion,
       "org.http4s" %% "http4s-blaze-server" % http4sVersion,
       "org.http4s" %% "http4s-dsl" % http4sVersion
     )
   )
   .dependsOn(`shared-jvm`)
 
-lazy val client = crossProject.crossType(CrossType.Pure)
-  .in(file("client"))
+lazy val `client-jvm` = project
+  .in(file("client-jvm"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.pheymann" %%% "typedapi-http4s-client" % typedapiVersion,
+      "com.github.pheymann" %% "typedapi-http4s-client" % typedapiVersion,
 
-      "org.http4s" %%% "http4s-blaze-client" % http4sVersion,
-      "org.http4s" %%% "http4s-dsl" % http4sVersion
+      "org.http4s" %% "http4s-circe" % http4sVersion,
+      "org.http4s" %% "http4s-blaze-client" % http4sVersion,
+      "org.http4s" %% "http4s-dsl" % http4sVersion
     )
   )
-  .jsSettings(
+  .dependsOn(`shared-jvm`)
+
+lazy val `client-js` = project
+  .in(file("client-js"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.github.pheymann" %%% "typedapi-js-client" % typedapiVersion,
+    ),
     scalaJSUseMainModuleInitializer := true
   )
-  .dependsOn(shared)
-
-lazy val `client-js` = client.js
-lazy val `client-jvm` = client.jvm
+  .dependsOn(`shared-js`)

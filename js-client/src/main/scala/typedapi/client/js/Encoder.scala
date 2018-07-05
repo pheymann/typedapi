@@ -1,10 +1,12 @@
 package typedapi.client.js
 
-trait Encoder[A] extends (A => String)
+import scala.language.higherKinds
+
+trait Encoder[F[_], A] extends (A => F[String])
 
 object Encoder {
 
-  def apply[A](encoder: A => String): Encoder[A] = new Encoder[A] {
-    def apply(a: A): String = encoder(a)
+  def apply[F[_], A](encoder: A => F[String]): Encoder[F, A] = new Encoder[F, A] {
+    def apply(a: A): F[String] = encoder(a)
   }
 }
