@@ -1,6 +1,6 @@
 package http.support.tests.server
 
-import http.support.tests.Api
+import http.support.tests.{Api, UserCoding}
 import typedapi.server._
 import typedapi.server.akkahttp._
 import akka.actor.ActorSystem
@@ -15,6 +15,7 @@ import scala.concurrent.duration._
 
 final class AkkaHttpServerSupportSpec(implicit ee: ExecutionEnv) extends ServerSupportSpec[Future]()(catsStdInstancesForFuture(ee.ec)) {
 
+  import UserCoding._
   import FailFastCirceSupport._
 
   implicit val timeout = 1.second

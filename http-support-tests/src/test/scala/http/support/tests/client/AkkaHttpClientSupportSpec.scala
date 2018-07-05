@@ -1,6 +1,6 @@
 package http.support.tests.client
 
-import http.support.tests.{User, Api}
+import http.support.tests.{User, UserCoding, Api}
 import typedapi.client._
 import typedapi.client.akkahttp._
 import akka.actor.ActorSystem
@@ -15,6 +15,7 @@ import scala.concurrent.{Future, Await}
 
 final class AkkaHttpClientSupportSpec(implicit ee: ExecutionEnv) extends Specification {
 
+  import UserCoding._
   import FailFastCirceSupport._
 
   sequential
