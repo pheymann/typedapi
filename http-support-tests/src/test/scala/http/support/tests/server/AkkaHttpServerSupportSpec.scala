@@ -18,7 +18,7 @@ final class AkkaHttpServerSupportSpec(implicit ee: ExecutionEnv) extends ServerS
   import UserCoding._
   import FailFastCirceSupport._
 
-  implicit val timeout = 1.second
+  implicit val timeout = 5.second
   implicit val system  = ActorSystem("akka-http-server-spec", defaultExecutionContext = Some(ee.ec))
   implicit val mat     = ActorMaterializer()
 

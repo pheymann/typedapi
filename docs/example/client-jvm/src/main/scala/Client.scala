@@ -1,8 +1,14 @@
 
 import typedapi.client._
 import typedapi.client.http4s._
+import cats.effect.IO
+import org.http4s._
+import org.http4s.circe._
 
 object Client {
+
+  implicit val decoder = jsonOf[IO, User]
+  implicit val encoder = jsonEncoderOf[IO, User]
 
   val (fetch, create) = deriveAll(FromDsl.MyApi)
 
