@@ -19,8 +19,6 @@ package object dsl {
   def ReqBody[MT <: MediaType, A] = ReqBodyElement[MT, A]
   def Get[MT <: MediaType, A] = GetElement[MT, A]
   def Put[MT <: MediaType, A] = PutElement[MT, A]
-//  def PutWithBody[BMT <: MediaType, Bd, MT <: MediaType, A] = PutWithBodyElement[BMT, Bd, MT, A]
   def Post[MT <: MediaType, A] = PostElement[MT, A]
-//  def PostWithBody[BMT <: MediaType, Bd, MT <: MediaType, A] = PostWithBodyElement[BMT, Bd, MT, A]
   def Delete[MT <: MediaType, A] = DeleteElement[MT, A]
 }

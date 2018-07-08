@@ -7,7 +7,8 @@ import shapeless.ops.hlist.Tupler
 import shapeless.ops.function.FnFromProduct
 
 package object client extends TypeLevelFoldLeftLowPrio 
-                      with TypeLevelFoldLeftListLowPrio 
+                      with TypeLevelFoldLeftListLowPrio
+                      with WitnessToStringLowPrio
                       with ApiTransformer {
 
   def deriveUriString(cm: ClientManager[_], uri: List[String]): String = cm.base + "/" + uri.mkString("/")

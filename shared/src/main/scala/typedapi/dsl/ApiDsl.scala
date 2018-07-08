@@ -29,40 +29,40 @@ sealed trait ApiListWithOps[H <: HList] extends ApiList[H] {
 case object EmptyCons extends ApiListWithOps[HNil] {
 
   def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: HNil] = PathCons()
-  def :>[S <: Symbol, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: HNil] = SegmentCons()
-  def :>[S <: Symbol, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: HNil] = QueryCons()  
-  def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: HNil] = HeaderCons()
+  def :>[S, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: HNil] = SegmentCons()
+  def :>[S, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: HNil] = QueryCons()  
+  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: HNil] = HeaderCons()
 }
 
 /** Last set element is a path. */
 final case class PathCons[H <: HList]() extends ApiListWithOps[H] {
 
   def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: H] = PathCons()
-  def :>[S <: Symbol, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: H] = SegmentCons()
-  def :>[S <: Symbol, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()  
-  def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
+  def :>[S, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: H] = SegmentCons()
+  def :>[S, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()  
+  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
 }
 
 /** Last set element is a segment. */
 final case class SegmentCons[H <: HList]() extends ApiListWithOps[H] {
 
   def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: H] = PathCons()
-  def :>[S <: Symbol, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: H] = SegmentCons()
-  def :>[S <: Symbol, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()
-  def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
+  def :>[S, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: H] = SegmentCons()
+  def :>[S, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()
+  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
 }
 
 /** Last set element is a query parameter. */
 final case class QueryCons[H <: HList]() extends ApiListWithOps[H]  {
 
-  def :>[S <: Symbol, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()
-  def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
+  def :>[S, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()
+  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
 }
 
 /** Last set element is a header. */
 final case class HeaderCons[H <: HList]() extends ApiListWithOps[H] {
 
-  def :>[S <: Symbol, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
+  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
 }
 
 /** Last set element is a header. */

@@ -31,16 +31,16 @@ trait ApiTransformer {
   implicit def pathElementTransformer[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[PathElement[S], (El, KIn, VIn, M, Out), (S :: El, KIn, VIn, M, Out)]
 
-  implicit def segmentElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+  implicit def segmentElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[SegmentParam[S, A], (El, KIn, VIn, M, Out), (SegmentInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def queryElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+  implicit def queryElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[QueryParam[S, A], (El, KIn, VIn, M, Out), (QueryInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def queryListElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+  implicit def queryListElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[QueryParam[S, List[A]], (El, KIn, VIn, M, Out), (QueryInput :: El, S :: KIn, List[A] :: VIn, M, Out)]
 
-  implicit def headerElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+  implicit def headerElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[HeaderParam[S, A], (El, KIn, VIn, M, Out), (HeaderInput :: El, S :: KIn, A :: VIn, M, Out)]
 
   implicit def rawHeadersElementTransformer[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 

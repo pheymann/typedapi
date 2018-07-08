@@ -18,8 +18,8 @@ object Client {
   final case class DecodeException(msg: String) extends Exception
 
   implicit val decoder = typedapi.client.js.Decoder[Future, User](json => decode[User](json).fold(
-    error => Future.success(Left(DecodeException(error.toString()))), 
-    Right(_)
+    error => Future.successful(Left(DecodeException(error.toString()))), 
+    user  => Future.successful(Right(user))
   ))
   implicit val encoder = typedapi.client.js.Encoder[Future, User](user => Future.successful(user.asJson.noSpaces))
 
@@ -29,8 +29,8 @@ object Client {
     val cm = ClientManager(Ajax, "http://localhost", 9000)
 
     (for {
-      u0 <- create(User("joe", 27)).run[Future](cm)
-      u1 <- fetch("joe").run[Future](cm)
+      u0 <- create("*", User("joe", 27)).run[Future](cm)
+      u1 <- fetch("joe", "*").run[Future](cm)
     } yield (u0, u1)).foreach { case (u0, u1) =>
       println(u0)
       println(u1)

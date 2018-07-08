@@ -7,9 +7,12 @@ import scala.concurrent.{Future, ExecutionContext}
 package object js {
 
   private def renderQueries(queries: Map[String, List[String]]): String = 
-    queries
-      .map { case (key, values) => s"$key=${values.mkString(",")}" }
-      .mkString("?", "&", "")
+    if (queries.nonEmpty)
+      queries
+        .map { case (key, values) => s"$key=${values.mkString(",")}" }
+        .mkString("?", "&", "")
+  else
+    ""
 
   private def flatten[A](decoded: Future[Either[Exception, A]])(implicit ec: ExecutionContext): Future[A] = decoded.flatMap {
     case Right(a)    => Future.successful(a)

@@ -52,24 +52,26 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def queryInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+  implicit def queryInputCompiler[T <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit wit: Witness.Aux[K], show: WitnessToString[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
     new RequestDataBuilder[QueryInput :: T, K :: KIn, V :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        val queryName  = wit.value.name
+        val queryName  = show.show(wit.value)
         val queryValue = inputs.head
 
         compiler(inputs.tail, uri, Map((queryName, List(queryValue.toString()))) ++ queries, headers)
       }
     }
 
-  implicit def headerInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+  implicit def headerInputCompiler[T <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit wit: Witness.Aux[K], show: WitnessToString[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
     new RequestDataBuilder[HeaderInput :: T, K :: KIn, V :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        val headerName  = wit.value.name
+        val headerName  = show.show(wit.value)
         val headerValue = inputs.head
 
         compiler(inputs.tail, uri, queries, Map((headerName, headerValue.toString())) ++ headers)
@@ -161,12 +163,13 @@ trait RequestDataBuilderLowPrio {
 
 trait RequestDataBuilderMediumPrio extends RequestDataBuilderLowPrio {
 
-  implicit def queryOptInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+  implicit def queryOptInputCompiler[T <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit wit: Witness.Aux[K], show: WitnessToString[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
     new RequestDataBuilder[QueryInput :: T, K :: KIn, Option[V] :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: Option[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        val queryName      = wit.value.name
+        val queryName      = show.show(wit.value)
         val queryValue     = inputs.head
         val updatedQueries = queryValue.fold(queries)(q => Map(queryName -> List(q.toString())) ++ queries)
 
@@ -174,12 +177,13 @@ trait RequestDataBuilderMediumPrio extends RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def queryListInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+  implicit def queryListInputCompiler[T <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit wit: Witness.Aux[K], show: WitnessToString[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
     new RequestDataBuilder[QueryInput :: T, K :: KIn, List[V] :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: List[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        val queryName  = wit.value.name
+        val queryName  = show.show(wit.value)
         val queryValue = inputs.head
 
         if (queryValue.isEmpty)
@@ -189,12 +193,13 @@ trait RequestDataBuilderMediumPrio extends RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def headersOptInputCompiler[T <: HList, K <: Symbol, V, KIn <: HList, VIn <: HList, M <: MethodType, O](implicit wit: Witness.Aux[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+  implicit def headersOptInputCompiler[T <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit wit: Witness.Aux[K], show: WitnessToString[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
     new RequestDataBuilder[HeaderInput :: T, K :: KIn, Option[V] :: VIn, M, O] {
       type Out = compiler.Out
 
       def apply(inputs: Option[V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        val headerName     = wit.value.name
+        val headerName     = show.show(wit.value)
         val headerValue    = inputs.head
         val updatedHeaders = headerValue.fold(headers)(h => Map(headerName -> h.toString()) ++ headers)
 
