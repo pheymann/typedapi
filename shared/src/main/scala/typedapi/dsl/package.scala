@@ -12,11 +12,15 @@ package object dsl {
   def Query[A]   = new QueryHelper[A]
   def Header[A]  = new HeaderHelper[A]
   val RawHeaders = RawHeadersParam
-  def ReqBody[A] = ReqBodyElement[A]
-  def Get[A] = GetElement[A]
-  def Put[A] = PutElement[A]
-  def PutWithBody[Bd, A] = PutWithBodyElement[Bd, A]
-  def Post[A] = PostElement[A]
-  def PostWithBody[Bd, A] = PostWithBodyElement[Bd, A]
-  def Delete[A] = DeleteElement[A]
+
+  type Json  = `Application/Json`.type
+  type Plain = `Text/Plain`.type
+
+  def ReqBody[MT <: MediaType, A] = ReqBodyElement[MT, A]
+  def Get[MT <: MediaType, A] = GetElement[MT, A]
+  def Put[MT <: MediaType, A] = PutElement[MT, A]
+//  def PutWithBody[BMT <: MediaType, Bd, MT <: MediaType, A] = PutWithBodyElement[BMT, Bd, MT, A]
+  def Post[MT <: MediaType, A] = PostElement[MT, A]
+//  def PostWithBody[BMT <: MediaType, Bd, MT <: MediaType, A] = PostWithBodyElement[BMT, Bd, MT, A]
+  def Delete[MT <: MediaType, A] = DeleteElement[MT, A]
 }

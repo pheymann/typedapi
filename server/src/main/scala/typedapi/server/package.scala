@@ -13,8 +13,9 @@ package object server extends TypeLevelFoldLeftLowPrio
   def derive[F[_]]: ExecutableDerivation[F] = new ExecutableDerivation[F]
 
 
-  def mount[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut, Req, Resp, Out](server: ServerManager[S], endpoint: Endpoint[El, KIn, VIn, M, ROut, F, FOut])
-                                                                                                          (implicit executor: EndpointExecutor.Aux[Req, El, KIn, VIn, M, ROut, F, FOut, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
+  def mount[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut, Req, Resp, Out]
+      (server: ServerManager[S], endpoint: Endpoint[El, KIn, VIn, M, ROut, F, FOut])
+      (implicit executor: EndpointExecutor.Aux[Req, El, KIn, VIn, M, ROut, F, FOut, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
     mounting(server, List(new Serve[executor.R, executor.Out] {
       def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
     }))

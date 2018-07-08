@@ -54,7 +54,7 @@ final class ServeAndMountSpec extends Specification {
 
   "serve endpoints as simple Request -> Response functions and mount them into a server" >> {
     "serve single endpoint and no body" >> {
-      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[List[Foo]]
+      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[Json, List[Foo]]
       val endpoint = derive[Option](Api).from((name, sortByAge) => Some(List(Foo(name))))
       val served   = toList(endpoint)
 
@@ -65,7 +65,7 @@ final class ServeAndMountSpec extends Specification {
     }
 
     "serve single endpoint and with body" >> {
-      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> ReqBody[Foo] :> Post[List[Foo]]
+      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> ReqBody[Json, Foo] :> Post[Json, List[Foo]]
       val endpoint = derive[Option](Api).from((name, body) => Some(List(Foo(name), body)))
       val served   = toList(endpoint)
 
@@ -77,8 +77,8 @@ final class ServeAndMountSpec extends Specification {
 
     "serve multiple endpoints" >> {
       val Api = 
-        (:= :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[List[Foo]]) :|:
-        (:= :> "create" :> "user" :> ReqBody[Foo] :> Post[Foo])
+        (:= :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[Json, List[Foo]]) :|:
+        (:= :> "create" :> "user" :> ReqBody[Json, Foo] :> Post[Json, Foo])
 
       def find(name: String, age: Int): Option[List[Foo]] = Some(List(Foo(name)))
       def create(foo: Foo): Option[Foo] = Some(foo)

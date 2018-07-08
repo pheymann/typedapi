@@ -2,6 +2,7 @@ package typedapi.client
 
 import typedapi.shared._
 import shapeless._
+import shapeless.labelled.FieldType
 
 import scala.collection.mutable.Builder
 import scala.annotation.implicitNotFound
@@ -89,61 +90,69 @@ trait RequestDataBuilderLowPrio {
   type Data             = List[String] :: Map[String, List[String]] :: Map[String, String] :: HNil
   type DataWithBody[Bd] = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
 
-  implicit def getCompiler[A] = new RequestDataBuilder[HNil, HNil, HNil, GetCall, A] {
+  private def accept[MT <: MediaType](headers: Map[String, String], media: MT): Map[String, String] =
+    Map(("Accept", media.value)) ++ headers
+
+  private def contentType[MT <: MediaType](headers: Map[String, String], media: MT): Map[String, String] =
+    Map(("Content-Type", media.value)) ++ headers
+
+  implicit def getCompiler[MT <: MediaType, A](implicit media: Witness.Aux[MT]) = new RequestDataBuilder[HNil, HNil, HNil, GetCall, FieldType[MT, A]] {
     type Out = Data
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = uri.result() :: queries :: headers :: HNil
+      val out = uri.result() :: queries :: accept(headers, media.value) :: HNil
 
       out
     }
   }
 
-  implicit def putCompiler[A] = new RequestDataBuilder[HNil, HNil, HNil, PutCall, A] {
+  implicit def putCompiler[MT <: MediaType, A](implicit media: Witness.Aux[MT]) = new RequestDataBuilder[HNil, HNil, HNil, PutCall, FieldType[MT, A]] {
     type Out = Data
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = uri.result() :: queries :: headers :: HNil
+      val out = uri.result() :: queries :: accept(headers, media.value) :: HNil
 
       out
     }
   }
 
-  implicit def putWithBodyCompiler[Bd, A] = new RequestDataBuilder[HNil, BodyField.T :: HNil, Bd :: HNil, PutWithBodyCall, A] {
-    type Out = DataWithBody[Bd]
+  implicit def putWithBodyCompiler[BMT <: MediaType, Bd, MT <: MediaType, A](implicit bodyMedia: Witness.Aux[BMT], media: Witness.Aux[MT]) = 
+    new RequestDataBuilder[HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PutWithBodyCall, FieldType[MT, A]] {
+      type Out = DataWithBody[Bd]
 
-    def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = uri.result() :: queries :: headers :: inputs.head :: HNil
+      def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+        val out = uri.result() :: queries :: contentType(accept(headers, media.value), bodyMedia.value) :: inputs.head :: HNil
 
-      out
+        out
+      }
     }
-  }
 
-  implicit def postCompiler[A] = new RequestDataBuilder[HNil, HNil, HNil, PostCall, A] {
+  implicit def postCompiler[MT <: MediaType, A](implicit media: Witness.Aux[MT]) = new RequestDataBuilder[HNil, HNil, HNil, PostCall, FieldType[MT, A]] {
     type Out = Data
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = uri.result() :: queries :: headers :: HNil
+      val out = uri.result() :: queries :: accept(headers, media.value) :: HNil
 
       out
     }
   }
 
-  implicit def postWithBodyCompiler[Bd, A] = new RequestDataBuilder[HNil, BodyField.T :: HNil, Bd :: HNil, PostWithBodyCall, A] {
-    type Out = DataWithBody[Bd]
+  implicit def postWithBodyCompiler[BMT <: MediaType, Bd, MT <: MediaType, A](implicit bodyMedia: Witness.Aux[BMT], media: Witness.Aux[MT]) = 
+    new RequestDataBuilder[HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PostWithBodyCall, FieldType[MT, A]] {
+      type Out = DataWithBody[Bd]
 
-    def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = uri.result() :: queries :: headers :: inputs.head :: HNil
+      def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+        val out = uri.result() :: queries :: contentType(accept(headers, media.value), bodyMedia.value) :: inputs.head :: HNil
 
-      out
+        out
+      }
     }
-  }
 
-  implicit def deleteCompiler[A] = new RequestDataBuilder[HNil, HNil, HNil, DeleteCall, A] {
+  implicit def deleteCompiler[MT <: MediaType, A](implicit media: Witness.Aux[MT]) = new RequestDataBuilder[HNil, HNil, HNil, DeleteCall, FieldType[MT, A]] {
     type Out = Data
 
     def apply(inputs: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-      val out = uri.result() :: queries :: headers :: HNil
+      val out = uri.result() :: queries :: accept(headers, media.value) :: HNil
 
       out
     }

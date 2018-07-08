@@ -2,6 +2,7 @@ package typedapi.server
 
 import typedapi.shared._
 import shapeless._
+import shapeless.labelled.FieldType
 import shapeless.ops.function._
 
 import scala.language.higherKinds
@@ -45,12 +46,12 @@ trait PrecompileEndpointLowPrio {
     val constructors = HNil
   }
 
-  implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, Out, M <: MethodType, ROut, T <: HList]
+  implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, MT <: MediaType, Out, M <: MethodType, ROut, T <: HList]
     (implicit extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
               vinToFn: FnFromProduct.Aux[VIn => F[Out], Fn],
               fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]],
               next: PrecompileEndpoint[F, T]) =
-    new PrecompileEndpoint[F, (El, KIn, VIn, M, Out) :: T] {
+    new PrecompileEndpoint[F, (El, KIn, VIn, M, FieldType[MT, Out]) :: T] {
       type Fns    = Fn :: next.Fns
       type Consts = EndpointConstructor[F, Fn, El, KIn, VIn, M, ROut, Out] :: next.Consts
 

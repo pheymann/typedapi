@@ -8,8 +8,7 @@ final case class ApiTypeCarrier[H <: HList]() {
   def :|:[H1 <: HList](next: ApiTypeCarrier[H1]): CompositionCons[H1 :: H :: HNil] = CompositionCons()
 }
 
-/** Compose multiple type level api descriptions in a HList of HLists.
-  */
+/** Compose multiple type level api descriptions in a HList of HLists. */
 final case class CompositionCons[H <: HList]() {
 
   def :|:[H1 <: HList](next: ApiTypeCarrier[H1]): CompositionCons[H1 :: H] = CompositionCons()

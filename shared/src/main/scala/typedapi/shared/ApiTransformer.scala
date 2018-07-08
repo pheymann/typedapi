@@ -1,15 +1,16 @@
 package typedapi.shared
 
 import shapeless._
+import shapeless.labelled.FieldType
 
-sealed trait ApiOp
+trait ApiOp
 
 sealed trait SegmentInput extends ApiOp
 sealed trait QueryInput extends ApiOp
 sealed trait HeaderInput extends ApiOp
 sealed trait RawHeadersInput extends ApiOp
 
-sealed trait MethodType extends ApiOp
+trait MethodType extends ApiOp
 sealed trait GetCall extends MethodType
 sealed trait PutCall extends MethodType
 sealed trait PutWithBodyCall extends MethodType
@@ -17,10 +18,11 @@ sealed trait PostCall extends MethodType
 sealed trait PostWithBodyCall extends MethodType
 sealed trait DeleteCall extends MethodType
 
-/** Separates uri, input description and out type from `ApiList`. 
+/** Separates uri, input description, method  and out type from `ApiList`. 
+  * 
   *   Example:
-  *     val api: FinalCons[Get[Foo] :: Segment["name".type, String] :: "find".type :: HNil] = := :> "find" :> Segment[String]('name) :> Get[Foo]
-  *     val trans: ("name".type :: SegmentInput :: HNil, FieldType['name.type, String :: HNil], Foo)
+  *     val api: FinalCons[Get[Json, Foo] :: Segment["name".type, String] :: "find".type :: HNil] = := :> "find" :> Segment[String]('name) :> Get[Foo]
+  *     val trans: ("name".type :: SegmentInput :: HNil, 'name.type :: HNil, String :: HNil], Field[Json, GetCall], Foo)
   */
 trait ApiTransformer {
 
@@ -44,15 +46,17 @@ trait ApiTransformer {
   implicit def rawHeadersElementTransformer[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[RawHeadersParam.type, (El, KIn, VIn, M, Out), (RawHeadersInput :: El, RawHeadersField.T :: KIn, Map[String, String] :: VIn, M, Out)]
 
-  implicit def getTransformer[A] = at[GetElement[A], Unit, (HNil, HNil, HNil, GetCall, A)]
+  implicit def getTransformer[MT <: MediaType, A] = at[GetElement[MT, A], Unit, (HNil, HNil, HNil, GetCall, FieldType[MT, A])]
 
-  implicit def putTransformer[A] = at[PutElement[A], Unit, (HNil, HNil, HNil, PutCall, A)]
+  implicit def putTransformer[MT <: MediaType, A] = at[PutElement[MT, A], Unit, (HNil, HNil, HNil, PutCall, FieldType[MT, A])]
 
-  implicit def putWithBodyTransformer[Bd, A] = at[PutWithBodyElement[Bd, A], Unit, (HNil, BodyField.T :: HNil, Bd :: HNil, PutWithBodyCall, A)]
+  implicit def putWithBodyTransformer[BMT <: MediaType, Bd, MT <: MediaType, A] = 
+    at[PutWithBodyElement[BMT, Bd, MT, A], Unit, (HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PutWithBodyCall, FieldType[MT, A])]
 
-  implicit def postTransformer[A] = at[PostElement[A], Unit, (HNil, HNil, HNil, PostCall, A)]
+  implicit def postTransformer[MT <: MediaType, A] = at[PostElement[MT, A], Unit, (HNil, HNil, HNil, PostCall, FieldType[MT, A])]
 
-  implicit def postWithBodyTransformer[Bd, A] = at[PostWithBodyElement[Bd, A], Unit, (HNil, BodyField.T :: HNil, Bd :: HNil, PostWithBodyCall, A)]
+  implicit def postWithBodyTransformer[BMT <: MediaType, Bd, MT <: MediaType, A] = 
+    at[PostWithBodyElement[BMT, Bd, MT, A], Unit, (HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PostWithBodyCall, FieldType[MT, A])]
 
-  implicit def deleteTransformer[A] = at[DeleteElement[A], Unit, (HNil, HNil, HNil, DeleteCall, A)]
+  implicit def deleteTransformer[MT <: MediaType, A] = at[DeleteElement[MT, A], Unit, (HNil, HNil, HNil, DeleteCall, FieldType[MT, A])]
 }

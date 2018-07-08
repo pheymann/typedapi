@@ -2,6 +2,7 @@ package typedapi.server
 
 import typedapi.shared._
 import shapeless.{HList, HNil, Witness}
+import shapeless.labelled.FieldType
 import shapeless.ops.hlist.Reverse
 
 import scala.util.Try
@@ -182,16 +183,17 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     }
   }
 
-  implicit def putWithBodyExtractor[Bd, EIn <: HList] = new RouteExtractor[HNil, shapeless.::[BodyField.T, HNil], shapeless.::[Bd, HNil], PutWithBodyCall, EIn] {
-    type Out = (BodyType[Bd], EIn)
+  implicit def putWithBodyExtractor[BMT <: MediaType, Bd, EIn <: HList] = 
+    new RouteExtractor[HNil, shapeless.::[FieldType[BMT, BodyField.T], HNil], shapeless.::[Bd, HNil], PutWithBodyCall, EIn] {
+      type Out = (BodyType[Bd], EIn)
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-      if (req.method == "PUT") 
-        Right((BodyType[Bd], inAgg))
-      else 
-        NotFoundE
+      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+        if (req.method == "PUT")
+          Right((BodyType[Bd], inAgg))
+        else
+          NotFoundE
+      }
     }
-  }
 
   implicit def postExtractor[EIn <: HList] = new RouteExtractor[HNil, HNil, HNil, PostCall, EIn] {
     type Out = EIn
@@ -204,16 +206,17 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     }
   }
 
-  implicit def postWithBodyExtractor[Bd, EIn <: HList, REIn <: HList] = new RouteExtractor[HNil, shapeless.::[BodyField.T, HNil], shapeless.::[Bd, HNil], PostWithBodyCall, EIn] {
-    type Out = (BodyType[Bd], EIn)
+  implicit def postWithBodyExtractor[BMT <: MediaType, Bd, EIn <: HList, REIn <: HList] = 
+    new RouteExtractor[HNil, shapeless.::[FieldType[BMT, BodyField.T], HNil], shapeless.::[Bd, HNil], PostWithBodyCall, EIn] {
+      type Out = (BodyType[Bd], EIn)
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-      if (req.method == "POST") 
-        Right((BodyType[Bd], inAgg))
-      else 
-        NotFoundE
+      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+        if (req.method == "POST")
+          Right((BodyType[Bd], inAgg))
+        else
+          NotFoundE
+      }
     }
-  }
 
   implicit def deleteExtractor[EIn <: HList] = new RouteExtractor[HNil, HNil, HNil, DeleteCall, EIn] {
     type Out = EIn
@@ -227,7 +230,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
   }
 }
 
-sealed trait ValueExtractor[A] extends (String => Option[A]) {
+trait ValueExtractor[A] extends (String => Option[A]) {
 
   def typeDesc: String
 }

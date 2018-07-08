@@ -1,11 +1,13 @@
 package typedapi.client
 
-import typedapi.shared.MethodType
+import typedapi.shared.{MethodType, MediaType}
 import shapeless._
+import shapeless.labelled.FieldType
 
 import scala.language.higherKinds
 
-final class ExecutableDerivation[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O, D <: HList](builder: RequestDataBuilder.Aux[El, KIn, VIn, M, O, D], input: VIn) {
+final class ExecutableDerivation[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, MT <: MediaType, O, D <: HList]
+  (builder: RequestDataBuilder.Aux[El, KIn, VIn, M, FieldType[MT, O], D], input: VIn) {
 
   final class Derivation[F[_]] {
 
