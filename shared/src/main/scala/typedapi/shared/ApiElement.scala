@@ -1,6 +1,6 @@
 package typedapi.shared
 
-import shapeless.Witness
+import shapeless._
 
 import scala.annotation.implicitNotFound
 
@@ -51,6 +51,14 @@ final class HeaderHelper[A] {
   */
 case object RawHeadersParam extends ApiElement
 
+final case class FixedHeadersElement[H <: HList]() extends ApiElement
+
+final class FixedHeadersHelper[H <: HList] {
+
+  def add[K, V](key: Witness.Lt[K], value: Witness.Lt[V]): FixedHeadersHelper[(K, V) :: HNil] = 
+    new FixedHeadersHelper
+}
+
 /** Request body type description. */
 final case class ReqBodyElement[MT <: MediaType, A]() extends ApiElement
 
@@ -83,7 +91,6 @@ trait MethodToReqBodyLowPrio {
 }
 
 trait MediaType {
-
   def value: String
 }
 case object `Application/Json` extends MediaType {

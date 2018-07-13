@@ -12,10 +12,11 @@ package object typedapi extends MethodToReqBodyLowPrio {
   val NoQueries = Queries
   def Query[A]  = new QueryHelper[A]
 
-  val Headers    = HeaderListEmpty
-  val NoHeaders  = Headers
-  def Header[A]  = new HeaderHelper[A]
-  val RawHeaders = RawHeadersParam
+  val Headers      = HeaderListCons[HNil]
+  val NoHeaders    = Headers
+  def Header[A]    = new HeaderHelper[A]
+  val FixedHeaders = new FixedHeadersHelper[HNil]()
+  val RawHeaders   = RawHeadersParam
 
   def ReqBody[MT <: MediaType, A] = ReqBodyElement[MT, A]
   def Get[MT <: MediaType, A]     = GetElement[MT, A]

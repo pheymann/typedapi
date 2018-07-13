@@ -45,13 +45,8 @@ sealed trait HeaderList[H <: HList]
 final case class HeaderListCons[H <: HList]() extends HeaderList[H] {
 
   def add[S, A](header: HeaderParam[S, A]): HeaderListCons[HeaderParam[S, A] :: H] = HeaderListCons()
+  def add[FH <: HList](fixed: FixedHeadersHelper[FH]): HeaderListCons[FixedHeadersElement[FH] :: H] = HeaderListCons()
   def add(headers: RawHeadersParam.type): RawHeaderCons[RawHeadersParam.type :: H] = RawHeaderCons()
 }
 
 final case class RawHeaderCons[H <: HList]() extends HeaderList[H]
-
-case object HeaderListEmpty extends HeaderList[HNil] {
-
-  def add[S, A](header: HeaderParam[S, A]): HeaderListCons[HeaderParam[S, A] :: HNil] = HeaderListCons()
-  def add(headers: RawHeadersParam.type): RawHeaderCons[RawHeadersParam.type :: HNil] = RawHeaderCons()
-}

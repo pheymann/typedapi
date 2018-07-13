@@ -35,6 +35,7 @@ object ApiDefinitionSpec {
   testCompile(Headers add Header[Int](fooW) add Header[Int](barW))[HeaderParam[barW.T, Int] :: HeaderParam[fooW.T, Int] :: HNil]
 
   // raw headers
+  testCompile(Headers add FixedHeaders.add("test", "test2"))[FixedHeadersElement[(testW.T, test2W.T) :: HNil] :: HNil]
   testCompile(Headers add RawHeaders)[RawHeadersParam.type :: HNil]
   testCompile(Headers add Header[Int](fooW) add RawHeaders)[RawHeadersParam.type :: HeaderParam[fooW.T, Int] :: HNil]
   test.illTyped("Headers add RawHeaders add Header[Int](fooW)")
