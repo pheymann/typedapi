@@ -20,8 +20,8 @@ object Client {
     val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://localhost", 9000)
 
     (for {
-      u0 <- create("*", User("joe", 27)).run[IO](cm)
-      u1 <- fetch("joe", "*").run[IO](cm)
+      u0 <- create(User("joe", 27)).run[IO](cm)
+      u1 <- fetch("joe").run[IO](cm)
     } yield {
       println(u0)
       println(u1)

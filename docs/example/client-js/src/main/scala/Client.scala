@@ -29,8 +29,8 @@ object Client {
     val cm = ClientManager(Ajax, "http://localhost", 9000)
 
     (for {
-      u0 <- create("*", User("joe", 27)).run[Future](cm)
-      u1 <- fetch("joe", "*").run[Future](cm)
+      u0 <- create(User("joe", 27)).run[Future](cm)
+      u1 <- fetch("joe").run[Future](cm)
     } yield (u0, u1)).foreach { case (u0, u1) =>
       println(u0)
       println(u1)
