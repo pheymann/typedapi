@@ -34,25 +34,25 @@ final class AkkaHttpClientSupportSpec(implicit ee: ExecutionEnv) extends Specifi
 
     "paths and segments" >> {
       p().run[Future](cm) must beEqualTo(User("foo", 27)).awaitFor(timeout)
-      s("jim").run[Future](cm) must beEqualTo( User("jim", 27)).awaitFor(timeout)
+      s("jim").run[Future](cm) must beEqualTo(User("jim", 27)).awaitFor(timeout)
     }
     
     "queries" >> {
-      q(42).run[Future](cm) must beEqualTo( User("foo", 42)).awaitFor(timeout)
+      q(42).run[Future](cm) must beEqualTo(User("foo", 42)).awaitFor(timeout)
     }
     
     "headers" >> {
-      h0(42).run[Future](cm) must beEqualTo( User("foo", 42)).awaitFor(timeout)
-      h1(42, Map("name" -> "jim")).run[Future](cm) must beEqualTo( User("jim", 42)).awaitFor(timeout)
+      h0(42).run[Future](cm) must beEqualTo(User("foo", 42)).awaitFor(timeout)
+      h1(42, Map("name" -> "jim")).run[Future](cm) must beEqualTo(User("jim", 42)).awaitFor(timeout)
     }
 
     "methods" >> {
-      m0().run[Future](cm) must beEqualTo( User("foo", 27)).awaitFor(timeout)
-      m1().run[Future](cm) must beEqualTo( User("foo", 27)).awaitFor(timeout)
-      m2(User("jim", 42)).run[Future](cm) must beEqualTo( User("jim", 42)).awaitFor(timeout)
-      m3().run[Future](cm) must beEqualTo( User("foo", 27)).awaitFor(timeout)
-      m4(User("jim", 42)).run[Future](cm) must beEqualTo( User("jim", 42)).awaitFor(timeout)
-      m5(List("because")).run[Future](cm) must beEqualTo( User("foo", 27)).awaitFor(timeout)
+      m0().run[Future](cm) must beEqualTo(User("foo", 27)).awaitFor(timeout)
+      m1().run[Future](cm) must beEqualTo(User("foo", 27)).awaitFor(timeout)
+      m2(User("jim", 42)).run[Future](cm) must beEqualTo(User("jim", 42)).awaitFor(timeout)
+      m3().run[Future](cm) must beEqualTo(User("foo", 27)).awaitFor(timeout)
+      m4(User("jim", 42)).run[Future](cm) must beEqualTo(User("jim", 42)).awaitFor(timeout)
+      m5(List("because")).run[Future](cm) must beEqualTo(User("foo", 27)).awaitFor(timeout)
     }
 
     step {

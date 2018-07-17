@@ -5,15 +5,15 @@ import typedapi.dsl._
 package object tests {
 
   val Api =
-    (:= :> "path" :> Get[User]) :|:
-    (:= :> "segment" :> Segment[String]('name) :> Get[User]) :|:
-    (:= :> "query" :> Query[Int]('age) :> Get[User]) :|:
-    (:= :> "header" :> Header[Int]('age) :> Get[User]) :|:
-    (:= :> "header" :> "raw" :> Header[Int]('age) :> RawHeaders :> Get[User]) :|:
-    (:= :> Get[User]) :|:
-    (:= :> Put[User]) :|:
-    (:= :> "body" :> ReqBody[User] :> Put[User]) :|:
-    (:= :> Post[User]) :|:
-    (:= :> "body" :> ReqBody[User] :> Post[User]) :|:
-    (:= :> Query[List[String]]('reasons) :> Delete[User])
+    (:= :> "path" :> Get[Json, User]) :|:
+    (:= :> "segment" :> Segment[String]('name) :> Get[Json, User]) :|:
+    (:= :> "query" :> Query[Int]('age) :> Get[Json, User]) :|:
+    (:= :> "header" :> Header[Int]('age) :> Get[Json, User]) :|:
+    (:= :> "header" :> "raw" :> Header[Int]('age) :> RawHeaders :> Get[Json, User]) :|:
+    (:= :> Get[Json, User]) :|:
+    (:= :> Put[Json, User]) :|:
+    (:= :> "body" :> ReqBody[Json, User] :> Put[Json, User]) :|:
+    (:= :> Post[Json, User]) :|:
+    (:= :> "body" :> ReqBody[Json, User] :> Post[Json, User]) :|:
+    (:= :> Query[List[String]]('reasons) :> Delete[Json, User])
 }

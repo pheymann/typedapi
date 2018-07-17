@@ -68,7 +68,7 @@ package object akkahttp {
                                                                           mat: Materializer) = new PutWithBodyRequest[HttpExt, Future, Bd, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[HttpExt]): Future[A] = {
       Marshal(body).to[RequestEntity].flatMap { marshalledBody =>
-        val request = mkRequest(deriveUriString(cm, uri), queries, headers).copy(HttpMethods.PUT, entity = marshalledBody)
+        val request = mkRequest(deriveUriString(cm, uri), queries, headers - "Content-Type").copy(HttpMethods.PUT, entity = marshalledBody)
 
         execRequest(cm.client, request, bodyConsumerTimeout).flatMap { response =>
           Unmarshal(response.entity).to[A]
@@ -106,7 +106,7 @@ package object akkahttp {
                                                                            mat: Materializer) = new PostWithBodyRequest[HttpExt, Future, Bd, A] {
     def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[HttpExt]): Future[A] = {
       Marshal(body).to[RequestEntity].flatMap { marshalledBody =>
-        val request = mkRequest(deriveUriString(cm, uri), queries, headers).copy(HttpMethods.POST, entity = marshalledBody)
+        val request = mkRequest(deriveUriString(cm, uri), queries, headers - "Content-Type").copy(HttpMethods.POST, entity = marshalledBody)
 
         execRequest(cm.client, request, bodyConsumerTimeout).flatMap { response =>
           Unmarshal(response.entity).to[A]

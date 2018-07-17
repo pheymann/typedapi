@@ -1,7 +1,8 @@
 package typedapi.client
 
-import typedapi.shared.MethodType
+import typedapi.shared.{MethodType, MediaType}
 import shapeless._
+import shapeless.labelled.FieldType
 import shapeless.ops.function.FnFromProduct
 
 /** Derives executables from list of RequestBuilders. */
@@ -25,13 +26,14 @@ trait ExecutablesFromHListLowPrio {
     def apply(h: HNil): Out = HNil
   }
 
-  implicit def deriveExcutable[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O, D <: HList, T <: HList](implicit next: ExecutablesFromHList[T],
-                                                                                                                             vinToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, M, O, D]]) = 
-    new ExecutablesFromHList[RequestDataBuilder.Aux[El, KIn, VIn, M, O, D] :: T] {
+  implicit def deriveExcutable[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, MT <: MediaType, O, D <: HList, T <: HList]
+    (implicit next: ExecutablesFromHList[T],
+              vinToFn: FnFromProduct[VIn => ExecutableDerivation[El, KIn, VIn, M, MT, O, D]]) =
+    new ExecutablesFromHList[RequestDataBuilder.Aux[El, KIn, VIn, M, FieldType[MT, O], D] :: T] {
       type Out = vinToFn.Out :: next.Out
 
-      def apply(comps: RequestDataBuilder.Aux[El, KIn, VIn, M, O, D] :: T): Out = {
-        val fn = vinToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, M, O, D](comps.head, input))
+      def apply(comps: RequestDataBuilder.Aux[El, KIn, VIn, M, FieldType[MT, O], D] :: T): Out = {
+        val fn = vinToFn.apply(input => new ExecutableDerivation[El, KIn, VIn, M, MT, O, D](comps.head, input))
 
         fn :: next(comps.tail)
       }

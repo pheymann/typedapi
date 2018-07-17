@@ -2,6 +2,7 @@ package typedapi.server
 
 import typedapi.shared._
 import shapeless._
+import shapeless.labelled.FieldType
 import shapeless.ops.function._
 
 import scala.language.higherKinds
@@ -20,8 +21,9 @@ final case class EndpointRequest(method: String,
 
 final class ExecutableDerivation[F[_]] {
 
-  final class Derivation[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, Fn, Out](extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut], 
-                                                                                                  fnToVIn: FnToProduct.Aux[Fn, VIn => F[Out]]) {
+  final class Derivation[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, Fn, Out]
+    (extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
+     fnToVIn: FnToProduct.Aux[Fn, VIn => F[Out]]) {
 
     /** Restricts type of parameter `fn` to a function defined by the given API:
       * 
@@ -39,10 +41,11 @@ final class ExecutableDerivation[F[_]] {
       }
   }
 
-  def apply[H <: HList, El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, M <: MethodType, Out](apiList: ApiTypeCarrier[H])
-                                                                                                (implicit folder: Lazy[TypeLevelFoldLeft.Aux[H, Unit, (El, KIn, VIn, M, Out)]],
-                                                                                                          extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
-                                                                                                          inToFn: Lazy[FnFromProduct.Aux[VIn => F[Out], Fn]],
-                                                                                                          fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, M, ROut, Fn, Out] =
+  def apply[H <: HList, El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, M <: MethodType, MT <: MediaType, Out]
+    (apiList: ApiTypeCarrier[H])
+    (implicit folder: Lazy[TypeLevelFoldLeft.Aux[H, Unit, (El, KIn, VIn, M, FieldType[MT, Out])]],
+              extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
+              inToFn: Lazy[FnFromProduct.Aux[VIn => F[Out], Fn]],
+              fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, M, ROut, Fn, Out] =
     new Derivation[El, KIn, VIn, M, ROut, Fn, Out](extractor, fnToVIn.value)
 }
