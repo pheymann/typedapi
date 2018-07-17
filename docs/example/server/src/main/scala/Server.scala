@@ -10,8 +10,8 @@ object Server {
   implicit val decoder = jsonOf[IO, User]
   implicit val encoder = jsonEncoderOf[IO, User]
 
-  val fetch: (String, String) => IO[User] = (name, _) => IO.pure(User(name, 27))
-  val create: (String, User) => IO[User] = (_, user) => IO.pure(user)
+  val fetch: String => IO[User] = name => IO.pure(User(name, 27))
+  val create: User  => IO[User] = user => IO.pure(user)
 
   val endpoints = deriveAll[IO](FromDefinition.MyApi).from(fetch, create)
 
