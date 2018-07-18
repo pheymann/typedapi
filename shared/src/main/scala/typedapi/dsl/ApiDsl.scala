@@ -17,11 +17,8 @@ sealed trait ApiList[H <: HList]
 /** Basic operations. */
 sealed trait ApiListWithOps[H <: HList] extends ApiList[H] {
 
-  def :>[MT <: MediaType, A](body: ReqBodyElement[MT, A]): WithBodyCons[MT, A, H] = WithBodyCons()
-  def :>[MT <: MediaType, A](get: GetElement[MT, A]): ApiTypeCarrier[GetElement[MT, A] :: H] = ApiTypeCarrier()
-  def :>[MT <: MediaType, A](put: PutElement[MT, A]): ApiTypeCarrier[PutElement[MT, A] :: H] = ApiTypeCarrier()
-  def :>[MT <: MediaType, A](post: PostElement[MT, A]): ApiTypeCarrier[PostElement[MT, A] :: H] = ApiTypeCarrier()
-  def :>[MT <: MediaType, A](delete: DeleteElement[MT, A]): ApiTypeCarrier[DeleteElement[MT, A] :: H] = ApiTypeCarrier()
+  def :>[MT <: MediaType, A](body: TypeCarrier[ReqBodyElement[MT, A]]): WithBodyCons[MT, A, H] = WithBodyCons()
+  def :>[M <: MethodElement](method: TypeCarrier[M]): ApiTypeCarrier[M :: H] = ApiTypeCarrier()
 }
 
 /** Initial element with empty api description. */
@@ -67,6 +64,5 @@ final case class HeaderCons[H <: HList]() extends ApiListWithOps[H] {
 /** Last set element is a request body. */
 final case class WithBodyCons[BMT <: MediaType, Bd, H <: HList]() extends ApiList[H] {
 
-  def :>[MT <: MediaType, A](put: PutElement[MT, A]): ApiTypeCarrier[PutWithBodyElement[BMT, Bd, MT, A] :: H] = ApiTypeCarrier()
-  def :>[MT <: MediaType, A](post: PostElement[MT, A]): ApiTypeCarrier[PostWithBodyElement[BMT, Bd, MT, A] :: H] = ApiTypeCarrier()
+  def :>[M <: MethodElement](method: TypeCarrier[M])(implicit out: MethodToReqBody[M, BMT, Bd]): ApiTypeCarrier[out.Out :: H] = ApiTypeCarrier()
 }

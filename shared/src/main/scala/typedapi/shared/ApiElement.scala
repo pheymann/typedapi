@@ -1,7 +1,5 @@
 package typedapi.shared
 
-import shapeless._
-
 import scala.annotation.implicitNotFound
 
 sealed trait ApiElement
@@ -10,36 +8,27 @@ sealed trait ApiElement
   * 
   * @param wit singleton type of static path element
   */
-final case class PathElement[S](wit: Witness.Lt[S]) extends ApiElement
+sealed trait PathElement[P]
 
-/** Dynamically set segment within an URI which has a unique name to reference it on input.
-  * 
-  * @param name unique name reference
-  */
+/** Dynamically set segment within an URI which has a unique name to reference it on input. */
 sealed trait SegmentParam[K, V] extends ApiElement
 
-/** Query parameter which represents its key as singleton type and describes the value type.
-  * 
-  * @param name query key
-  */
+/** Query parameter which represents its key as singleton type and describes the value type. */
 sealed trait QueryParam[K, V] extends ApiElement
 
-/** Header which represents its key as singleton type and describes the value type.
-  * 
-  * @param name header key
-  */
+/** Header which represents its key as singleton type and describes the value type. */
 sealed trait HeaderParam[K, V] extends ApiElement
 
 /** Request body type description. */
-final case class ReqBodyElement[MT <: MediaType, A]() extends ApiElement
+sealed trait ReqBodyElement[MT <: MediaType, A] extends ApiElement
 
 trait MethodElement extends ApiElement
-final case class GetElement[MT <: MediaType, A]() extends MethodElement
-final case class PutElement[MT <: MediaType, A]() extends MethodElement
-final case class PutWithBodyElement[BMT <: MediaType, Bd, MT <: MediaType, A]() extends MethodElement
-final case class PostElement[MT <: MediaType, A]() extends MethodElement
-final case class PostWithBodyElement[BMT <: MediaType, Bd, MT <: MediaType, A]() extends MethodElement
-final case class DeleteElement[MT <: MediaType, A]() extends MethodElement
+sealed trait GetElement[MT <: MediaType, A] extends MethodElement
+sealed trait PutElement[MT <: MediaType, A] extends MethodElement
+sealed trait PutWithBodyElement[BMT <: MediaType, Bd, MT <: MediaType, A] extends MethodElement
+sealed trait PostElement[MT <: MediaType, A] extends MethodElement
+sealed trait PostWithBodyElement[BMT <: MediaType, Bd, MT <: MediaType, A] extends MethodElement
+sealed trait DeleteElement[MT <: MediaType, A] extends MethodElement
 
 @implicitNotFound("""You try to add a request body to a method which doesn't expect one.
 
