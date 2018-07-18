@@ -8,7 +8,8 @@ trait ApiOp
 sealed trait SegmentInput extends ApiOp
 sealed trait QueryInput extends ApiOp
 sealed trait HeaderInput extends ApiOp
-sealed trait RawHeadersInput extends ApiOp
+
+sealed trait FixedHeader[K, V] extends ApiOp
 
 trait MethodType extends ApiOp
 sealed trait GetCall extends MethodType
@@ -42,6 +43,9 @@ trait ApiTransformer {
 
   implicit def headerElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[HeaderParam[S, A], (El, KIn, VIn, M, Out), (HeaderInput :: El, S :: KIn, A :: VIn, M, Out)]
+
+  implicit def fixedHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[FixedHeaderElement[K, V], (El, KIn, VIn, M, Out), (FixedHeader[K, V] :: El, KIn, VIn, M, Out)]
 
   implicit def getTransformer[MT <: MediaType, A] = at[GetElement[MT, A], Unit, (HNil, HNil, HNil, GetCall, FieldType[MT, A])]
 

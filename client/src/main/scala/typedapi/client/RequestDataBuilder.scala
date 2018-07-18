@@ -78,6 +78,19 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
+  implicit def fixedHeaderCompiler[K, V, T <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit kWit: Witness.Aux[K], vWit: Witness.Aux[V], kShow: WitnessToString[K], vShow: WitnessToString[V], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
+    new RequestDataBuilder[FixedHeader[K, V] :: T, KIn, VIn, M, O] {
+      type Out = compiler.Out
+
+      def apply(inputs: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+        val key   = kShow.show(kWit.value)
+        val value = vShow.show(vWit.value)
+
+        compiler(inputs, uri, queries, Map((key, value)) ++ headers)
+      }
+    }
+
   type Data             = List[String] :: Map[String, List[String]] :: Map[String, String] :: HNil
   type DataWithBody[Bd] = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
 
@@ -228,25 +241,3 @@ trait RequestDataBuilderListLowPrio {
       val builders = builder :: next.builders
     }
 }
-
-/*
-sealed trait FixedHeadersToMap[H <: HList] {
-
-  def value: Map[String, String]
-}
-
-object FixedHeadersToMap {
-
-  implicit val baseFixedToMap = new FixedHeadersToMap[HNil] {
-    val value = Map.empty
-  }
-
-  implicit def inductiveFixedToMap[K, V, T <: HList](implicit key: Witness.Aux[K], 
-                                                              keyShow: WitnessToString[K],
-                                                              value: Witness.Aux[V], 
-                                                              valueShow: WitnessToString[V],
-                                                              next: FixedHeadersToMap[T]) = new FixedHeadersToMap[(K, V) :: T] {
-    val value = Map((keyShow.show(key), valueShow.show(value))) ++ next.value
-  }
-}
- */

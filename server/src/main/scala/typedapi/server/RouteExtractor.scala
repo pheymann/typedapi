@@ -137,7 +137,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       type Out = next.Out
 
       def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-        val key = show.show(wit.value)
+        val key = show.show(wit.value).toLowerCase
 
         req.headers.get(key).fold(BadRequestE[Out](s"missing header '$key'")) { raw =>
           value(raw).fold(BadRequestE[Out](s"header '$key' has not type ${value.typeDesc}")) { v =>
@@ -155,10 +155,28 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key = show.show(wit.value)
 
-        req.headers.get(key).fold(next(request, extractedHeaderKeys + key, None :: inAgg)) { raw =>
+        req.headers.get(key.toLowerCase).fold(next(request, extractedHeaderKeys + key, None :: inAgg)) { raw =>
           value(raw).fold(BadRequestE[Out](s"header '$key' has not type ${value.typeDesc}")) { v =>
             next(request, extractedHeaderKeys + key, Some(v) :: inAgg)
           }
+        }
+      }
+    }
+
+  implicit def fixedHeaderExtractor[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
+      (implicit kWit: Witness.Aux[K], kShow: WitnessToString[K], vWit: Witness.Aux[V], vShow: WitnessToString[V], next: RouteExtractor[El, KIn, VIn, M, EIn]) =
+    new RouteExtractor[shapeless.::[FixedHeader[K, V], El], KIn, VIn, M, EIn] {
+      type Out = next.Out
+
+      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+        val key   = kShow.show(kWit.value)
+        val value = vShow.show(vWit.value)
+
+        req.headers.get(key.toLowerCase).fold(BadRequestE[Out](s"missing header '$key'")) { raw =>
+          if (raw != value)
+            BadRequestE[Out](s"header '$key' has unexpected value '${raw}' - expected '${value}'")
+          else
+            next(request, extractedHeaderKeys + key, inAgg)
         }
       }
     }

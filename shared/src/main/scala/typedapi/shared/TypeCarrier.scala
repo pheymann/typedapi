@@ -11,6 +11,11 @@ final class PairTypeFromWitnessKey[F[_, _], V] {
   def apply[K](wit: Witness.Lt[K]): TypeCarrier[F[K, V]] = TypeCarrier()
 }
 
+final class PairTypeFromWitnesses[F[_, _]] {
+
+  def apply[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): TypeCarrier[F[K, V]] = TypeCarrier()
+}
+
 /** carriers the final api type, which is represented as `HList` */
 final case class ApiTypeCarrier[H <: HList]() {
 

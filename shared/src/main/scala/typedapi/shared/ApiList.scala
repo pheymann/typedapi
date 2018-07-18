@@ -32,4 +32,5 @@ final case class HeaderListBuilder[H <: HList]() {
   }
 
   def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
+  def add[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[FixedHeaderElement[K, V] :: H] = HeaderListBuilder()
 }

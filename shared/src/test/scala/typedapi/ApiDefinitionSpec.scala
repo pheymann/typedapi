@@ -33,6 +33,7 @@ object ApiDefinitionSpec {
   testCompile(Headers)[HNil]
   testCompile(Headers add[Int](fooW))[HeaderParam[fooW.T, Int] :: HNil]
   testCompile(Headers add[Int](fooW) add[Int](barW))[HeaderParam[barW.T, Int] :: HeaderParam[fooW.T, Int] :: HNil]
+  testCompile(Headers add(fooW, testW))[FixedHeaderElement[fooW.T, testW.T] :: HNil]
 
   // methods
   testCompile(api(Get[Json, Foo]))[GetElement[`Application/Json`.type, Foo] :: HNil]
