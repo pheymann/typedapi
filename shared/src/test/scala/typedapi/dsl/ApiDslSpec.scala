@@ -15,6 +15,8 @@ object ApiDslSpec {
 
   type Base = PathElement[testW.T] :: HNil
 
+  val a = Query[Int].apply(fooW)
+
   // empty path
   testCompile(:= :> Segment[Int](fooW))[SegmentParam[fooW.T, Int] :: HNil]
   testCompile(:= :> Query[Int](fooW))[QueryParam[fooW.T, Int] :: HNil]
@@ -58,16 +60,6 @@ object ApiDslSpec {
   test.illTyped("_baseH :> Query[Int](fooW)")
   testCompile(_baseH :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: _BaseH]
   testCompile(_baseH :> Get[Json, Foo])[GetElement[`Application/Json`.type, Foo] :: _BaseH]
-
-  // raw headers: add final
-  val _baseRH = base :> RawHeaders
-
-  type _BaseRH = RawHeaders.type :: Base
-
-  test.illTyped("_baseRH :> \"fail\"")
-  test.illTyped("_baseRH :> Segment[Int](fooW)")
-  test.illTyped("_baseRH :> Query[Int](fooW)")
-  testCompile(_baseRH :> Get[Json, Foo])[GetElement[`Application/Json`.type, Foo] :: _BaseRH]
 
   // request body: add put or post
   val _baseRB = base :> ReqBody[Plain, Foo]

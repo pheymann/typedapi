@@ -9,7 +9,6 @@ package object tests {
     (:= :> "segment" :> Segment[String]('name) :> Get[Json, User]) :|:
     (:= :> "query" :> Query[Int]('age) :> Get[Json, User]) :|:
     (:= :> "header" :> Header[Int]('age) :> Get[Json, User]) :|:
-    (:= :> "header" :> "raw" :> Header[Int]('age) :> RawHeaders :> Get[Json, User]) :|:
     (:= :> Get[Json, User]) :|:
     (:= :> Put[Json, User]) :|:
     (:= :> "body" :> ReqBody[Json, User] :> Put[Json, User]) :|:

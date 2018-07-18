@@ -163,21 +163,6 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def rawHeaderExtractor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
-      (implicit next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Map[String, String], EIn]]) =
-    new RouteExtractor[shapeless.::[RawHeadersInput, El], shapeless.::[RawHeadersField.T, KIn], shapeless.::[Map[String, String], VIn], M, EIn] {
-      type Out = next.Out
-
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-        val raw = req.headers.filterKeys(!extractedHeaderKeys(_))
-
-        if (raw.isEmpty)
-          BadRequestE("no raw headers left, but at least one expected")
-        else
-          next(request.copy(headers = Map.empty), extractedHeaderKeys, raw :: inAgg)
-      }
-    }
-
   implicit def getExtractor[EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[EIn, REIn]) = new RouteExtractor[HNil, HNil, HNil, GetCall, EIn] {
     type Out = REIn
 

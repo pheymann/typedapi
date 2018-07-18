@@ -5,8 +5,6 @@ import shapeless.labelled.FieldType
 
 trait ApiOp
 
-sealed trait FixedHeaders[H <: HList] extends ApiOp
-
 sealed trait SegmentInput extends ApiOp
 sealed trait QueryInput extends ApiOp
 sealed trait HeaderInput extends ApiOp
@@ -44,12 +42,6 @@ trait ApiTransformer {
 
   implicit def headerElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[HeaderParam[S, A], (El, KIn, VIn, M, Out), (HeaderInput :: El, S :: KIn, A :: VIn, M, Out)]
-
-  implicit def fixedHeaderElementTransformer[H <: HList, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
-    at[FixedHeadersElement[H], (El, KIn, VIn, M, Out), (FixedHeaders[H] :: El, KIn, VIn, M, Out)]
-
-  implicit def rawHeadersElementTransformer[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
-    at[RawHeadersParam.type, (El, KIn, VIn, M, Out), (RawHeadersInput :: El, RawHeadersField.T :: KIn, Map[String, String] :: VIn, M, Out)]
 
   implicit def getTransformer[MT <: MediaType, A] = at[GetElement[MT, A], Unit, (HNil, HNil, HNil, GetCall, FieldType[MT, A])]
 

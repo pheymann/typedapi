@@ -32,13 +32,6 @@ object TestServer {
 
       Ok(User("foo", age))
 
-    case req @ GET -> Root / "header" / "raw" => 
-      val headers = req.headers.toList
-      val name    = headers.find(_.name.value == "name").get.value
-      val age     = headers.find(_.name.value == "age").get.value.toInt
-
-      Ok(User(name, age))
-
     case GET -> Root => Ok(User("foo", 27))
     case PUT -> Root => Ok(User("foo", 27))
     case req @ PUT -> Root / "body" => Ok(User("foo", 27))

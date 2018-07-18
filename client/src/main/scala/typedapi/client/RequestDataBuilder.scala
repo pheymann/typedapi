@@ -78,27 +78,6 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def fixedHeaderInputCompiler[FH <: HList, T <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O]
-      (implicit fixedToMap: FixedHeadersToMap[FH], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
-    new RequestDataBuilder[FixedHeaders[FH] :: T, KIn, VIn, M, O] {
-      type Out = compiler.Out
-
-      def apply(inputs: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        compiler(inputs, uri, queries, fixedToMap.value ++ headers)
-      }
-    }
-
-  implicit def rawHeadersInputCompiler[T <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O](implicit compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
-    new RequestDataBuilder[RawHeadersInput :: T, RawHeadersField.T :: KIn, Map[String, String] :: VIn, M, O] {
-      type Out = compiler.Out
-
-      def apply(inputs: Map[String, String] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        val headerMap = inputs.head
-
-        compiler(inputs.tail, uri, queries, headerMap ++ headers)
-      }
-    }
-
   type Data             = List[String] :: Map[String, List[String]] :: Map[String, String] :: HNil
   type DataWithBody[Bd] = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
 
@@ -250,6 +229,7 @@ trait RequestDataBuilderListLowPrio {
     }
 }
 
+/*
 sealed trait FixedHeadersToMap[H <: HList] {
 
   def value: Map[String, String]
@@ -269,3 +249,4 @@ object FixedHeadersToMap {
     val value = Map((keyShow.show(key), valueShow.show(value))) ++ next.value
   }
 }
+ */

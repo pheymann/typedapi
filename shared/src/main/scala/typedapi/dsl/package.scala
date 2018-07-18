@@ -1,18 +1,16 @@
 package typedapi
 
 import typedapi.shared._
-import shapeless.{Witness, HNil}
+import shapeless.Witness
 
 package object dsl {
 
   def := = EmptyCons
 
   def Path[S](wit: Witness.Lt[S]) = PathElement[S](wit)
-  def Segment[A]                  = new SegmentHelper[A]
-  def Query[A]                    = new QueryHelper[A]
-  def Header[A]                   = new HeaderHelper[A]
-  val FixedHeaders                = new FixedHeadersHelper[HNil]()
-  val RawHeaders                  = RawHeadersParam
+  def Segment[V]                  = new PairTypeFromWitnessKey[SegmentParam, V]
+  def Query[V]                    = new PairTypeFromWitnessKey[QueryParam, V]
+  def Header[V]                   = new PairTypeFromWitnessKey[HeaderParam, V]
 
   type Json  = `Application/Json`.type
   type Plain = `Text/Plain`.type

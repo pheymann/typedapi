@@ -26,19 +26,13 @@ object ApiDefinitionSpec {
 
   // query lists
   testCompile(Queries)[HNil]
-  testCompile(Queries add Query[Int](fooW))[QueryParam[fooW.T, Int] :: HNil]
-  testCompile(Queries add Query[Int](fooW) add Query[Int](barW))[QueryParam[barW.T, Int] :: QueryParam[fooW.T, Int] :: HNil]
+  testCompile(Queries add[Int](fooW))[QueryParam[fooW.T, Int] :: HNil]
+  testCompile(Queries add[Int](fooW) add[Int](barW))[QueryParam[barW.T, Int] :: QueryParam[fooW.T, Int] :: HNil]
 
   // header lists
   testCompile(Headers)[HNil]
-  testCompile(Headers add Header[Int](fooW))[HeaderParam[fooW.T, Int] :: HNil]
-  testCompile(Headers add Header[Int](fooW) add Header[Int](barW))[HeaderParam[barW.T, Int] :: HeaderParam[fooW.T, Int] :: HNil]
-
-  // raw headers
-  testCompile(Headers add FixedHeaders.add("test", "test2"))[FixedHeadersElement[(testW.T, test2W.T) :: HNil] :: HNil]
-  testCompile(Headers add RawHeaders)[RawHeadersParam.type :: HNil]
-  testCompile(Headers add Header[Int](fooW) add RawHeaders)[RawHeadersParam.type :: HeaderParam[fooW.T, Int] :: HNil]
-  test.illTyped("Headers add RawHeaders add Header[Int](fooW)")
+  testCompile(Headers add[Int](fooW))[HeaderParam[fooW.T, Int] :: HNil]
+  testCompile(Headers add[Int](fooW) add[Int](barW))[HeaderParam[barW.T, Int] :: HeaderParam[fooW.T, Int] :: HNil]
 
   // methods
   testCompile(api(Get[Json, Foo]))[GetElement[`Application/Json`.type, Foo] :: HNil]
@@ -52,6 +46,6 @@ object ApiDefinitionSpec {
 
   // whole api
   testCompile(
-    api(Get[Json, Foo], Root / "test" / Segment[Int]('foo), Queries add Query[String]('foo), Headers add Header[Double]('foo))
+    api(Get[Json, Foo], Root / "test" / Segment[Int]('foo), Queries add[String]('foo), Headers add[Double]('foo))
   )[GetElement[`Application/Json`.type, Foo] :: HeaderParam[fooW.T, Double] :: QueryParam[fooW.T, String] :: SegmentParam[fooW.T, Int] :: PathElement[testW.T] :: HNil]
 }

@@ -16,48 +16,19 @@ final case class PathElement[S](wit: Witness.Lt[S]) extends ApiElement
   * 
   * @param name unique name reference
   */
-final case class SegmentParam[S, A](name: Witness.Lt[S]) extends ApiElement
-
-final class SegmentHelper[A] {
-
-  def apply[S](wit: Witness.Lt[S]) = SegmentParam[S, A](wit)
-}
+sealed trait SegmentParam[K, V] extends ApiElement
 
 /** Query parameter which represents its key as singleton type and describes the value type.
   * 
   * @param name query key
   */
-final case class QueryParam[S, A](name: Witness.Lt[S]) extends ApiElement
-
-final class QueryHelper[A] {
-
-  def apply[S](wit: Witness.Lt[S]) = QueryParam[S, A](wit)
-}
+sealed trait QueryParam[K, V] extends ApiElement
 
 /** Header which represents its key as singleton type and describes the value type.
   * 
   * @param name header key
   */
-final case class HeaderParam[S, A](name: Witness.Lt[S]) extends ApiElement
-
-final class HeaderHelper[A] {
-
-  def apply[S](wit: Witness.Lt[S]) = HeaderParam[S, A](wit)
-}
-
-/** Convenience class to add headers as `Map[String, String]` patch. This class cannot guarantee type safety.
-  * 
-  * @param headers
-  */
-case object RawHeadersParam extends ApiElement
-
-final case class FixedHeadersElement[H <: HList]() extends ApiElement
-
-final class FixedHeadersHelper[H <: HList] {
-
-  def add[K, V](key: Witness.Lt[K], value: Witness.Lt[V]): FixedHeadersHelper[(K, V) :: HNil] = 
-    new FixedHeadersHelper
-}
+sealed trait HeaderParam[K, V] extends ApiElement
 
 /** Request body type description. */
 final case class ReqBodyElement[MT <: MediaType, A]() extends ApiElement
