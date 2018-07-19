@@ -19,7 +19,10 @@ sealed trait QueryParam[K, V] extends ApiElement
 /** Header which represents its key as singleton type and describes the value type. */
 sealed trait HeaderParam[K, V] extends ApiElement
 
+/** Header which represents its key and vlaue as singleton types. */
 sealed trait FixedHeaderElement[K, V] extends ApiElement
+sealed trait ClientHeaderElement[K, V] extends ApiElement
+sealed trait ServerHeaderElement[K, V] extends ApiElement
 
 /** Request body type description. */
 sealed trait ReqBodyElement[MT <: MediaType, A] extends ApiElement

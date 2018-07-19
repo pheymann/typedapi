@@ -34,6 +34,8 @@ object ApiDefinitionSpec {
   testCompile(Headers add[Int](fooW))[HeaderParam[fooW.T, Int] :: HNil]
   testCompile(Headers add[Int](fooW) add[Int](barW))[HeaderParam[barW.T, Int] :: HeaderParam[fooW.T, Int] :: HNil]
   testCompile(Headers add(fooW, testW))[FixedHeaderElement[fooW.T, testW.T] :: HNil]
+  testCompile(Headers client(fooW, testW))[ClientHeaderElement[fooW.T, testW.T] :: HNil]
+  testCompile(Headers server(fooW, testW))[ServerHeaderElement[fooW.T, testW.T] :: HNil]
 
   // methods
   testCompile(api(Get[Json, Foo]))[GetElement[`Application/Json`.type, Foo] :: HNil]

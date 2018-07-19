@@ -10,6 +10,8 @@ package object dsl {
   def Query[V]   = new PairTypeFromWitnessKey[QueryParam, V]
   def Header[V]  = new PairTypeFromWitnessKey[HeaderParam, V]
   def Fixed      = new PairTypeFromWitnesses[FixedHeaderElement]
+  def Client     = new PairTypeFromWitnesses[ClientHeaderElement]
+  def Server     = new PairTypeFromWitnesses[ServerHeaderElement]
 
   type Json  = `Application/Json`.type
   type Plain = `Text/Plain`.type

@@ -60,6 +60,8 @@ object ApiDslSpec {
   test.illTyped("_baseH :> Query[Int](fooW)")
   testCompile(_baseH :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: _BaseH]
   testCompile(_baseH :> Fixed(fooW, testW) :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: FixedHeaderElement[fooW.T, testW.T] :: _BaseH]
+  testCompile(_baseH :> Client(fooW, testW) :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: ClientHeaderElement[fooW.T, testW.T] :: _BaseH]
+  testCompile(_baseH :> Server(fooW, testW) :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: ServerHeaderElement[fooW.T, testW.T] :: _BaseH]
   testCompile(_baseH :> Get[Json, Foo])[GetElement[`Application/Json`.type, Foo] :: _BaseH]
 
   // request body: add put or post
