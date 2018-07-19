@@ -17,61 +17,60 @@ sealed trait ApiList[H <: HList]
 /** Basic operations. */
 sealed trait ApiListWithOps[H <: HList] extends ApiList[H] {
 
-  def :>(headers: RawHeadersParam.type): RawHeadersCons[RawHeadersParam.type :: H] = RawHeadersCons()
-  def :>[MT <: MediaType, A](body: ReqBodyElement[MT, A]): WithBodyCons[MT, A, H] = WithBodyCons()
-  def :>[MT <: MediaType, A](get: GetElement[MT, A]): ApiTypeCarrier[GetElement[MT, A] :: H] = ApiTypeCarrier()
-  def :>[MT <: MediaType, A](put: PutElement[MT, A]): ApiTypeCarrier[PutElement[MT, A] :: H] = ApiTypeCarrier()
-  def :>[MT <: MediaType, A](post: PostElement[MT, A]): ApiTypeCarrier[PostElement[MT, A] :: H] = ApiTypeCarrier()
-  def :>[MT <: MediaType, A](delete: DeleteElement[MT, A]): ApiTypeCarrier[DeleteElement[MT, A] :: H] = ApiTypeCarrier()
+  def :>[MT <: MediaType, A](body: TypeCarrier[ReqBodyElement[MT, A]]): WithBodyCons[MT, A, H] = WithBodyCons()
+  def :>[M <: MethodElement](method: TypeCarrier[M]): ApiTypeCarrier[M :: H] = ApiTypeCarrier()
 }
 
 /** Initial element with empty api description. */
 case object EmptyCons extends ApiListWithOps[HNil] {
 
   def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: HNil] = PathCons()
-  def :>[S, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: HNil] = SegmentCons()
-  def :>[S, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: HNil] = QueryCons()  
-  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: HNil] = HeaderCons()
+  def :>[K, V](segment: TypeCarrier[SegmentParam[K, V]]): SegmentCons[SegmentParam[K, V] :: HNil] = SegmentCons()
+  def :>[K, V](query: TypeCarrier[QueryParam[K, V]]): QueryCons[QueryParam[K, V] :: HNil] = QueryCons()  
+  def :>[K, V](header: TypeCarrier[HeaderParam[K, V]]): InputHeaderCons[HeaderParam[K, V] :: HNil] = InputHeaderCons()
+  def :>[K, V](fixed: TypeCarrier[FixedHeaderElement[K, V]]): FixedHeaderCons[FixedHeaderElement[K, V] :: HNil] = FixedHeaderCons()
 }
 
 /** Last set element is a path. */
 final case class PathCons[H <: HList]() extends ApiListWithOps[H] {
 
   def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: H] = PathCons()
-  def :>[S, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: H] = SegmentCons()
-  def :>[S, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()  
-  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
+  def :>[K, V](segment: TypeCarrier[SegmentParam[K, V]]): SegmentCons[SegmentParam[K, V] :: H] = SegmentCons()
+  def :>[K, V](query: TypeCarrier[QueryParam[K, V]]): QueryCons[QueryParam[K, V] :: H] = QueryCons()  
+  def :>[K, V](header: TypeCarrier[HeaderParam[K, V]]): InputHeaderCons[HeaderParam[K, V] :: H] = InputHeaderCons()
+  def :>[K, V](fixed: TypeCarrier[FixedHeaderElement[K, V]]): FixedHeaderCons[FixedHeaderElement[K, V] :: H] = FixedHeaderCons()
 }
 
 /** Last set element is a segment. */
 final case class SegmentCons[H <: HList]() extends ApiListWithOps[H] {
 
   def :>[S](path: Witness.Lt[S]): PathCons[PathElement[S] :: H] = PathCons()
-  def :>[S, A](segment: SegmentParam[S, A]): SegmentCons[SegmentParam[S, A] :: H] = SegmentCons()
-  def :>[S, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()
-  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
+  def :>[K, V](segment: TypeCarrier[SegmentParam[K, V]]): SegmentCons[SegmentParam[K, V] :: H] = SegmentCons()
+  def :>[K, V](query: TypeCarrier[QueryParam[K, V]]): QueryCons[QueryParam[K, V] :: H] = QueryCons()
+  def :>[K, V](header: TypeCarrier[HeaderParam[K, V]]): InputHeaderCons[HeaderParam[K, V] :: H] = InputHeaderCons()
+  def :>[K, V](fixed: TypeCarrier[FixedHeaderElement[K, V]]): FixedHeaderCons[FixedHeaderElement[K, V] :: H] = FixedHeaderCons()
 }
 
 /** Last set element is a query parameter. */
 final case class QueryCons[H <: HList]() extends ApiListWithOps[H]  {
 
-  def :>[S, A](query: QueryParam[S, A]): QueryCons[QueryParam[S, A] :: H] = QueryCons()
-  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
+  def :>[K, V](query: TypeCarrier[QueryParam[K, V]]): QueryCons[QueryParam[K, V] :: H] = QueryCons()
+  def :>[K, V](header: TypeCarrier[HeaderParam[K, V]]): InputHeaderCons[HeaderParam[K, V] :: H] = InputHeaderCons()
+  def :>[K, V](fixed: TypeCarrier[FixedHeaderElement[K, V]]): FixedHeaderCons[FixedHeaderElement[K, V] :: H] = FixedHeaderCons()
 }
 
 /** Last set element is a header. */
-final case class HeaderCons[H <: HList]() extends ApiListWithOps[H] {
+sealed trait HeaderCons[H <: HList] extends ApiListWithOps[H] {
 
-  def :>[S, A](header: HeaderParam[S, A]): HeaderCons[HeaderParam[S, A] :: H] = HeaderCons()
+  def :>[K, V](header: TypeCarrier[HeaderParam[K, V]]): InputHeaderCons[HeaderParam[K, V] :: H] = InputHeaderCons()
+  def :>[K, V](fixed: TypeCarrier[FixedHeaderElement[K, V]]): FixedHeaderCons[FixedHeaderElement[K, V] :: H] = FixedHeaderCons()
 }
 
-/** Last set element is a header. */
-final case class RawHeadersCons[H <: HList]() extends ApiListWithOps[H]
-
+final case class InputHeaderCons[H <: HList]() extends HeaderCons[H]
+final case class FixedHeaderCons[H <: HList]() extends HeaderCons[H]
 
 /** Last set element is a request body. */
 final case class WithBodyCons[BMT <: MediaType, Bd, H <: HList]() extends ApiList[H] {
 
-  def :>[MT <: MediaType, A](put: PutElement[MT, A]): ApiTypeCarrier[PutWithBodyElement[BMT, Bd, MT, A] :: H] = ApiTypeCarrier()
-  def :>[MT <: MediaType, A](post: PostElement[MT, A]): ApiTypeCarrier[PostWithBodyElement[BMT, Bd, MT, A] :: H] = ApiTypeCarrier()
+  def :>[M <: MethodElement](method: TypeCarrier[M])(implicit out: MethodToReqBody[M, BMT, Bd]): ApiTypeCarrier[out.Out :: H] = ApiTypeCarrier()
 }

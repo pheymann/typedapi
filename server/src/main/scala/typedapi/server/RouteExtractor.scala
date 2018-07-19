@@ -137,7 +137,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       type Out = next.Out
 
       def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-        val key = show.show(wit.value)
+        val key = show.show(wit.value).toLowerCase
 
         req.headers.get(key).fold(BadRequestE[Out](s"missing header '$key'")) { raw =>
           value(raw).fold(BadRequestE[Out](s"header '$key' has not type ${value.typeDesc}")) { v =>
@@ -155,7 +155,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key = show.show(wit.value)
 
-        req.headers.get(key).fold(next(request, extractedHeaderKeys + key, None :: inAgg)) { raw =>
+        req.headers.get(key.toLowerCase).fold(next(request, extractedHeaderKeys + key, None :: inAgg)) { raw =>
           value(raw).fold(BadRequestE[Out](s"header '$key' has not type ${value.typeDesc}")) { v =>
             next(request, extractedHeaderKeys + key, Some(v) :: inAgg)
           }
@@ -163,18 +163,21 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def rawHeaderExtractor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
-      (implicit next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Map[String, String], EIn]]) =
-    new RouteExtractor[shapeless.::[RawHeadersInput, El], shapeless.::[RawHeadersField.T, KIn], shapeless.::[Map[String, String], VIn], M, EIn] {
+  implicit def fixedHeaderExtractor[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
+      (implicit kWit: Witness.Aux[K], kShow: WitnessToString[K], vWit: Witness.Aux[V], vShow: WitnessToString[V], next: RouteExtractor[El, KIn, VIn, M, EIn]) =
+    new RouteExtractor[shapeless.::[FixedHeader[K, V], El], KIn, VIn, M, EIn] {
       type Out = next.Out
 
       def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-        val raw = req.headers.filterKeys(!extractedHeaderKeys(_))
+        val key   = kShow.show(kWit.value)
+        val value = vShow.show(vWit.value)
 
-        if (raw.isEmpty)
-          BadRequestE("no raw headers left, but at least one expected")
-        else
-          next(request.copy(headers = Map.empty), extractedHeaderKeys, raw :: inAgg)
+        req.headers.get(key.toLowerCase).fold(BadRequestE[Out](s"missing header '$key'")) { raw =>
+          if (raw != value)
+            BadRequestE[Out](s"header '$key' has unexpected value '${raw}' - expected '${value}'")
+          else
+            next(request, extractedHeaderKeys + key, inAgg)
+        }
       }
     }
 

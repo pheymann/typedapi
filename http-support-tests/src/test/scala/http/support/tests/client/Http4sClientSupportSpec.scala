@@ -31,7 +31,7 @@ final class Http4sClientSupportSpec extends Specification {
     
     "headers" >> {
       h0(42).run[IO](cm).unsafeRunSync() === User("foo", 42)
-      h1(42, Map("name" -> "jim")).run[IO](cm).unsafeRunSync() === User("jim", 42)
+      h1().run[IO](cm).unsafeRunSync() === User("joe", 27)
     }
 
     "methods" >> {

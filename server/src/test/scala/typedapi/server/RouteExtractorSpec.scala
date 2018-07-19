@@ -62,22 +62,16 @@ final class RouteExtractorSpec extends Specification {
       ext0(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === RouteExtractor.BadRequestE("missing header 'age'")
       ext0(EndpointRequest("GET", List("foo", "bar"), Map.empty, Map.empty), Set.empty, HNil) === RouteExtractor.NotFoundE
 
-      //raw
-      val ext1 = extract(:= :> "foo" :> RawHeaders :> Get[Json, Foo])
+      val ext2 = extract(:= :> "foo" :> Header[Option[Int]]('age) :> Get[Json, Foo])
 
-      ext1(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "blah")), Set.empty, HNil) === Right(Map("age" -> "blah") :: HNil)
-      ext1(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === RouteExtractor.BadRequestE("no raw headers left, but at least one expected")
+      ext2(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0")), Set.empty, HNil) === Right(Some(0) :: HNil)
+      ext2(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === Right(None :: HNil)
 
-      // headers and raw
-      val ext2 = extract(:= :> "foo" :> Header[Int]('age) :> RawHeaders :> Get[Json, Foo])
+      val ext3 = extract(:= :> "foo" :> Fixed("Accept", "*") :> Get[Json, Foo])
 
-      ext2(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0")), Set.empty, HNil) === RouteExtractor.BadRequestE("no raw headers left, but at least one expected")
-      ext2(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0", "foo" -> "bar")), Set.empty, HNil) === Right(0 :: Map("foo" -> "bar") :: HNil)
-
-      val ext3 = extract(:= :> "foo" :> Header[Option[Int]]('age) :> Get[Json, Foo])
-
-      ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0")), Set.empty, HNil) === Right(Some(0) :: HNil)
-      ext3(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === Right(None :: HNil)
+      ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "*")), Set.empty, HNil) === Right(HNil)
+      ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("wrong" -> "*")), Set.empty, HNil) === RouteExtractor.BadRequestE("missing header 'Accept'")
+      ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "wrong")), Set.empty, HNil) === RouteExtractor.BadRequestE("header 'Accept' has unexpected value 'wrong' - expected '*'")
     }
 
     "body type" >> {

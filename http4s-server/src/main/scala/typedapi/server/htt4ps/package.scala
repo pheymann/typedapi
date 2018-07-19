@@ -86,7 +86,7 @@ package object http4s {
               else              path.tail.toList
             },
             request.uri.multiParams.map { case (key, value) => key -> value.toList },
-            request.headers.toList.map(header => header.name.toString -> header.value)(collection.breakOut)
+            request.headers.toList.map(header => header.name.toString.toLowerCase -> header.value)(collection.breakOut)
           )
           execute(endpoints, eReq)
       }

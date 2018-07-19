@@ -32,12 +32,14 @@ object TestServer {
 
       Ok(User("foo", age))
 
-    case req @ GET -> Root / "header" / "raw" => 
+    case req @ GET -> Root / "header" / "fixed" => 
       val headers = req.headers.toList
-      val name    = headers.find(_.name.value == "name").get.value
-      val age     = headers.find(_.name.value == "age").get.value.toInt
+      val value   = headers.find(_.name.value == "Hello").get.value
 
-      Ok(User(name, age))
+      if (value != "*")
+        throw new IllegalArgumentException("unexpected header value " + value)
+
+      Ok(User("joe", 27))
 
     case GET -> Root => Ok(User("foo", 27))
     case PUT -> Root => Ok(User("foo", 27))

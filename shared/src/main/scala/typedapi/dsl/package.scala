@@ -1,24 +1,22 @@
 package typedapi
 
 import typedapi.shared._
-import shapeless.Witness
 
 package object dsl {
 
   def := = EmptyCons
 
-  def Path[S](wit: Witness.Lt[S]) = PathElement[S](wit)
-  def Segment[A] = new SegmentHelper[A]
-  def Query[A]   = new QueryHelper[A]
-  def Header[A]  = new HeaderHelper[A]
-  val RawHeaders = RawHeadersParam
+  def Segment[V] = new PairTypeFromWitnessKey[SegmentParam, V]
+  def Query[V]   = new PairTypeFromWitnessKey[QueryParam, V]
+  def Header[V]  = new PairTypeFromWitnessKey[HeaderParam, V]
+  def Fixed      = new PairTypeFromWitnesses[FixedHeaderElement]
 
   type Json  = `Application/Json`.type
   type Plain = `Text/Plain`.type
 
-  def ReqBody[MT <: MediaType, A] = ReqBodyElement[MT, A]
-  def Get[MT <: MediaType, A] = GetElement[MT, A]
-  def Put[MT <: MediaType, A] = PutElement[MT, A]
-  def Post[MT <: MediaType, A] = PostElement[MT, A]
-  def Delete[MT <: MediaType, A] = DeleteElement[MT, A]
+  def ReqBody[MT <: MediaType, A] = TypeCarrier[ReqBodyElement[MT, A]]()
+  def Get[MT <: MediaType, A]     = TypeCarrier[GetElement[MT, A]]()
+  def Put[MT <: MediaType, A]     = TypeCarrier[PutElement[MT, A]]()
+  def Post[MT <: MediaType, A]    = TypeCarrier[PostElement[MT, A]]()
+  def Delete[MT <: MediaType, A]  = TypeCarrier[DeleteElement[MT, A]]()
 }

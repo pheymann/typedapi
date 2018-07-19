@@ -43,7 +43,7 @@ final class AkkaHttpClientSupportSpec(implicit ee: ExecutionEnv) extends Specifi
     
     "headers" >> {
       h0(42).run[Future](cm) must beEqualTo(User("foo", 42)).awaitFor(timeout)
-      h1(42, Map("name" -> "jim")).run[Future](cm) must beEqualTo(User("jim", 42)).awaitFor(timeout)
+      h1().run[Future](cm) must beEqualTo(User("joe", 27)).awaitFor(timeout)
     }
 
     "methods" >> {

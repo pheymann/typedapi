@@ -2,56 +2,35 @@ package typedapi.shared
 
 import shapeless._
 
-/** A final element is a method describing the request type. */
-final case class ApiTypeCarrier[H <: HList]() {
-
-  def :|:[H1 <: HList](next: ApiTypeCarrier[H1]): CompositionCons[H1 :: H :: HNil] = CompositionCons()
-}
-
-/** Compose multiple type level api descriptions in a HList of HLists. */
-final case class CompositionCons[H <: HList]() {
-
-  def :|:[H1 <: HList](next: ApiTypeCarrier[H1]): CompositionCons[H1 :: H] = CompositionCons()
-}
-
 sealed trait PathList[P <: HList]
 
 final case class PathListCons[P <: HList]() extends PathList[P] {
 
   def /[S](path: Witness.Lt[S]): PathListCons[PathElement[S] :: P] = PathListCons()
-  def /[S, A](segment: SegmentParam[S, A]): PathListCons[SegmentParam[S, A] :: P] = PathListCons()
+  def /[K, V](segment: TypeCarrier[SegmentParam[K, V]]): PathListCons[SegmentParam[K, V] :: P] = PathListCons()
 }
 
 case object PathListEmpty extends PathList[HNil] {
 
   def /[S](path: Witness.Lt[S]): PathListCons[PathElement[S] :: HNil] = PathListCons()
-  def /[S, A](segment: SegmentParam[S, A]): PathListCons[SegmentParam[S, A] :: HNil] = PathListCons()
+  def /[K, V](segment: TypeCarrier[SegmentParam[K, V]]): PathListCons[SegmentParam[K, V] :: HNil] = PathListCons()
 }
 
-sealed trait QueryList[Q <: HList]
+final case class QueryListBuilder[Q <: HList]() {
 
-final case class QueryListCons[Q <: HList]() extends QueryList[Q] {
+  final class WitnessDerivation[V] {
+    def apply[K](wit: Witness.Lt[K]): QueryListBuilder[QueryParam[K, V] :: Q] = QueryListBuilder()
+  }
 
-  def add[S, A](query: QueryParam[S, A]): QueryListCons[QueryParam[S, A] :: Q] = QueryListCons()
+  def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
 }
 
-case object QueryListEmpty extends QueryList[HNil] {
+final case class HeaderListBuilder[H <: HList]() {
 
-  def add[S, A](query: QueryParam[S, A]): QueryListCons[QueryParam[S, A] :: HNil] = QueryListCons()
-}
+  final class WitnessDerivation[V] {
+    def apply[K](wit: Witness.Lt[K]): HeaderListBuilder[HeaderParam[K, V] :: H] = HeaderListBuilder()
+  }
 
-sealed trait HeaderList[H <: HList]
-
-final case class HeaderListCons[H <: HList]() extends HeaderList[H] {
-
-  def add[S, A](header: HeaderParam[S, A]): HeaderListCons[HeaderParam[S, A] :: H] = HeaderListCons()
-  def add(headers: RawHeadersParam.type): RawHeaderCons[RawHeadersParam.type :: H] = RawHeaderCons()
-}
-
-final case class RawHeaderCons[H <: HList]() extends HeaderList[H]
-
-case object HeaderListEmpty extends HeaderList[HNil] {
-
-  def add[S, A](header: HeaderParam[S, A]): HeaderListCons[HeaderParam[S, A] :: HNil] = HeaderListCons()
-  def add(headers: RawHeadersParam.type): RawHeaderCons[RawHeadersParam.type :: HNil] = RawHeaderCons()
+  def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
+  def add[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[FixedHeaderElement[K, V] :: H] = HeaderListBuilder()
 }
