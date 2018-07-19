@@ -1,4 +1,26 @@
 ### 0.1.0
+ - internal cleanups and refactorings
+ - centralized http-support specs
+ - added akka-http support on server and client side
+ - added ScalaJS compilation support for shared and client code
+ - implemented basic ScalaJS client
+ - shared changes:
+   - added body encoding types and made them mandatory
+   ```Scala
+   := :> ReqBody[Json, User] :> Get[Json, User]
+   _______________^__________________^
+   ```
+   
+   - `RawHeaders` was removed
+   - fixed headers were added; a fixed header is a statically known key-value pair, therefore, no input is required
+   ```Scala
+   // dsl
+   := :> Fixed("Access-Control-Allow-Origin", "*") :> Get[Json, User]
+   
+   // function
+   api(Get[Json, User], headers = Headers add("Access-Control-Allow-Origin", "*"))
+   ```
+   
  - changes to the server API:
    - `NoReqBodyExecutor` and `ReqBodyExecutor` now expect a `MethodType`:
  ```Scala
@@ -8,6 +30,8 @@
  new ReqBodyExecutor[El, KIn, VIn, Bd, M, ROut, POut, F, FOut] {
  ______________________________________^
  ```
+ - changes to the client API:
+   - new encoding types add `Content-Type` and `Accept` headers
 
 ### 0.1.0-RC5 / Almost there
  - changes to the client API:
