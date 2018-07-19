@@ -23,13 +23,13 @@
    
  - changes to the server API:
    - `NoReqBodyExecutor` and `ReqBodyExecutor` now expect a `MethodType`:
- ```Scala
- new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
- ____________________________________^
- 
- new ReqBodyExecutor[El, KIn, VIn, Bd, M, ROut, POut, F, FOut] {
- ______________________________________^
- ```
+   ```Scala
+   new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
+   ____________________________________^
+  
+   new ReqBodyExecutor[El, KIn, VIn, Bd, M, ROut, POut, F, FOut] {
+   ______________________________________^
+   ```
  - changes to the client API:
    - new encoding types add `Content-Type` and `Accept` headers
 
