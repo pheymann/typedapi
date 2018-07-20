@@ -213,7 +213,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     type Out = REIn
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-      if (req.method == "GET") 
+      if (req.method == "GET" || req.method == "OPTIONS") 
         Right(inAgg.reverse)
       else 
         NotFoundE
@@ -224,7 +224,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     type Out = REIn
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-      if (req.method == "PUT") 
+      if (req.method == "PUT" || req.method == "OPTIONS") 
         Right(inAgg.reverse)
       else 
         NotFoundE
@@ -236,7 +236,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       type Out = (BodyType[Bd], EIn)
 
       def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-        if (req.method == "PUT")
+        if (req.method == "PUT" || req.method == "OPTIONS")
           Right((BodyType[Bd], inAgg))
         else
           NotFoundE
@@ -247,7 +247,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     type Out = EIn
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-      if (req.method == "POST") 
+      if (req.method == "POST" || req.method == "OPTIONS") 
         Right(inAgg)
       else 
         NotFoundE
@@ -259,7 +259,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       type Out = (BodyType[Bd], EIn)
 
       def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-        if (req.method == "POST")
+        if (req.method == "POST" || req.method == "OPTIONS")
           Right((BodyType[Bd], inAgg))
         else
           NotFoundE
@@ -270,7 +270,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     type Out = EIn
 
     def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-      if (req.method == "DELETE") 
+      if (req.method == "DELETE" || req.method == "OPTIONS")
         Right(inAgg)
       else 
         NotFoundE

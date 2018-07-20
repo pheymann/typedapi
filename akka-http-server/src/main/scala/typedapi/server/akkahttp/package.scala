@@ -93,7 +93,12 @@ package object akkahttp {
           request.uri.query().toMultiMap,
           request.headers.map(header => header.lowercaseName -> header.value)(collection.breakOut)
         )
-        execute(endpoints, eReq)
+
+        if (request.method.name == "OPTIONS") {
+          Future.successful(HttpResponse(headers = getHeaders(Map("Access-Control-Allow-Methods" -> checkMethods(endpoints, eReq, Nil).mkString(",")))))
+        }
+        else
+          execute(endpoints, eReq)
       }
     
       server.server.bind(server.host, server.port).to(Sink.foreach { connection =>

@@ -2,7 +2,7 @@ package typedapi
 
 import typedapi.shared._
 
-package object dsl {
+package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio {
 
   def := = EmptyCons
 

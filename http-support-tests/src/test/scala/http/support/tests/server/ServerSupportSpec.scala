@@ -55,6 +55,17 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
           resp.headers.toList.find(_.name.toString == "Hello")
         }
       ).unsafeRunSync() === Some(Header("Hello", "*"))
+      client.fetch[Option[Header]](
+        Request[IO](
+          method = OPTIONS,
+          uri = Uri.fromString(s"http://localhost:$port/header/fixed").right.get,
+          headers = Headers(Header("Hello", "*"))
+        )
+      )(
+        resp => IO {
+          resp.headers.toList.find(_.name.toString == "Access-Control-Allow-Methods")
+        }
+      ).unsafeRunSync() === Some(Header("Access-Control-Allow-Methods", "GET"))
     }
 
     "methods" >> {

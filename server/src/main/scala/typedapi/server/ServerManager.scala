@@ -1,5 +1,7 @@
 package typedapi.server
 
+import scala.annotation.tailrec
+
 final case class ServerManager[S](server: S, host: String, port: Int)
 
 object ServerManager {
@@ -11,6 +13,16 @@ object ServerManager {
 trait MountEndpoints[S, Req, Resp] {
 
   type Out
+
+  @tailrec
+  final def checkMethods(eps: List[Serve[Req, Resp]], eReq: EndpointRequest, agg: List[String]): List[String] = eps match {
+    case collection.immutable.::(endpoint, tail) => endpoint.exists(eReq) match {
+      case Some(method) => method :: agg
+      case _            => checkMethods(tail, eReq, agg)
+    }
+
+    case Nil => agg
+  }
 
   def apply(server: ServerManager[S], endpoints: List[Serve[Req, Resp]]): Out
 }

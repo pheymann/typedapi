@@ -58,6 +58,9 @@ trait MethodToReqBodyLowPrio {
 trait MediaType {
   def value: String
 }
+case object NoMediaType extends MediaType {
+  val value = "NO MEDIA TYPE"
+}
 case object `Application/Json` extends MediaType {
   val value = "application/json"
 }

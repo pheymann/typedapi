@@ -92,7 +92,12 @@ package object http4s {
             request.uri.multiParams.map { case (key, value) => key -> value.toList },
             request.headers.toList.map(header => header.name.toString.toLowerCase -> header.value)(collection.breakOut)
           )
-          execute(endpoints, eReq)
+
+          if (request.method.name == "OPTIONS") {
+            IO.pure(Response(headers = Headers(Header("Access-Control-Allow-Methods", checkMethods(endpoints, eReq, Nil).mkString(",")))))
+          }
+          else
+            execute(endpoints, eReq)
       }
 
       server.server.bindHttp(server.port, server.host).mountService(service, "/").start

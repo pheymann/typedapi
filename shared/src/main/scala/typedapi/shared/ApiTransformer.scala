@@ -21,6 +21,21 @@ sealed trait PostCall extends MethodType
 sealed trait PostWithBodyCall extends MethodType
 sealed trait DeleteCall extends MethodType
 
+trait MethodToString[M <: MethodType] {
+
+  def show: String
+}
+
+trait MethodToStringLowPrio {
+
+  implicit val getToStr      = new MethodToString[GetCall] { val show = "GET" }
+  implicit val putToStr      = new MethodToString[PutCall] { val show = "PUT" }
+  implicit val putBodyToStr  = new MethodToString[PutWithBodyCall] { val show = "PUT" }
+  implicit val postToStr     = new MethodToString[PostCall] { val show = "POST" }
+  implicit val postBodyToStr = new MethodToString[PostWithBodyCall] { val show = "POST" }
+  implicit val deleteToStr   = new MethodToString[DeleteCall] { val show = "DELETE" }
+}
+
 /** Separates uri, input description, method  and out type from `ApiList`. 
   * 
   *   Example:
