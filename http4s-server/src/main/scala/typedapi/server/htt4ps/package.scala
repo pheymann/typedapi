@@ -94,7 +94,7 @@ package object http4s {
           )
 
           if (request.method.name == "OPTIONS") {
-            IO.pure(Response(headers = Headers(Header("Access-Control-Allow-Methods", checkMethods(endpoints, eReq, Nil).mkString(",")))))
+            IO(Response(headers = Headers(getHeaders(optionsHeaders(endpoints, eReq)))))
           }
           else
             execute(endpoints, eReq)

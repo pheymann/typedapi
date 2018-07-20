@@ -95,7 +95,7 @@ package object akkahttp {
         )
 
         if (request.method.name == "OPTIONS") {
-          Future.successful(HttpResponse(headers = getHeaders(Map("Access-Control-Allow-Methods" -> checkMethods(endpoints, eReq, Nil).mkString(",")))))
+          Future.successful(HttpResponse(headers = getHeaders(optionsHeaders(endpoints, eReq))))
         }
         else
           execute(endpoints, eReq)

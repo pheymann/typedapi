@@ -46,9 +46,11 @@ final class ServeAndMountSpec extends Specification {
   def toList[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut](endpoint: Endpoint[El, KIn, VIn, M, ROut, F, FOut])
                                                                                         (implicit executor: EndpointExecutor[El, KIn, VIn, M, ROut, F, FOut]): List[Serve[executor.R, executor.Out]] = 
     List(new Serve[executor.R, executor.Out] {
-      def exists(eReq: EndpointRequest): Option[String] = endpoint.extractor(eReq, Set.empty, HNil) match {
-        case Right(_) => Some(endpoint.method)
-        case _        => None
+      def options(eReq: EndpointRequest): Option[(String, Map[String, String])] = {
+        endpoint.extractor(eReq, Set.empty, HNil) match {
+          case Right(_) => Some((endpoint.method, endpoint.headers))
+          case _        => None
+        }
       }
 
       def apply(req: executor.R, eReq: EndpointRequest): Either[ExtractionError, executor.Out] = executor(req, eReq, endpoint)
@@ -70,18 +72,18 @@ final class ServeAndMountSpec extends Specification {
     }
 
     "check if route exists and return method" >> {
-      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Get[Json, List[Foo]]
+      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Server("Hello", "*") :> Get[Json, List[Foo]]
       val endpoint = derive[Option](Api).from((name, sortByAge) => Some(List(Foo(name))))
       val served   = toList(endpoint)
 
       val req0  = TestRequest(List("find", "user", "joe"), Map("sortByAge" -> List("1")), Map.empty)
       val eReq0 = EndpointRequest("GET", req0.uri, req0.queries, req0.headers)
 
-      served.head.exists(eReq0) === Some("GET")
+      served.head.options(eReq0) === Some(("GET", Map(("Hello", "*"))))
 
       val eReq1 = EndpointRequest("POST", req0.uri, req0.queries, req0.headers)
 
-      served.head.exists(eReq1) === None
+      served.head.options(eReq1) === None
     }
 
     "serve single endpoint and with body" >> {

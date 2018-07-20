@@ -14,14 +14,20 @@ trait MountEndpoints[S, Req, Resp] {
 
   type Out
 
-  @tailrec
-  final def checkMethods(eps: List[Serve[Req, Resp]], eReq: EndpointRequest, agg: List[String]): List[String] = eps match {
-    case collection.immutable.::(endpoint, tail) => endpoint.exists(eReq) match {
-      case Some(method) => method :: agg
-      case _            => checkMethods(tail, eReq, agg)
+  final def optionsHeaders(eps: List[Serve[Req, Resp]], eReq: EndpointRequest): Map[String, String] = {
+    @tailrec
+    def collect(serve: List[Serve[Req, Resp]], methods: List[String], headers: Map[String, String]): (List[String], Map[String, String]) = serve match {
+      case collection.immutable.::(endpoint, tail) => endpoint.options(eReq) match {
+        case Some((method, hds)) => collect(tail, method :: methods, hds ++ headers)
+        case _                   => collect(tail, methods, headers)
+      }
+
+      case Nil => (methods, headers)
     }
 
-    case Nil => agg
+    val (methods, headers) = collect(eps, Nil, Map.empty)
+    
+    headers + (("Access-Control-Allow-Methods", methods.mkString(",")))
   }
 
   def apply(server: ServerManager[S], endpoints: List[Serve[Req, Resp]]): Out
