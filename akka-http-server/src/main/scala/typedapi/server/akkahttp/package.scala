@@ -16,6 +16,14 @@ import scala.annotation.tailrec
 
 package object akkahttp {
 
+  case class AkkaHttpHeaderParseException(msg: String) extends Exception(msg)
+
+  private def getHeaders(raw: Map[String, String]): List[HttpHeader] = 
+    raw.map { case (key, value) => HttpHeader.parse(key, value) match {
+      case HttpHeader.ParsingResult.Ok(header, _) => header
+      case HttpHeader.ParsingResult.Error(cause)  => throw AkkaHttpHeaderParseException(cause.formatPretty)
+    }}(collection.breakOut)
+
   implicit def noReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, FOut](implicit encoder: ToEntityMarshaller[FOut], ec: ExecutionContext) = 
     new NoReqBodyExecutor[El, KIn, VIn, M, Future, FOut] {
       type R   = HttpRequest
@@ -25,7 +33,7 @@ package object akkahttp {
         extract(eReq, endpoint).right.map { extracted =>
           execute(extracted, endpoint).flatMap { response =>
             Marshal(response).to[ResponseEntity].map { marshalledBody =>
-              HttpResponse(entity = marshalledBody)
+              HttpResponse(entity = marshalledBody, headers = getHeaders(endpoint.headers))
             }
           }
         }
@@ -52,7 +60,7 @@ package object akkahttp {
           response <- execute(extracted, body, endpoint)
 
           entity <- Marshal(response).to[ResponseEntity]
-        } yield HttpResponse(entity = entity)
+        } yield HttpResponse(entity = entity, headers = getHeaders(endpoint.headers))
       }
     }
   }

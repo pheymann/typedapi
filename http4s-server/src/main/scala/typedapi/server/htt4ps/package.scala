@@ -15,23 +15,27 @@ import scala.language.higherKinds
 
 package object http4s {
 
-  implicit def noReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, F[_]: Monad, FOut](implicit encoder: EntityEncoder[F, FOut]) = new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
-    type R   = Request[F]
-    type Out = F[Response[F]]
+  private def getHeaders(raw: Map[String, String]): List[Header.Raw] = 
+    raw.map { case (key, value) => Header(key, value) }(collection.breakOut)
 
-    private val dsl = Http4sDsl[F]
-    import dsl._
+  implicit def noReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, F[_]: Monad, FOut](implicit encoder: EntityEncoder[F, FOut]) = 
+    new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
+      type R   = Request[F]
+      type Out = F[Response[F]]
 
-    def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, VIn, F, FOut]): Either[ExtractionError, Out] = {
-      extract(eReq, endpoint).map { extracted =>
-        Monad[F].flatMap(execute(extracted, endpoint)) { response =>
-          val resp: F[Response[F]] = Ok.apply(response)(Monad[F], encoder)
+      private val dsl = Http4sDsl[F]
+      import dsl._
 
-          resp
+      def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, VIn, F, FOut]): Either[ExtractionError, Out] = {
+        extract(eReq, endpoint).map { extracted =>
+          Monad[F].flatMap(execute(extracted, endpoint)) { response =>
+            Ok(response).map { resp =>
+              resp.copy(headers = resp.headers ++ getHeaders(endpoint.headers))
+            }
+          }
         }
       }
     }
-  }
 
   implicit def withReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, Bd, M <: MethodType, ROut <: HList, POut <: HList, F[_]: Monad, FOut]
     (implicit encoder: EntityEncoder[F, FOut], 
@@ -54,7 +58,7 @@ package object http4s {
           response <- execute(extracted, body, endpoint)
 
           r <- Ok(response)
-        } yield r
+        } yield r.copy(headers = r.headers ++ getHeaders(endpoint.headers))
       }
     }
   }

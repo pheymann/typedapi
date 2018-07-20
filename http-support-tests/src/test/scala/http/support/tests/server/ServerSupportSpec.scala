@@ -1,8 +1,7 @@
 package http.support.tests.server
 
 import http.support.tests.{User, UserCoding}
-import typedapi.dsl._
-import org.http4s.{Headers, Header, Request, Uri}
+import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.client.blaze._
 import org.http4s.client.dsl.io._
@@ -41,6 +40,21 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
         uri = Uri.fromString(s"http://localhost:$port/header/fixed").right.get,
         headers = Headers(Header("Hello", "*"))
       )).unsafeRunSync() === User("joe", 27)
+      client.expect[User](Request[IO](
+        method = GET,
+        uri = Uri.fromString(s"http://localhost:$port/header/client").right.get,
+        headers = Headers(Header("Hello", "*"))
+      )).unsafeRunSync() === User("joe", 27)
+      client.fetch[Option[Header]](
+        Request[IO](
+          method = GET,
+          uri = Uri.fromString(s"http://localhost:$port/header/server").right.get
+        )
+      )(
+        resp => IO {
+          resp.headers.toList.find(_.name.toString == "Hello")
+        }
+      ).unsafeRunSync() === Some(Header("Hello", "*"))
     }
 
     "methods" >> {
