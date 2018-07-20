@@ -72,6 +72,16 @@ final class RouteExtractorSpec extends Specification {
       ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "*")), Set.empty, HNil) === Right(HNil)
       ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("wrong" -> "*")), Set.empty, HNil) === RouteExtractor.BadRequestE("missing header 'Accept'")
       ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "wrong")), Set.empty, HNil) === RouteExtractor.BadRequestE("header 'Accept' has unexpected value 'wrong' - expected '*'")
+
+      val ext4 = extract(:= :> "foo" :> Client("Accept", "*") :> Get[Json, Foo])
+
+      ext4(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "*")), Set.empty, HNil) === Right(HNil)
+      ext4(EndpointRequest("GET", List("foo"), Map.empty, Map("wrong" -> "*")), Set.empty, HNil) === RouteExtractor.BadRequestE("missing header 'Accept'")
+      ext4(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "wrong")), Set.empty, HNil) === RouteExtractor.BadRequestE("header 'Accept' has unexpected value 'wrong' - expected '*'")
+
+      val ext5 = extract(:= :> "foo" :> Server("Accept", "*") :> Get[Json, Foo])
+
+      ext5(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
     }
 
     "body type" >> {
@@ -79,10 +89,12 @@ final class RouteExtractorSpec extends Specification {
 
       ext0(EndpointRequest("PUT", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right((BodyType[Foo], HNil))
       ext0(EndpointRequest("PUT", List("foo", "bar"), Map.empty, Map.empty), Set.empty, HNil) === RouteExtractor.NotFoundE
+      ext0(EndpointRequest("OPTIONS", List("foo", "bar"), Map.empty, Map.empty), Set.empty, HNil) === RouteExtractor.NotFoundE
 
       val ext1 = extract(:= :> ReqBody[Json, Foo] :> Post[Json, Foo])
 
       ext1(EndpointRequest("POST", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right((BodyType[Foo], HNil))
+      ext1(EndpointRequest("OPTIONS", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right((BodyType[Foo], HNil))
     }
 
     "methods" >> {
@@ -91,18 +103,22 @@ final class RouteExtractorSpec extends Specification {
       ext0(EndpointRequest("GET", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
       ext0(EndpointRequest("WRONG", Nil, Map.empty, Map.empty), Set.empty, HNil) === RouteExtractor.NotFoundE
       ext0(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === RouteExtractor.NotFoundE
+      ext0(EndpointRequest("OPTIONS", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
 
       val ext1 = extract(:= :> Put[Json, Foo])
 
       ext1(EndpointRequest("PUT", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
+      ext1(EndpointRequest("OPTIONS", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
 
       val ext2 = extract(:= :> Post[Json, Foo])
 
       ext2(EndpointRequest("POST", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
+      ext2(EndpointRequest("OPTIONS", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
 
       val ext3 = extract(:= :> Delete[Json, Foo])
 
       ext3(EndpointRequest("DELETE", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
+      ext3(EndpointRequest("OPTIONS", Nil, Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
     }
 
     "combinations" >> {

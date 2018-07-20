@@ -3,7 +3,7 @@ import typedapi.shared._
 import shapeless._
 import shapeless.ops.hlist.Prepend
 
-package object typedapi extends MethodToReqBodyLowPrio {
+package object typedapi extends MethodToReqBodyLowPrio with MethodToStringLowPrio {
 
   val Root       = PathListEmpty
   def Segment[V] = new PairTypeFromWitnessKey[SegmentParam, V]

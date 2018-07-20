@@ -5,9 +5,9 @@ object FromDsl {
 
   val MyApi = 
     // GET /fetch/user?name=<>
-    (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[Json, User]) :|:
+    (:= :> "fetch" :> "user" :> Query[String]('name) :> Server("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
     // POST /create/user
-    (:= :> "create" :> "user" :> ReqBody[Json, User] :> Post[Json, User])
+    (:= :> "create" :> "user" :> Server("Access-Control-Allow-Origin", "*") :> ReqBody[Json, User] :> Post[Json, User])
 }
 
 object FromDefinition {
@@ -19,12 +19,14 @@ object FromDefinition {
     api(
       method = Get[Json, User], 
       path = Root / "fetch" / "user", 
-      queries = Queries add Query[String]('name)
+      queries = Queries add[String]('name),
+      headers = Headers.server("Access-Control-Allow-Origin", "*")
     ) :|:
     // POST /create/user
     apiWithBody(
       method = Post[Json, User], 
       body = ReqBody[Json, User], 
-      path = Root / "create" / "user"
+      path = Root / "create" / "user",
+      headers = Headers.server("Access-Control-Allow-Origin", "*")
     )
 }

@@ -41,6 +41,18 @@ object TestServer {
 
       Ok(User("joe", 27))
 
+    case req @ GET -> Root / "header" / "client" =>
+      val headers = req.headers.toList
+      val value   = headers.find(_.name.value == "Hello").get.value
+
+      if (value != "*")
+        throw new IllegalArgumentException("unexpected header value " + value)
+
+      Ok(User("joe", 27))
+
+    case req @ GET -> Root / "header" / "server" =>
+      Ok(User("joe", 27)).map(resp => resp.copy(headers = resp.headers put Header("Hello", "*")))
+
     case GET -> Root => Ok(User("foo", 27))
     case PUT -> Root => Ok(User("foo", 27))
     case req @ PUT -> Root / "body" => Ok(User("foo", 27))

@@ -64,11 +64,15 @@ final class RequestDataBuilderSpec extends Specification {
         api2(None).run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json"))
         val api3 = derive(:= :> Fixed('i0, 'i1) :> Get[Json, ReqInput])
         api3().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "i1"))
+        val api4 = derive(:= :> Client('i0, 'i1) :> Get[Json, ReqInput])
+        api4().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "i1"))
+        val api5 = derive(:= :> Server('i0, 'i1) :> Get[Json, ReqInput])
+        api5().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json"))
       }
 
       "request body" >> {
         val api0 = derive(:= :> ReqBody[Json, Int] :> Put[Json, ReqInputWithBody[Int]])
-        api0(0).run[Id](cm)(putB) === ReqInputWithBody("PUT", Nil, Map(), Map(("Accept", "application/json"), ("Content-Type", "application/json")), 0)
+        api0(0).run[Id](cm)(putB) === ReqInputWithBody("PUT", Nil, Map(), Map(("Accept", "application/json")), 0)
       }
 
       "path" >> {
@@ -87,7 +91,7 @@ final class RequestDataBuilderSpec extends Specification {
 
       find().run[Id](cm) === ReqInput("GET", "find" :: Nil, Map(), Map(("Accept", "application/json")))
       fetch("all").run[Id](cm) === ReqInput("GET", "fetch" :: "all" :: Nil, Map(), Map(("Accept", "application/json")))
-      store(0).run[Id](cm) === ReqInputWithBody("POST", "store" :: Nil, Map(), Map(("Accept", "application/json"), ("Content-Type", "application/json")), 0)
+      store(0).run[Id](cm) === ReqInputWithBody("POST", "store" :: Nil, Map(), Map(("Accept", "application/json")), 0)
     }
   }
 }

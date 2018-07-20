@@ -29,6 +29,8 @@ final class ApiTransformerSpec extends TypeLevelFoldLeftLowPrio with ApiTransfor
   testCompile[GetElement[Json, Foo] :: QueryParam[fooW.T, List[String]] :: HNil, (QueryInput :: HNil, fooW.T :: HNil, List[String] :: HNil, GetCall, FieldType[Json, Foo])]
   testCompile[GetElement[Json, Foo] :: HeaderParam[fooW.T, String] :: HNil, (HeaderInput :: HNil, fooW.T :: HNil, String :: HNil, GetCall, FieldType[Json, Foo])]
   testCompile[GetElement[Json, Foo] :: FixedHeaderElement[fooW.T, barW.T] :: HNil, (FixedHeader[fooW.T, barW.T] :: HNil, HNil, HNil, GetCall, FieldType[Json, Foo])]
+  testCompile[GetElement[Json, Foo] :: ClientHeaderElement[fooW.T, barW.T] :: HNil, (ClientHeader[fooW.T, barW.T] :: HNil, HNil, HNil, GetCall, FieldType[Json, Foo])]
+  testCompile[GetElement[Json, Foo] :: ServerHeaderElement[fooW.T, barW.T] :: HNil, (ServerHeader[fooW.T, barW.T] :: HNil, HNil, HNil, GetCall, FieldType[Json, Foo])]
 
   testCompile[
     GetElement[Json, Foo] :: HeaderParam[fooW.T, Boolean] :: QueryParam[fooW.T, Int] :: SegmentParam[fooW.T, String] :: PathElement[pathW.T] :: HNil, 

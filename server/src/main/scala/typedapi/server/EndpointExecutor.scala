@@ -26,7 +26,7 @@ sealed trait EndpointExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: Meth
 object EndpointExecutor {
 
   type Aux[R0, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut, Out0] = EndpointExecutor[El, KIn, VIn, M, ROut, F, FOut] {
-    type R = R0
+    type R   = R0
     type Out = Out0
   }
 }

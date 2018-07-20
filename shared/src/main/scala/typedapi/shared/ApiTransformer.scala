@@ -10,6 +10,8 @@ sealed trait QueryInput extends ApiOp
 sealed trait HeaderInput extends ApiOp
 
 sealed trait FixedHeader[K, V] extends ApiOp
+sealed trait ClientHeader[K, V] extends ApiOp
+sealed trait ServerHeader[K, V] extends ApiOp
 
 trait MethodType extends ApiOp
 sealed trait GetCall extends MethodType
@@ -18,6 +20,21 @@ sealed trait PutWithBodyCall extends MethodType
 sealed trait PostCall extends MethodType
 sealed trait PostWithBodyCall extends MethodType
 sealed trait DeleteCall extends MethodType
+
+trait MethodToString[M <: MethodType] {
+
+  def show: String
+}
+
+trait MethodToStringLowPrio {
+
+  implicit val getToStr      = new MethodToString[GetCall] { val show = "GET" }
+  implicit val putToStr      = new MethodToString[PutCall] { val show = "PUT" }
+  implicit val putBodyToStr  = new MethodToString[PutWithBodyCall] { val show = "PUT" }
+  implicit val postToStr     = new MethodToString[PostCall] { val show = "POST" }
+  implicit val postBodyToStr = new MethodToString[PostWithBodyCall] { val show = "POST" }
+  implicit val deleteToStr   = new MethodToString[DeleteCall] { val show = "DELETE" }
+}
 
 /** Separates uri, input description, method  and out type from `ApiList`. 
   * 
@@ -46,6 +63,12 @@ trait ApiTransformer {
 
   implicit def fixedHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[FixedHeaderElement[K, V], (El, KIn, VIn, M, Out), (FixedHeader[K, V] :: El, KIn, VIn, M, Out)]
+
+  implicit def clientHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[ClientHeaderElement[K, V], (El, KIn, VIn, M, Out), (ClientHeader[K, V] :: El, KIn, VIn, M, Out)]
+
+  implicit def serverHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[ServerHeaderElement[K, V], (El, KIn, VIn, M, Out), (ServerHeader[K, V] :: El, KIn, VIn, M, Out)]
 
   implicit def getTransformer[MT <: MediaType, A] = at[GetElement[MT, A], Unit, (HNil, HNil, HNil, GetCall, FieldType[MT, A])]
 

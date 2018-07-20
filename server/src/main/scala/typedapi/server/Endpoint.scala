@@ -8,7 +8,8 @@ import shapeless.ops.function._
 import scala.language.higherKinds
 
 /** Container storing the extractor and function of an endpoint. */
-abstract class Endpoint[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], Out](val extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut]) {
+abstract class Endpoint[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], Out]
+    (val method: String, val extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut], val headers: Map[String, String]) {
 
   def apply(in: VIn): F[Out]
 }
@@ -23,6 +24,8 @@ final class ExecutableDerivation[F[_]] {
 
   final class Derivation[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, Fn, Out]
     (extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
+     method: String,
+     headers: Map[String, String],
      fnToVIn: FnToProduct.Aux[Fn, VIn => F[Out]]) {
 
     /** Restricts type of parameter `fn` to a function defined by the given API:
@@ -34,7 +37,7 @@ final class ExecutableDerivation[F[_]] {
       * }}}
       */
     def from(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out] =
-      new Endpoint[El, KIn, VIn, M, ROut, F, Out](extractor) {
+      new Endpoint[El, KIn, VIn, M, ROut, F, Out](method, extractor, headers) {
         private val fin = fnToVIn(fn)
 
         def apply(in: VIn): F[Out] = fin(in)
@@ -45,7 +48,9 @@ final class ExecutableDerivation[F[_]] {
     (apiList: ApiTypeCarrier[H])
     (implicit folder: Lazy[TypeLevelFoldLeft.Aux[H, Unit, (El, KIn, VIn, M, FieldType[MT, Out])]],
               extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
+              methodShow: MethodToString[M],
+              serverHeaders: ServerHeaderExtractor[El],
               inToFn: Lazy[FnFromProduct.Aux[VIn => F[Out], Fn]],
               fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, M, ROut, Fn, Out] =
-    new Derivation[El, KIn, VIn, M, ROut, Fn, Out](extractor, fnToVIn.value)
+    new Derivation[El, KIn, VIn, M, ROut, Fn, Out](extractor, methodShow.show, serverHeaders(Map.empty), fnToVIn.value)
 }
