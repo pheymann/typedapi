@@ -72,6 +72,16 @@ final class RouteExtractorSpec extends Specification {
       ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "*")), Set.empty, HNil) === Right(HNil)
       ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("wrong" -> "*")), Set.empty, HNil) === RouteExtractor.BadRequestE("missing header 'Accept'")
       ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "wrong")), Set.empty, HNil) === RouteExtractor.BadRequestE("header 'Accept' has unexpected value 'wrong' - expected '*'")
+
+      val ext4 = extract(:= :> "foo" :> Client("Accept", "*") :> Get[Json, Foo])
+
+      ext4(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "*")), Set.empty, HNil) === Right(HNil)
+      ext4(EndpointRequest("GET", List("foo"), Map.empty, Map("wrong" -> "*")), Set.empty, HNil) === RouteExtractor.BadRequestE("missing header 'Accept'")
+      ext4(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "wrong")), Set.empty, HNil) === RouteExtractor.BadRequestE("header 'Accept' has unexpected value 'wrong' - expected '*'")
+
+      val ext5 = extract(:= :> "foo" :> Server("Accept", "*") :> Get[Json, Foo])
+
+      ext5(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === Right(HNil)
     }
 
     "body type" >> {

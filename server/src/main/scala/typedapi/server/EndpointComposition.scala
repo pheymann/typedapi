@@ -48,6 +48,7 @@ trait PrecompileEndpointLowPrio {
 
   implicit def constructorsCase[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, MT <: MediaType, Out, M <: MethodType, ROut, T <: HList]
     (implicit extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
+              serverHeaders: ServerHeaderExtractor[El],
               vinToFn: FnFromProduct.Aux[VIn => F[Out], Fn],
               fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]],
               next: PrecompileEndpoint[F, T]) =
@@ -56,7 +57,7 @@ trait PrecompileEndpointLowPrio {
       type Consts = EndpointConstructor[F, Fn, El, KIn, VIn, M, ROut, Out] :: next.Consts
 
       val constructor = new EndpointConstructor[F, Fn, El, KIn, VIn, M, ROut, Out] {
-        def apply(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out] = new Endpoint[El, KIn, VIn, M, ROut, F, Out](extractor) {
+        def apply(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out] = new Endpoint[El, KIn, VIn, M, ROut, F, Out](extractor, serverHeaders(Map.empty)) {
           private val fin = fnToVIn.value(fn)
 
           def apply(in: VIn): F[Out] = fin(in)

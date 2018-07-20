@@ -91,6 +91,29 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
+  implicit def clientHeaderCompiler[K, V, T <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit kWit: Witness.Aux[K], vWit: Witness.Aux[V], kShow: WitnessToString[K], vShow: WitnessToString[V], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
+    new RequestDataBuilder[ClientHeader[K, V] :: T, KIn, VIn, M, O] {
+      type Out = compiler.Out
+
+      def apply(inputs: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+        val key   = kShow.show(kWit.value)
+        val value = vShow.show(vWit.value)
+
+        compiler(inputs, uri, queries, Map((key, value)) ++ headers)
+      }
+    }
+
+  implicit def ignoreServerHeaderCompiler[K, V, T <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
+    new RequestDataBuilder[ServerHeader[K, V] :: T, KIn, VIn, M, O] {
+      type Out = compiler.Out
+
+      def apply(inputs: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+        compiler(inputs, uri, queries, headers)
+      }
+    }
+
   type Data             = List[String] :: Map[String, List[String]] :: Map[String, String] :: HNil
   type DataWithBody[Bd] = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
 

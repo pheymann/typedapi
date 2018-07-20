@@ -64,6 +64,10 @@ final class RequestDataBuilderSpec extends Specification {
         api2(None).run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json"))
         val api3 = derive(:= :> Fixed('i0, 'i1) :> Get[Json, ReqInput])
         api3().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "i1"))
+        val api4 = derive(:= :> Client('i0, 'i1) :> Get[Json, ReqInput])
+        api4().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "i1"))
+        val api5 = derive(:= :> Server('i0, 'i1) :> Get[Json, ReqInput])
+        api5().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json"))
       }
 
       "request body" >> {
