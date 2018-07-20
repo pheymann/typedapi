@@ -72,7 +72,7 @@ final class RequestDataBuilderSpec extends Specification {
 
       "request body" >> {
         val api0 = derive(:= :> ReqBody[Json, Int] :> Put[Json, ReqInputWithBody[Int]])
-        api0(0).run[Id](cm)(putB) === ReqInputWithBody("PUT", Nil, Map(), Map(("Accept", "application/json"), ("Content-Type", "application/json")), 0)
+        api0(0).run[Id](cm)(putB) === ReqInputWithBody("PUT", Nil, Map(), Map(("Accept", "application/json")), 0)
       }
 
       "path" >> {
@@ -91,7 +91,7 @@ final class RequestDataBuilderSpec extends Specification {
 
       find().run[Id](cm) === ReqInput("GET", "find" :: Nil, Map(), Map(("Accept", "application/json")))
       fetch("all").run[Id](cm) === ReqInput("GET", "fetch" :: "all" :: Nil, Map(), Map(("Accept", "application/json")))
-      store(0).run[Id](cm) === ReqInputWithBody("POST", "store" :: Nil, Map(), Map(("Accept", "application/json"), ("Content-Type", "application/json")), 0)
+      store(0).run[Id](cm) === ReqInputWithBody("POST", "store" :: Nil, Map(), Map(("Accept", "application/json")), 0)
     }
   }
 }

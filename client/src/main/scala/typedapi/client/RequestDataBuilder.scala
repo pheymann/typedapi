@@ -120,9 +120,6 @@ trait RequestDataBuilderLowPrio {
   private def accept[MT <: MediaType](headers: Map[String, String], media: MT): Map[String, String] =
     Map(("Accept", media.value)) ++ headers
 
-  private def contentType[MT <: MediaType](headers: Map[String, String], media: MT): Map[String, String] =
-    Map(("Content-Type", media.value)) ++ headers
-
   implicit def getCompiler[MT <: MediaType, A](implicit media: Witness.Aux[MT]) = new RequestDataBuilder[HNil, HNil, HNil, GetCall, FieldType[MT, A]] {
     type Out = Data
 
@@ -143,12 +140,12 @@ trait RequestDataBuilderLowPrio {
     }
   }
 
-  implicit def putWithBodyCompiler[BMT <: MediaType, Bd, MT <: MediaType, A](implicit bodyMedia: Witness.Aux[BMT], media: Witness.Aux[MT]) = 
+  implicit def putWithBodyCompiler[BMT <: MediaType, Bd, MT <: MediaType, A](implicit media: Witness.Aux[MT]) = 
     new RequestDataBuilder[HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PutWithBodyCall, FieldType[MT, A]] {
       type Out = DataWithBody[Bd]
 
       def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        val out = uri.result() :: queries :: contentType(accept(headers, media.value), bodyMedia.value) :: inputs.head :: HNil
+        val out = uri.result() :: queries :: accept(headers, media.value) :: inputs.head :: HNil
 
         out
       }
@@ -164,12 +161,12 @@ trait RequestDataBuilderLowPrio {
     }
   }
 
-  implicit def postWithBodyCompiler[BMT <: MediaType, Bd, MT <: MediaType, A](implicit bodyMedia: Witness.Aux[BMT], media: Witness.Aux[MT]) = 
+  implicit def postWithBodyCompiler[BMT <: MediaType, Bd, MT <: MediaType, A](implicit media: Witness.Aux[MT]) = 
     new RequestDataBuilder[HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PostWithBodyCall, FieldType[MT, A]] {
       type Out = DataWithBody[Bd]
 
       def apply(inputs: Bd :: HNil, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        val out = uri.result() :: queries :: contentType(accept(headers, media.value), bodyMedia.value) :: inputs.head :: HNil
+        val out = uri.result() :: queries :: accept(headers, media.value) :: inputs.head :: HNil
 
         out
       }
