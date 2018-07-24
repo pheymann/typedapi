@@ -1,15 +1,24 @@
 ## Create a server from your API
 After we [defined](https://github.com/pheymann/typedapi/blob/master/docs/ApiDefinition.md) our API we have to derive the endpoint/set of endpoints we can mount and serve to the world.
 
+```Scala
+val Api =
+  (api(Get[Json, User], Root / "user" / Segment[String]("name"))) :|:
+  (apiWithBody(Put[Json, User], ReqBody[Json, User], Root / "user"))
+```
+
 ### First things first, derive the endpoints
 ```Scala
 import typedapi.server._
 
 final case class User(name: String)
 
-val Api = := :> "my" :> "awesome" :> "api" :> Segment[String]('name) :> Get[User]
+// implicit encoders and decoders
 
-val endpoint = derive[IO](Api).from(name => ???)
+val endpoints = deriveAll[IO](Api).from(
+  name => // retrieve and return user
+  user => // store user
+)
 ```
 
 ### Http4s
@@ -17,43 +26,31 @@ If you want to use [http4s](https://github.com/http4s/http4s) as your server bac
 
 ```Scala
 import typedapi.server.http4s._
-import cats.effect.IO
 import org.http4s.server.blaze.BlazeBuilder
 
-val builder = BlazeBuilder[IO]
-val cm      = ServerManager(builder, "http://my-host", myPort)
+val sm = ServerManager(BlazeBuilder[IO], "http://my-host", myPort)
 ```
 
-Now we can mount `endpoint` and serve to to the world:
+### Akka-Http
+If you want to use [akka-http](https://github.com/akka/akka-http) as your server backend you have to add the following code:
 
 ```Scala
-val server = mount(sm, endpoint)
+implicit val timeout = 5.second
+implicit val system  = ActorSystem("akka-http-server")
+implicit val mat     = ActorMaterializer()
 
-server.unsafeRunSync()
+import system.dispatcher
+    
+val sm = ServerManager(Http(), "http://my-host", myPort)
 ```
 
-**Make sure** you have the proper `Encoder`s and `Decoder`s in place.
+### Start server
+Now we can mount `endpoints` and serve to to the world:
 
-#### Multiple APIs
 ```Scala
-import typedapi.server._
-import typedapi.server.http4s._
-import cats.effect.IO
-import org.http4s.server.blaze.BlazeBuilder
-
-val Api = 
-  (:= :> "user" :> Segment[String]('name) :> Get[User]) :|:
-  (:= :> "user" :> ReqBody[User] :> Put[User])
-
-def find(name: String): IO[User] = ???
-def create(user: User): IO[User] = ???
-
-val endpoints = deriveAll[IO](Api).from(find, create)
-
-val builder = BlazeBuilder[IO]
-val cm      = ServerManager(builder, "http://my-host", myPort)
-
 val server = mount(sm, endpoints)
 
 server.unsafeRunSync()
 ```
+
+**Make sure** you have the proper encoders and decoders in place.
