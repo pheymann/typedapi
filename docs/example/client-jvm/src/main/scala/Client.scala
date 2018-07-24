@@ -10,7 +10,7 @@ object Client {
   implicit val decoder = jsonOf[IO, User]
   implicit val encoder = jsonEncoderOf[IO, User]
 
-  val (fetch, create) = deriveAll(FromDsl.MyApi)
+  val (get, put, post, delete, path, putBody, segment, search, header, fixed, client) = deriveAll(FromDsl.MyApi)
 
   def main(args: Array[String]): Unit = {
     import User._
@@ -20,8 +20,8 @@ object Client {
     val cm = ClientManager(Http1Client[IO]().unsafeRunSync, "http://localhost", 9000)
 
     (for {
-      u0 <- create(User("joe", 27)).run[IO](cm)
-      u1 <- fetch("joe").run[IO](cm)
+      u0 <- putBody(User("joe", 27)).run[IO](cm)
+      u1 <- search("joe").run[IO](cm)
     } yield {
       println(u0)
       println(u1)
