@@ -152,7 +152,7 @@ If you have a set of headers which are statically known and have to be provided 
 ```Scala
 // GET /header/fixed {headers: consumer=me}
 // dsl
-:= :> "header" :> "fixed" :> Fixed("consumer", "me") :> Get[Json, A]
+:= :> "header" :> "fixed" :> Header("consumer", "me") :> Get[Json, A]
 
 // function
 api(Get[Json, A], Root / "header" / "fixed", headers = Headers.add("consumer", "me"))

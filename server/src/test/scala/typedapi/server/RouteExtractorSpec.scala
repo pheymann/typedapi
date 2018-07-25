@@ -67,7 +67,7 @@ final class RouteExtractorSpec extends Specification {
       ext2(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0")), Set.empty, HNil) === Right(Some(0) :: HNil)
       ext2(EndpointRequest("GET", List("foo"), Map.empty, Map.empty), Set.empty, HNil) === Right(None :: HNil)
 
-      val ext3 = extract(:= :> "foo" :> Fixed("Accept", "*") :> Get[Json, Foo])
+      val ext3 = extract(:= :> "foo" :> Header("Accept", "*") :> Get[Json, Foo])
 
       ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("accept" -> "*")), Set.empty, HNil) === Right(HNil)
       ext3(EndpointRequest("GET", List("foo"), Map.empty, Map("wrong" -> "*")), Set.empty, HNil) === RouteExtractor.BadRequestE("missing header 'Accept'")

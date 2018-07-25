@@ -9,7 +9,7 @@ package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio wit
   def Segment[V] = new PairTypeFromWitnessKey[SegmentParam, V]
   def Query[V]   = new PairTypeFromWitnessKey[QueryParam, V]
   def Header[V]  = new PairTypeFromWitnessKey[HeaderParam, V]
-  def Fixed      = new PairTypeFromWitnesses[FixedHeaderElement]
+  def Header     = new PairTypeFromWitnesses[FixedHeaderElement]
   def Client     = new PairTypeFromWitnesses[ClientHeaderElement]
   def Server     = new PairTypeFromWitnesses[ServerHeaderElement]
 

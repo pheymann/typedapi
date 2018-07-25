@@ -9,7 +9,7 @@ package object tests {
     (:= :> "segment" :> Segment[String]('name) :> Get[Json, User]) :|:
     (:= :> "query" :> Query[Int]('age) :> Get[Json, User]) :|:
     (:= :> "header" :> Header[Int]('age) :> Get[Json, User]) :|:
-    (:= :> "header" :> "fixed" :> Fixed("Hello", "*") :> Get[Json, User]) :|:
+    (:= :> "header" :> "fixed" :> Header("Hello", "*") :> Get[Json, User]) :|:
     (:= :> "header" :> "client" :> Client("Hello", "*") :> Get[Json, User]) :|:
     (:= :> "header" :> "server" :> Server("Hello", "*") :> Get[Json, User]) :|:
     (:= :> Get[Json, User]) :|:

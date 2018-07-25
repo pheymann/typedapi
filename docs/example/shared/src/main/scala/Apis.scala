@@ -26,7 +26,7 @@ object FromDsl {
     (:= :> "search" :> "user" :> Query[String]("name") :> Server("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
     // add header
     (:= :> "header" :> Header[String]("consumer") :> Server("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
-    (:= :> "header" :> "fixed" :> Fixed("consumer", "me") :> Server("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
+    (:= :> "header" :> "fixed" :> Header("consumer", "me") :> Server("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
     (:= :> "header" :> "client" :> Client("client", "me") :> Server("Access-Control-Allow-Origin", "*") :> Get[Json, User])
 }
 
