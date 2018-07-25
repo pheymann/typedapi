@@ -3,7 +3,7 @@ import typedapi.shared._
 import shapeless._
 import shapeless.ops.hlist.Prepend
 
-package object typedapi extends MethodToReqBodyLowPrio with MethodToStringLowPrio {
+package object typedapi extends MethodToReqBodyLowPrio with MethodToStringLowPrio with MediaTypes {
 
   val Root       = PathListEmpty
   def Segment[V] = new PairTypeFromWitnessKey[SegmentParam, V]
@@ -20,8 +20,8 @@ package object typedapi extends MethodToReqBodyLowPrio with MethodToStringLowPri
   def Post[MT <: MediaType, A]    = TypeCarrier[PostElement[MT, A]]()
   def Delete[MT <: MediaType, A]  = TypeCarrier[DeleteElement[MT, A]]()
 
-  type Json  = `Application/Json`.type
-  type Plain = `Text/Plain`.type
+  type Json  = `Application/json`
+  type Plain = `Text/plain`
 
   def api[M <: MethodElement, P <: HList, Q <: HList, H <: HList, Prep <: HList, Api <: HList]
       (method: TypeCarrier[M], path: PathList[P] = Root, queries: QueryListBuilder[Q] = NoQueries, headers: HeaderListBuilder[H] = NoHeaders)

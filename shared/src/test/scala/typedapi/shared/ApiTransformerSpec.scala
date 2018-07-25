@@ -1,5 +1,6 @@
 package typedapi.shared
 
+import typedapi.Json
 import shapeless._
 import shapeless.labelled.FieldType
 
@@ -14,8 +15,6 @@ final class ApiTransformerSpec extends TypeLevelFoldLeftLowPrio with ApiTransfor
   val pathW = Witness("test")
   val fooW  = Witness('foo)
   val barW  = Witness('bar)
-
-  type Json  = `Application/Json`.type
 
   testCompile[GetElement[Json, Foo] :: HNil, (HNil, HNil, HNil, GetCall, FieldType[Json, Foo])]
   testCompile[PutElement[Json, Foo] :: HNil, (HNil, HNil, HNil, PutCall, FieldType[Json, Foo])]

@@ -23,14 +23,14 @@ object Client {
   ))
   implicit val encoder = typedapi.client.js.Encoder[Future, User](user => Future.successful(user.asJson.noSpaces))
 
-  val (fetch, create) = deriveAll(FromDsl.MyApi)
+  val (get, put, post, delete, path, putBody, segment, search, header, fixed, client) = deriveAll(FromDsl.MyApi)
 
   def main(args: Array[String]): Unit = {
     val cm = ClientManager(Ajax, "http://localhost", 9000)
 
     (for {
-      u0 <- create(User("joe", 27)).run[Future](cm)
-      u1 <- fetch("joe").run[Future](cm)
+      u0 <- putBody(User("joe", 27)).run[Future](cm)
+      u1 <- search("joe").run[Future](cm)
     } yield (u0, u1)).foreach { case (u0, u1) =>
       println(u0)
       println(u1)

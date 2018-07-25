@@ -21,13 +21,13 @@ object ApiDslSpec {
   testCompile(:= :> Segment[Int](fooW))[SegmentParam[fooW.T, Int] :: HNil]
   testCompile(:= :> Query[Int](fooW))[QueryParam[fooW.T, Int] :: HNil]
   testCompile(:= :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: HNil]
-  testCompile(:= :> Get[Json, Foo])[GetElement[`Application/Json`.type, Foo] :: HNil]
+  testCompile(:= :> Get[Json, Foo])[GetElement[`Application/json`, Foo] :: HNil]
 
   // path: add every element
   testCompile(base :> Segment[Int](fooW))[SegmentParam[fooW.T, Int] :: Base]
   testCompile(base :> Query[Int](fooW))[QueryParam[fooW.T, Int] :: Base]
   testCompile(base :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: Base]
-  testCompile(base :> Get[Json, Foo])[GetElement[`Application/Json`.type, Foo] :: Base]
+  testCompile(base :> Get[Json, Foo])[GetElement[`Application/json`, Foo] :: Base]
 
   // segment: add every element
   val _baseSeg = base :> Segment[Int](fooW)
@@ -37,7 +37,7 @@ object ApiDslSpec {
   testCompile(_baseSeg :> Segment[Int](fooW))[SegmentParam[fooW.T, Int] :: _BaseSeg]
   testCompile(_baseSeg :> Query[Int](fooW))[QueryParam[fooW.T, Int] :: _BaseSeg]
   testCompile(_baseSeg :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: _BaseSeg]
-  testCompile(_baseSeg :> Get[Json, Foo])[GetElement[`Application/Json`.type, Foo] :: _BaseSeg]
+  testCompile(_baseSeg :> Get[Json, Foo])[GetElement[`Application/json`, Foo] :: _BaseSeg]
   
   // query: add queries, headers, body and final
   val _baseQ = base :> Query[Int](fooW)
@@ -48,7 +48,7 @@ object ApiDslSpec {
   test.illTyped("_baseQ :> Segment[Int](fooW)")
   testCompile(_baseQ :> Query[Int](fooW))[QueryParam[fooW.T, Int] :: _BaseQ]
   testCompile(_baseQ :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: _BaseQ]
-  testCompile(_baseQ :> Get[Json, Foo])[GetElement[`Application/Json`.type, Foo] :: _BaseQ]
+  testCompile(_baseQ :> Get[Json, Foo])[GetElement[`Application/json`, Foo] :: _BaseQ]
   
   // header: add header, final
   val _baseH = base :> Header[Int](fooW)
@@ -59,10 +59,10 @@ object ApiDslSpec {
   test.illTyped("_baseH :> Segment[Int](fooW)")
   test.illTyped("_baseH :> Query[Int](fooW)")
   testCompile(_baseH :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: _BaseH]
-  testCompile(_baseH :> Fixed(fooW, testW) :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: FixedHeaderElement[fooW.T, testW.T] :: _BaseH]
+  testCompile(_baseH :> Header(fooW, testW) :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: FixedHeaderElement[fooW.T, testW.T] :: _BaseH]
   testCompile(_baseH :> Client(fooW, testW) :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: ClientHeaderElement[fooW.T, testW.T] :: _BaseH]
   testCompile(_baseH :> Server(fooW, testW) :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: ServerHeaderElement[fooW.T, testW.T] :: _BaseH]
-  testCompile(_baseH :> Get[Json, Foo])[GetElement[`Application/Json`.type, Foo] :: _BaseH]
+  testCompile(_baseH :> Get[Json, Foo])[GetElement[`Application/json`, Foo] :: _BaseH]
 
   // request body: add put or post
   val _baseRB = base :> ReqBody[Plain, Foo]
@@ -73,8 +73,8 @@ object ApiDslSpec {
   test.illTyped("_baseRB :> Query[Int](fooW)")
   test.illTyped("_baseRB :> Header[Int](fooW)")
   test.illTyped("_baseRB :> Get[Json, Foo]")
-  testCompile(_baseRB :> Put[Json, Foo])[PutWithBodyElement[`Text/Plain`.type, Foo, `Application/Json`.type, Foo] :: _BaseRB]
-  testCompile(_baseRB :> Post[Json, Foo])[PostWithBodyElement[`Text/Plain`.type, Foo, `Application/Json`.type, Foo] :: _BaseRB]
+  testCompile(_baseRB :> Put[Json, Foo])[PutWithBodyElement[`Text/plain`, Foo, `Application/json`, Foo] :: _BaseRB]
+  testCompile(_baseRB :> Post[Json, Foo])[PostWithBodyElement[`Text/plain`, Foo, `Application/json`, Foo] :: _BaseRB]
 
   // method: nothing at all
   val _baseF = base :> Get[Json, Foo]
