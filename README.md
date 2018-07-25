@@ -73,11 +73,13 @@ This library is the result of the following questions:
 It is inspired by [Servant](https://github.com/haskell-servant/servant) and it provides an API layer which is independent of the underlying server/client implementation. Right now Typedapi supports:
 
   - [http4s](https://github.com/http4s/http4s)
+  - [akka-http](https://github.com/akka/akka-http)
+  - ScalaJS on the client
 
-But it is planned to add [akka-http](https://github.com/akka/akka-http) before the first stable release `0.1.0`.
+If you need something else take a look at this [doc](https://github.com/pheymann/typedapi/blob/master/docs/ExtendIt.md#write-your-own-client-backend).
 
 ## Get this library
-It is available for Scala 2.11 and 2.12 and can downloaded as Maven artifact:
+It is available for Scala 2.11, 2.12 and ScalaJS and can be downloaded as Maven artifact:
 
 ```
 // dsl
@@ -87,6 +89,13 @@ It is available for Scala 2.11 and 2.12 and can downloaded as Maven artifact:
 // http4s support
 "com.github.pheymann" %% "typedapi-http4s-client" % <version>
 "com.github.pheymann" %% "typedapi-http4s-server" % <version>
+
+// akka-http support
+"com.github.pheymann" %% "typedapi-akka-http-client" % <version>
+"com.github.pheymann" %% "typedapi-akka-http-server" % <version>
+
+// ScalaJS client support
+"com.github.pheymann" %% "typedapi-js-client" % <version>
 ```
 
 You can also build it on your machine:
