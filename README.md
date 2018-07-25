@@ -13,9 +13,9 @@ For the Servant lovers:
 import typedapi.dsl._
 
 val MyApi = 
-  // GET /fetch/user?name=<>
+  // GET {body: User} /fetch/user?{name: String}
   (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[Json, User]) :|:
-  // POST /create/user
+  // POST {body: User} /create/user
   (:= :> "create" :> "user" :> ReqBody[Json, User] :> Post[Json, User])
 ```
 
@@ -25,9 +25,9 @@ And for all the others:
 import typedapi._
 
 val MyApi =
-  // GET /fetch/user?name=<>
+  // GET {body: User} /fetch/user?{name: String}
   api(method = Get[Json, User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name)) :|:
-  // POST /create/user
+  // POST {body: User} /create/user
   apiWithBody(method = Post[Json, User], body = ReqBody[Json, User], path = Root / "create" / "user")
 ```
 
