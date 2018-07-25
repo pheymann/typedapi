@@ -62,7 +62,7 @@ apiWithBody(Post[Json, A], ReqBody[Json, B])
 By the way, you can only add `Put` and `Post` as the next element of `ReqBody`. Everything else will not compile. Thus, you end up with a valid API description and not something like `:= :> ReqBody[Json, B] :> Get[Json, A]` or `api(Get[Json, A], ReqBody[Json, B])`.
 
 ### One word to encodings
-You can find a list of provided encodings [here](https://github.com/pheymann/typedapi/blob/update-docs-final-cleanups/shared/src/main/scala/typedapi/shared/ApiElement.scala#L62). If you need something else implement `trait MediaType`.
+You can find a list of provided encodings [here](https://github.com/pheymann/typedapi/blob/master/shared/src/main/scala/typedapi/shared/ApiElement.scala#L62). If you need something else implement `trait MediaType`.
 
 ### Path
 ```Scala
