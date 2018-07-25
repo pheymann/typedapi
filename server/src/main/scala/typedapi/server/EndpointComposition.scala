@@ -15,8 +15,7 @@ trait EndpointConstructor[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, M <
 }
 
 /** Compiles RouteExtractor and FunApply for every API endpoint and generates expected list of endpoint functions. */
-@implicitNotFound("""Could not precompile your API. This can happen when:
-  - you try to extract an value from the route which is not supported (ValueExtractor in RouteExtractor.scala)
+@implicitNotFound("""Could not precompile your API. This can happen when you try to extract an value from the route which is not supported (ValueExtractor in RouteExtractor.scala)
  
 transformed: ${H}""")
 sealed trait PrecompileEndpoint[F[_], H <: HList] {

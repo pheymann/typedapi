@@ -7,7 +7,7 @@ import shapeless._
 import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
-/** Basic api request structure. Expected input data and return-type are defined for each method. */
+/** Basic api request element. Provides a function to create an IO effect representing the actual request. */
 trait ApiRequest[M <: MethodType, D <: HList, C, F[_], Out] {
 
   def apply(data: D, cm: ClientManager[C]): F[Out]

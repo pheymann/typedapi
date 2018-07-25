@@ -7,7 +7,7 @@ import shapeless.labelled.FieldType
 import scala.collection.mutable.Builder
 import scala.annotation.implicitNotFound
 
-/** Compiles type level api description into a function returning data (uri, query, header, body) and return-type `A` which are used for a request. */
+/** Compiles type level api description into a function returning request data (uri, query, header, body) and return-type `A` which are used for a request. */
 @implicitNotFound("""Woops, you shouldn't be here. We cannot find the RequestDataBuilder. This seems to be a bug.
 
 elements: ${El}
