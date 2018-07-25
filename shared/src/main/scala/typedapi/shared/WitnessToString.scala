@@ -1,5 +1,8 @@
 package typedapi.shared
 
+import scala.annotation.implicitNotFound
+
+@implicitNotFound("Couldn't find transformation for witness ${K} to String.")
 sealed trait WitnessToString[K] {
 
   def show(key: K): String

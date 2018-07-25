@@ -3,15 +3,6 @@ package typedapi.dsl
 import typedapi.shared._
 import shapeless._
 
-/** Type level api representation encoded as HList. This wrapper is used to encapsulate shapeless code
-  * and enforces api structure:
-  *   path    -> all
-  *   segment -> all
-  *   query   -> [query, header, body, method]
-  *   header  -> [header, body, method]
-  *   body    -> [method]
-  *   method  -> nothing
-  */
 sealed trait ApiList[H <: HList]
 
 /** Basic operations. */

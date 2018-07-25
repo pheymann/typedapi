@@ -4,35 +4,40 @@ import scala.annotation.implicitNotFound
 
 sealed trait ApiElement
 
-/** Static path element represented as singleton type.
-  * 
-  * @param wit singleton type of static path element
-  */
+/** Type-container providing the singleton-type of an static path element */
 sealed trait PathElement[P]
 
-/** Dynamically set segment within an URI which has a unique name to reference it on input. */
+/** Type-container providing the name (singleton) and value type for a path parameter. */
 sealed trait SegmentParam[K, V] extends ApiElement
 
-/** Query parameter which represents its key as singleton type and describes the value type. */
+/** Type-container providing the name (singleton) and value type for a query parameter. */
 sealed trait QueryParam[K, V] extends ApiElement
 
-/** Header which represents its key as singleton type and describes the value type. */
+/** Type-container providing the name (singleton) and value type for a header parameter. */
 sealed trait HeaderParam[K, V] extends ApiElement
 
-/** Header which represents its key and vlaue as singleton types. */
+/** Type-container providing the name (singleton) and value type for a static header element. */
 sealed trait FixedHeaderElement[K, V] extends ApiElement
+/** Type-container providing the name (singleton) and value type for a static header element only used solely for the client. */
 sealed trait ClientHeaderElement[K, V] extends ApiElement
+/** Type-container providing the name (singleton) and value type for a static header element only used solely for the server. */
 sealed trait ServerHeaderElement[K, V] extends ApiElement
 
-/** Request body type description. */
+/** Type-container providing the media-type and value type for a request body. */
 sealed trait ReqBodyElement[MT <: MediaType, A] extends ApiElement
 
 trait MethodElement extends ApiElement
+/** Type-container representing a GET operation with a media-type and value type for the result. */
 sealed trait GetElement[MT <: MediaType, A] extends MethodElement
+/** Type-container representing a PUT operation with a media-type and value type for the result. */
 sealed trait PutElement[MT <: MediaType, A] extends MethodElement
+/** Type-container representing a PUT operation with a media-type and value type for the result and a body. */
 sealed trait PutWithBodyElement[BMT <: MediaType, Bd, MT <: MediaType, A] extends MethodElement
+/** Type-container representing a POST operation with a media-type and value type for the result. */
 sealed trait PostElement[MT <: MediaType, A] extends MethodElement
+/** Type-container representing a POST operation with a media-type and value type for the result and a body. */
 sealed trait PostWithBodyElement[BMT <: MediaType, Bd, MT <: MediaType, A] extends MethodElement
+/** Type-container representing a DELETE operation with a media-type and value type for the result. */
 sealed trait DeleteElement[MT <: MediaType, A] extends MethodElement
 
 @implicitNotFound("""You try to add a request body to a method which doesn't expect one.
@@ -46,11 +51,11 @@ trait MethodToReqBody[M <: MethodElement, MT <: MediaType, Bd] {
 
 trait MethodToReqBodyLowPrio {
 
-  implicit def putToReqBody[MT <: MediaType, A, BMT <: MediaType, Bd] = new MethodToReqBody[PutElement[MT, A], BMT, Bd] {
+  implicit def reqBodyForPut[MT <: MediaType, A, BMT <: MediaType, Bd] = new MethodToReqBody[PutElement[MT, A], BMT, Bd] {
     type Out = PutWithBodyElement[BMT, Bd, MT, A]
   }
 
-  implicit def postToReqBody[MT <: MediaType, A, BMT <: MediaType, Bd] = new MethodToReqBody[PostElement[MT, A], BMT, Bd] {
+  implicit def reqBodyForPost[MT <: MediaType, A, BMT <: MediaType, Bd] = new MethodToReqBody[PostElement[MT, A], BMT, Bd] {
     type Out = PostWithBodyElement[BMT, Bd, MT, A]
   }
 }
