@@ -8,7 +8,7 @@ import shapeless.ops.function._
 import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
-/** Fuses RouteExtractor, FunApply and endpoint function fun into an Endpoint. */
+/** Fuses [[RouteExtractor]] and the endpoint function into an [[Endpoint]]. */
 trait EndpointConstructor[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, Out] {
 
   def apply(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out]
