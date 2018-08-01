@@ -1,4 +1,4 @@
-package typedapi.client.js
+package typedapi.util
 
 import scala.language.higherKinds
 

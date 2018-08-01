@@ -1,5 +1,6 @@
 package typedapi.client
 
+import typedapi.util._
 import org.scalajs.dom.ext.Ajax
 
 import scala.concurrent.{Future, ExecutionContext}
