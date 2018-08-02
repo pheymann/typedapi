@@ -2,20 +2,14 @@ package typedapi.shared
 
 import shapeless._
 
-sealed trait PathList[P <: HList]
+/** Typecarrier to construct a complete path description from [[PathElement]]s and [[SegmentParam]]s. */
+final case class PathListBuilder[P <: HList]() {
 
-final case class PathListCons[P <: HList]() extends PathList[P] {
-
-  def /[S](path: Witness.Lt[S]): PathListCons[PathElement[S] :: P] = PathListCons()
-  def /[K, V](segment: TypeCarrier[SegmentParam[K, V]]): PathListCons[SegmentParam[K, V] :: P] = PathListCons()
+  def /[S](path: Witness.Lt[S]): PathListBuilder[PathElement[S] :: P] = PathListBuilder()
+  def /[K, V](segment: TypeCarrier[SegmentParam[K, V]]): PathListBuilder[SegmentParam[K, V] :: P] = PathListBuilder()
 }
 
-case object PathListEmpty extends PathList[HNil] {
-
-  def /[S](path: Witness.Lt[S]): PathListCons[PathElement[S] :: HNil] = PathListCons()
-  def /[K, V](segment: TypeCarrier[SegmentParam[K, V]]): PathListCons[SegmentParam[K, V] :: HNil] = PathListCons()
-}
-
+/** Typecarrier to construct a set of queries from [[QueryParam]]s. */
 final case class QueryListBuilder[Q <: HList]() {
 
   final class WitnessDerivation[V] {
@@ -25,6 +19,7 @@ final case class QueryListBuilder[Q <: HList]() {
   def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
 }
 
+/** Typecarrier to construct a set of headers from [[HeaderParam]]s, [[FixedHeaderElement]]s, [[ClientHeaderElement]]s and [[ServerHeaderElement]]s. */
 final case class HeaderListBuilder[H <: HList]() {
 
   final class WitnessDerivation[V] {

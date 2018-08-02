@@ -3,6 +3,8 @@ package typedapi.shared
 import shapeless._
 import shapeless.labelled.FieldType
 
+import scala.annotation.implicitNotFound
+
 trait ApiOp
 
 sealed trait SegmentInput extends ApiOp
@@ -21,6 +23,8 @@ sealed trait PostCall extends MethodType
 sealed trait PostWithBodyCall extends MethodType
 sealed trait DeleteCall extends MethodType
 
+/** Transforms a [[MethodType]] to a `String`. */
+@implicitNotFound("""Missing String transformation for this method = ${M}.""")
 trait MethodToString[M <: MethodType] {
 
   def show: String
@@ -36,11 +40,17 @@ trait MethodToStringLowPrio {
   implicit val deleteToStr   = new MethodToString[DeleteCall] { val show = "DELETE" }
 }
 
-/** Separates uri, input description, method  and out type from `ApiList`. 
+/** Tranforms API type shape into five distinct types:
+  *  - El:  elements of the API (path elements, segment/query/header input placeholder, etc.)
+  *  - KIn: expected input key types (from parameters)
+  *  - VIn: expected input value types (from parameters)
+  *  - M:   method type 
+  *  - Out: output type
   * 
-  *   Example:
-  *     val api: FinalCons[Get[Json, Foo] :: Segment["name".type, String] :: "find".type :: HNil] = := :> "find" :> Segment[String]('name) :> Get[Foo]
-  *     val trans: ("name".type :: SegmentInput :: HNil, 'name.type :: HNil, String :: HNil], Field[Json, GetCall], Foo)
+  * ```
+  * val api: TypeCarrier[Get[Json, Foo] :: Segment["name".type, String] :: "find".type :: HNil]
+  * val trans: ("name".type :: SegmentInput :: HNil, "name".type :: HNil, String :: HNil], Field[Json, GetCall], Foo)
+  * ```
   */
 trait ApiTransformer {
 

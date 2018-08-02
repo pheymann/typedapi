@@ -4,10 +4,13 @@ import shapeless._
 
 import scala.annotation.implicitNotFound
 
-/** Reimplements shapeles Case2 but on the type level (no real HList instance) */
+// INTERNAL API
+
+/** Reimplements shapeles Case2 but on the type level (no real HList instance). */
 @implicitNotFound("""Woops, you shouldn't be here. We cannot find TypeLevelFoldFunction instance.
 
-input: ${In}""")
+input: ${In}
+aggregation: ${Agg}""")
 sealed trait TypeLevelFoldFunction[In, Agg] {
 
   type Out
@@ -54,7 +57,7 @@ trait TypeLevelFoldLeftLowPrio {
 /** Helper to work on a composition of HLists we want to fold over. */
 @implicitNotFound("""Woops, you shouldn't be here. We cannot find TypeLevelFoldList instance.
 
-list: ${H}""")
+apis: ${H}""")
 trait TypeLevelFoldLeftList[H <: HList] {
 
   type Out <: HList

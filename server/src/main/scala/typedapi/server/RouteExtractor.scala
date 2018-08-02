@@ -12,7 +12,7 @@ sealed trait ExtractionError
 case object RouteNotFound extends ExtractionError
 final case class BadRouteRequest(msg: String) extends ExtractionError
 
-/** Build a function which extracts inputs from a given requests based on the API. 
+/** Builds a function which extracts inputs from a given requests based on the API. 
   *  - if a request path does not fit the API definition `RouteNotFound` is returned
   *  - if a query, header, body, etc is missing `BadRouteRequest` is returned
   */

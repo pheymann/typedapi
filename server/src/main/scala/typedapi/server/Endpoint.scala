@@ -7,7 +7,7 @@ import shapeless.ops.function._
 
 import scala.language.higherKinds
 
-/** Container storing the extractor and function of an endpoint. */
+/** Represents a server endpoint and is basically a function which gets the expected input `VIn` and returns the expected output. */
 abstract class Endpoint[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], Out]
     (val method: String, val extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut], val headers: Map[String, String]) {
 

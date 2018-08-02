@@ -8,15 +8,14 @@ import shapeless.ops.function._
 import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
-/** Fuses RouteExtractor, FunApply and endpoint function fun into an Endpoint. */
+/** Fuses [[RouteExtractor]] and the endpoint function into an [[Endpoint]]. */
 trait EndpointConstructor[F[_], Fn, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, Out] {
 
   def apply(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out]
 }
 
 /** Compiles RouteExtractor and FunApply for every API endpoint and generates expected list of endpoint functions. */
-@implicitNotFound("""Could not precompile your API. This can happen when:
-  - you try to extract an value from the route which is not supported (ValueExtractor in RouteExtractor.scala)
+@implicitNotFound("""Could not precompile your API. This can happen when you try to extract an value from the route which is not supported (ValueExtractor in RouteExtractor.scala)
  
 transformed: ${H}""")
 sealed trait PrecompileEndpoint[F[_], H <: HList] {
