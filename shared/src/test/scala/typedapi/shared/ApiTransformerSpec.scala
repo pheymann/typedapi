@@ -30,7 +30,8 @@ final class ApiTransformerSpec extends TypeLevelFoldLeftLowPrio with ApiTransfor
   testCompile[GetElement[Json, Foo] :: FixedHeaderElement[fooW.T, barW.T] :: HNil, (FixedHeader[fooW.T, barW.T] :: HNil, HNil, HNil, GetCall, FieldType[Json, Foo])]
   testCompile[GetElement[Json, Foo] :: ClientHeaderParam[fooW.T, String] :: HNil, (ClientHeaderInput :: HNil, fooW.T :: HNil, String :: HNil, GetCall, FieldType[Json, Foo])]
   testCompile[GetElement[Json, Foo] :: ClientHeaderElement[fooW.T, barW.T] :: HNil, (ClientHeader[fooW.T, barW.T] :: HNil, HNil, HNil, GetCall, FieldType[Json, Foo])]
-  testCompile[GetElement[Json, Foo] :: ServerHeaderElement[fooW.T, barW.T] :: HNil, (ServerHeader[fooW.T, barW.T] :: HNil, HNil, HNil, GetCall, FieldType[Json, Foo])]
+  testCompile[GetElement[Json, Foo] :: ServerHeaderMatchParam[fooW.T, String] :: HNil, (ServerHeaderMatchInput :: HNil, fooW.T :: HNil, Set[String] :: HNil, GetCall, FieldType[Json, Foo])]
+  testCompile[GetElement[Json, Foo] :: ServerHeaderSendElement[fooW.T, barW.T] :: HNil, (ServerHeaderSend[fooW.T, barW.T] :: HNil, HNil, HNil, GetCall, FieldType[Json, Foo])]
 
   testCompile[
     GetElement[Json, Foo] :: HeaderParam[fooW.T, Boolean] :: QueryParam[fooW.T, Int] :: SegmentParam[fooW.T, String] :: PathElement[pathW.T] :: HNil, 

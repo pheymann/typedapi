@@ -51,13 +51,18 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
       client.fetch[Option[Header]](
         Request[IO](
           method = GET,
-          uri = Uri.fromString(s"http://localhost:$port/header/server").right.get
+          uri = Uri.fromString(s"http://localhost:$port/header/server/send").right.get
         )
       )(
         resp => IO {
           resp.headers.toList.find(_.name.toString == "Hello")
         }
       ).unsafeRunSync() === Some(Header("Hello", "*"))
+      client.expect[User](Request[IO](
+        method = GET,
+        uri = Uri.fromString(s"http://localhost:$port/header/server/match").right.get,
+        headers = Headers(Header("test", "foo"), Header("testy", "bar"), Header("meh", "NONO"))
+      )).unsafeRunSync() === User("foobar", 27)
       client.fetch[Option[Header]](
         Request[IO](
           method = OPTIONS,
@@ -86,6 +91,7 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
   val query: Int => F[User] = age => Applicative[F].pure(User("joe", age))
   val header: Int => F[User] = age => Applicative[F].pure(User("joe", age))
   val fixed: () => F[User] = () => Applicative[F].pure(User("joe", 27))
+  val matching: Set[String] => F[User] = matches => Applicative[F].pure(User(matches.mkString(""), 27))
   val get: () => F[User] = () => Applicative[F].pure(User("joe", 27))
   val put: () => F[User] = () => Applicative[F].pure(User("joe", 27))
   val putB: User => F[User] = user => Applicative[F].pure(user)

@@ -71,7 +71,7 @@ final class RequestDataBuilderSpec extends Specification {
       }
 
       "ignore server elements" >> {
-        val api0 = derive(:= :> Server.Header('s1, 's2) :> Client.Header[Int]('i0) :> Get[Json, ReqInput])
+        val api0 = derive(:= :> Server.Match[String]("Hello-") :> Server.Send("a", "b") :> Client.Header[Int]('i0) :> Get[Json, ReqInput])
         api0(0).run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "0"))
       }
 
@@ -88,7 +88,7 @@ final class RequestDataBuilderSpec extends Specification {
 
     "composition" >> {
       val api = 
-        (:= :> "find" :> Server.Header("Test", "ignore") :> Get[Json, ReqInput]) :|:
+        (:= :> "find" :> Server.Match[String]("Hello-") :> Server.Send("a", "b") :> Get[Json, ReqInput]) :|:
         (:= :> "fetch" :> Segment[String]('type) :> Get[Json, ReqInput]) :|:
         (:= :> "store" :> ReqBody[Json, Int] :> Post[Json, ReqInputWithBody[Int]])
 

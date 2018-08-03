@@ -18,7 +18,7 @@ package object server extends TypeLevelFoldLeftLowPrio
       (implicit executor: EndpointExecutor.Aux[Req, El, KIn, VIn, M, ROut, F, FOut, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
     mounting(server, List(new Serve[executor.R, executor.Out] {
       def options(eReq: EndpointRequest): Option[(String, Map[String, String])] = {
-        endpoint.extractor(eReq, Set.empty, HNil) match {
+        endpoint.extractor(eReq, HNil) match {
           case Right(_) => Some((endpoint.method, endpoint.headers))
           case _        => None
         }
@@ -35,7 +35,7 @@ package object server extends TypeLevelFoldLeftLowPrio
       at[Endpoint[El, KIn, VIn, M, ROut, F, FOut]] { endpoint =>
         new Serve[executor.R, executor.Out] {
           def options(eReq: EndpointRequest): Option[(String, Map[String, String])] = {
-            endpoint.extractor(eReq, Set.empty, HNil) match {
+            endpoint.extractor(eReq, HNil) match {
               case Right(_) => Some((endpoint.method, endpoint.headers))
               case _        => None
             }

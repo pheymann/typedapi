@@ -19,7 +19,8 @@ package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio wit
 
   object Server {
 
-    def Header    = new PairTypeFromWitnesses[ServerHeaderElement]
+    def Send      = new PairTypeFromWitnesses[ServerHeaderSendElement]
+    def Match[V]  = new PairTypeFromWitnessKey[ServerHeaderMatchParam, V]
   }
 
   type Json  = `Application/json`

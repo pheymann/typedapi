@@ -56,8 +56,11 @@ object TestServer {
 
       Ok(User(value, 27))
 
-    case req @ GET -> Root / "header" / "server" =>
+    case req @ GET -> Root / "header" / "server" / "send" =>
       Ok(User("joe", 27)).map(resp => resp.copy(headers = resp.headers put Header("Hello", "*")))
+
+    case req @ GET -> Root / "header" / "server" / "match" =>
+      Ok(User("joe", 27))
 
     case GET -> Root => Ok(User("foo", 27))
     case PUT -> Root => Ok(User("foo", 27))

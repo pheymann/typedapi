@@ -62,7 +62,8 @@ object ApiDslSpec {
   testCompile(_baseH :> Header(fooW, testW) :> Header[Int](fooW))[HeaderParam[fooW.T, Int] :: FixedHeaderElement[fooW.T, testW.T] :: _BaseH]
   testCompile(_baseH :> Client.Header[String](fooW))[ClientHeaderParam[fooW.T, String] :: _BaseH]
   testCompile(_baseH :> Client.Header(fooW, testW))[ClientHeaderElement[fooW.T, testW.T] :: _BaseH]
-  testCompile(_baseH :> Server.Header(fooW, testW))[ServerHeaderElement[fooW.T, testW.T] :: _BaseH]
+  testCompile(_baseH :> Server.Send(fooW, testW))[ServerHeaderSendElement[fooW.T, testW.T] :: _BaseH]
+  testCompile(_baseH :> Server.Match[String](fooW))[ServerHeaderMatchParam[fooW.T, String] :: _BaseH]
   testCompile(_baseH :> Get[Json, Foo])[GetElement[`Application/json`, Foo] :: _BaseH]
 
   // request body: add put or post
