@@ -54,6 +54,10 @@ final class ScalajHttpClientSupportSpec extends Specification {
       m5(List("because")).run[Blocking](cm) === Right(User("foo", 27))
     }
 
+    "raw" >> {
+      m0().run[Blocking].raw(cm).right.map(_.body) === Right("""{"name":"foo","age":27}""")
+    }
+
     step {
       server.shutdown.unsafeRunSync()
     }
