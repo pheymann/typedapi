@@ -24,8 +24,9 @@ object Server {
   val header: String => IO[User] = consumer => IO.pure(User("found: " + consumer, 42))
   val fixed: () => IO[User] = get
   val client: () => IO[User] = get
+  val matching: Set[String] => IO[User] = matches => IO.pure(User(matches.mkString(""), 42))
 
-  val endpoints = deriveAll[IO](FromDefinition.MyApi).from(get, put, post, delete, path, putBody, segment, search, header, fixed, client)
+  val endpoints = deriveAll[IO](FromDefinition.MyApi).from(get, put, post, delete, path, putBody, segment, search, header, fixed, client, matching)
 
   def main(args: Array[String]): Unit = {
     import org.http4s.server.blaze.BlazeBuilder

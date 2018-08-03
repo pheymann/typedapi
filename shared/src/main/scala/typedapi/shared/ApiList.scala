@@ -19,7 +19,8 @@ final case class QueryListBuilder[Q <: HList]() {
   def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
 }
 
-/** Typecarrier to construct a set of headers from [[HeaderParam]]s, [[FixedHeaderElement]]s, [[ClientHeaderElement]]s and [[ServerHeaderElement]]s. */
+/** Typecarrier to construct a set of headers from [[HeaderParam]]s, [[FixedHeaderElement]]s, [[ClientHeaderElement]]s, 
+    [[ServerHeaderSendElement]]s and [ServerHeaderMatchParam]]s. */
 final case class HeaderListBuilder[H <: HList]() {
 
   final class WitnessDerivation[V] {
