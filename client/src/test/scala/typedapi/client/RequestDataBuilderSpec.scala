@@ -12,12 +12,12 @@ final class RequestDataBuilderSpec extends Specification {
 
   type Result = (String, List[String], Map[String, String], Map[String, String], Option[Foo])
 
-  implicit val get       = testGet[Id, ReqInput](identity)
-  implicit val put       = testPut[Id, ReqInput](identity)
-  implicit def putB[Bd]  = testPutWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)
-  implicit val post      = testPost[Id, ReqInput](identity)
-  implicit def postB[Bd] = testPostWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)
-  implicit val delete    = testDelete[Id, ReqInput](identity)
+  implicit val get       = testGet[Id, ReqInput](identity)(identity)
+  implicit val put       = testPut[Id, ReqInput](identity)(identity)
+  implicit def putB[Bd]  = testPutWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)(identity)
+  implicit val post      = testPost[Id, ReqInput](identity)(identity)
+  implicit def postB[Bd] = testPostWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)(identity)
+  implicit val delete    = testDelete[Id, ReqInput](identity)(identity)
 
   "executes compiled api" >> {
     val cm = clientManager

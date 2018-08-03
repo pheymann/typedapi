@@ -30,13 +30,18 @@ package object akkahttp {
   def getRequest[A](bodyConsumerTimeout: FiniteDuration)(implicit decoder: FromEntityUnmarshaller[A],
                                                                   ec: ExecutionContext, 
                                                                   mat: Materializer) = new GetRequest[HttpExt, Future, A] {
-    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] = {
+    type Resp = HttpResponse
+
+    def raw(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[Resp] = {
       val request = mkRequest(deriveUriString(cm, uri), queries, headers).copy(HttpMethods.GET)
 
-      execRequest(cm.client, request, bodyConsumerTimeout).flatMap { response =>
+      execRequest(cm.client, request, bodyConsumerTimeout)
+    }
+
+    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] =
+      raw(uri, queries, headers, cm).flatMap { response =>
         Unmarshal(response.entity).to[A]
       }
-    }
   }
 
 
@@ -48,13 +53,18 @@ package object akkahttp {
   def putRequest[A](bodyConsumerTimeout: FiniteDuration)(implicit decoder: FromEntityUnmarshaller[A],
                                                                   ec: ExecutionContext, 
                                                                   mat: Materializer) = new PutRequest[HttpExt, Future, A] {
-    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] = {
+    type Resp = HttpResponse
+
+    def raw(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[Resp] = {
       val request = mkRequest(deriveUriString(cm, uri), queries, headers).copy(HttpMethods.PUT)
 
-      execRequest(cm.client, request, bodyConsumerTimeout).flatMap { response =>
+      execRequest(cm.client, request, bodyConsumerTimeout)
+    }
+
+    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] =
+      raw(uri, queries, headers, cm).flatMap { response =>
         Unmarshal(response.entity).to[A]
       }
-    }
   }
 
   implicit def putRequestImpl[A](implicit bodyConsumerTimeout: FiniteDuration,
@@ -66,15 +76,20 @@ package object akkahttp {
                                                                           decoder: FromEntityUnmarshaller[A],
                                                                           ec: ExecutionContext, 
                                                                           mat: Materializer) = new PutWithBodyRequest[HttpExt, Future, Bd, A] {
-    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[HttpExt]): Future[A] = {
+    type Resp = HttpResponse
+
+    def raw(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[HttpExt]): Future[Resp] = {
       Marshal(body).to[RequestEntity].flatMap { marshalledBody =>
         val request = mkRequest(deriveUriString(cm, uri), queries, headers - "Content-Type").copy(HttpMethods.PUT, entity = marshalledBody)
 
-        execRequest(cm.client, request, bodyConsumerTimeout).flatMap { response =>
-          Unmarshal(response.entity).to[A]
-        }
+        execRequest(cm.client, request, bodyConsumerTimeout)
       }
     }
+
+    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[HttpExt]): Future[A] =
+      raw(uri, queries, headers, body, cm).flatMap { response =>
+        Unmarshal(response.entity).to[A]
+      }
   }
 
   implicit def putBodyRequestImpl[Bd, A](implicit bodyConsumerTimeout: FiniteDuration,
@@ -86,13 +101,18 @@ package object akkahttp {
   def postRequest[A](bodyConsumerTimeout: FiniteDuration)(implicit decoder: FromEntityUnmarshaller[A],
                                                                    ec: ExecutionContext, 
                                                                    mat: Materializer) = new PostRequest[HttpExt, Future, A] {
-    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] = {
+    type Resp = HttpResponse
+
+    def raw(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[Resp] = {
       val request = mkRequest(deriveUriString(cm, uri), queries, headers).copy(HttpMethods.POST)
 
-      execRequest(cm.client, request, bodyConsumerTimeout).flatMap { response =>
+      execRequest(cm.client, request, bodyConsumerTimeout)
+    }
+
+    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] =
+      raw(uri, queries, headers, cm).flatMap { response =>
         Unmarshal(response.entity).to[A]
       }
-    }
   }
 
   implicit def postRequestImpl[A](implicit bodyConsumerTimeout: FiniteDuration,
@@ -104,15 +124,20 @@ package object akkahttp {
                                                                            decoder: FromEntityUnmarshaller[A],
                                                                            ec: ExecutionContext, 
                                                                            mat: Materializer) = new PostWithBodyRequest[HttpExt, Future, Bd, A] {
-    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[HttpExt]): Future[A] = {
+    type Resp = HttpResponse
+
+    def raw(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[HttpExt]): Future[Resp] = {
       Marshal(body).to[RequestEntity].flatMap { marshalledBody =>
         val request = mkRequest(deriveUriString(cm, uri), queries, headers - "Content-Type").copy(HttpMethods.POST, entity = marshalledBody)
 
-        execRequest(cm.client, request, bodyConsumerTimeout).flatMap { response =>
-          Unmarshal(response.entity).to[A]
-        }
+        execRequest(cm.client, request, bodyConsumerTimeout)
       }
     }
+
+    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[HttpExt]): Future[A] =
+      raw(uri, queries, headers, body, cm).flatMap { response =>
+        Unmarshal(response.entity).to[A]
+      }
   }
 
   implicit def postBodyRequestImpl[Bd, A](implicit bodyConsumerTimeout: FiniteDuration,
@@ -124,13 +149,18 @@ package object akkahttp {
   def deleteRequest[A](bodyConsumerTimeout: FiniteDuration)(implicit decoder: FromEntityUnmarshaller[A],
                                                                      ec: ExecutionContext, 
                                                                      mat: Materializer) = new DeleteRequest[HttpExt, Future, A] {
-    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] = {
+    type Resp = HttpResponse
+
+    def raw(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[Resp] = {
       val request = mkRequest(deriveUriString(cm, uri), queries, headers).copy(HttpMethods.DELETE)
 
-      execRequest(cm.client, request, bodyConsumerTimeout).flatMap { response =>
+      execRequest(cm.client, request, bodyConsumerTimeout)
+    }
+
+    def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[HttpExt]): Future[A] =
+      raw(uri, queries, headers, cm).flatMap { response =>
         Unmarshal(response.entity).to[A]
       }
-    }
   }
 
   implicit def deleteRequestImpl[A](implicit bodyConsumerTimeout: FiniteDuration,

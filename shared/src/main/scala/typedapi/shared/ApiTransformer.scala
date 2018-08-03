@@ -24,7 +24,7 @@ sealed trait PostWithBodyCall extends MethodType
 sealed trait DeleteCall extends MethodType
 
 /** Transforms a [[MethodType]] to a `String`. */
-@implicitNotFound("""Missing String transformation for this method = ${M}.""")
+@implicitNotFound("Missing String transformation for this method = ${M}.")
 trait MethodToString[M <: MethodType] {
 
   def show: String
