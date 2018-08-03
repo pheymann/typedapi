@@ -158,6 +158,56 @@ If you have a set of headers which are statically known and have to be provided 
 api(Get[Json, A], Root / "header" / "fixed", headers = Headers.add("consumer", "me"))
 ```
 
+#### Client-Side: Headers
+You have to send headers from the client-side but not server side? Here you go:
+
+```Scala
+// GET /header/client {header: consumer: String}
+// dsl
+:= :> "header" :> "client" :> Client.Header[String]("consumer") :> Get[Json, A]
+
+// function
+api(Get[Json, A], Root / "header" / "client", headers = Headers.client[String]("consumer"))
+```
+
+#### Client-Side: fixed/static Headers
+You have to send static headers from the client-side but not server side? Here you go:
+
+```Scala
+// GET /header/client/fixed {header: consumer=me}
+// dsl
+:= :> "header" :> "client" :> "fixed" :> Client.Header("consumer", "me") :> Get[Json, A]
+
+// function
+api(Get[Json, A], Root / "header" / "client", headers = Headers.client("consumer", "me"))
+```
+
+#### Server-Side: send Headers
+You have to send headers from the server-side, e.g. for CORS? Here you go:
+
+```Scala
+// GET /header/server/send => {header: consumer=me}
+// dsl
+:= :> "header" :> "server" :> "send" :> Server.Send("consumer", "me") :> Get[Json, A]
+
+// function
+api(Get[Json, A], Root / "header" / "server" / "send", headers = Headers.serverSend("consumer", "me"))
+```
+
+#### Server-Side: extract matching Headers keys
+You want to extract all headers which contain a certain `String`? Here you go:
+
+```Scala
+// GET /header/server/match {header: test1=me, test2=you}
+// dsl
+:= :> "header" :> "server" :> "match" :> Server.Match[String]("test") :> Get[Json, A]
+
+// function
+api(Get[Json, A], Root / "header" / "server" / "match", headers = Headers.serverMatch[String]("test"))
+```
+
+This will give you a `Set[V]` with `V = String` in this example.
+
 ### Multiple definitions in a single API
 You can put multiple definitions into a single API element:
 
