@@ -10,8 +10,9 @@ package object tests {
     (:= :> "query" :> Query[Int]('age) :> Get[Json, User]) :|:
     (:= :> "header" :> Header[Int]('age) :> Get[Json, User]) :|:
     (:= :> "header" :> "fixed" :> Header("Hello", "*") :> Get[Json, User]) :|:
-    (:= :> "header" :> "client" :> Client("Hello", "*") :> Get[Json, User]) :|:
-    (:= :> "header" :> "server" :> Server("Hello", "*") :> Get[Json, User]) :|:
+    (:= :> "header" :> "input" :> "client" :> Client.Header[String]("Hello") :> Get[Json, User]) :|:
+    (:= :> "header" :> "client" :> Client.Header("Hello", "*") :> Get[Json, User]) :|:
+    (:= :> "header" :> "server" :> Server.Header("Hello", "*") :> Get[Json, User]) :|:
     (:= :> Get[Json, User]) :|:
     (:= :> Put[Json, User]) :|:
     (:= :> "body" :> ReqBody[Json, User] :> Put[Json, User]) :|:

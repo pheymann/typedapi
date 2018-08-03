@@ -44,9 +44,10 @@ final class ExecutableDerivation[F[_]] {
       }
   }
 
-  def apply[H <: HList, El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, M <: MethodType, MT <: MediaType, Out]
+  def apply[H <: HList, FH <: HList, El <: HList, KIn <: HList, VIn <: HList, ROut, Fn, M <: MethodType, MT <: MediaType, Out]
     (apiList: ApiTypeCarrier[H])
-    (implicit folder: Lazy[TypeLevelFoldLeft.Aux[H, Unit, (El, KIn, VIn, M, FieldType[MT, Out])]],
+    (implicit filter: FilterClientElements.Aux[H, FH],
+              folder: Lazy[TypeLevelFoldLeft.Aux[FH, Unit, (El, KIn, VIn, M, FieldType[MT, Out])]],
               extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
               methodShow: MethodToString[M],
               serverHeaders: ServerHeaderExtractor[El],

@@ -181,25 +181,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
       }
     }
 
-  implicit def clientHeaderExtractor[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
-      (implicit kWit: Witness.Aux[K], kShow: WitnessToString[K], vWit: Witness.Aux[V], vShow: WitnessToString[V], next: RouteExtractor[El, KIn, VIn, M, EIn]) =
-    new RouteExtractor[shapeless.::[ClientHeader[K, V], El], KIn, VIn, M, EIn] {
-      type Out = next.Out
-
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-        val key   = kShow.show(kWit.value)
-        val value = vShow.show(vWit.value)
-
-        req.headers.get(key.toLowerCase).fold(BadRequestE[Out](s"missing header '$key'")) { raw =>
-          if (raw != value)
-            BadRequestE[Out](s"header '$key' has unexpected value '${raw}' - expected '${value}'")
-          else
-            next(request, extractedHeaderKeys + key, inAgg)
-        }
-      }
-    }
-
-  implicit def ignoreServerHeaderExtractor[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
+  implicit def ignoreServerHeaderElExtractor[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
       (implicit next: RouteExtractor[El, KIn, VIn, M, EIn]) =
     new RouteExtractor[shapeless.::[ServerHeader[K, V], El], KIn, VIn, M, EIn] {
       type Out = next.Out

@@ -104,13 +104,16 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
-  implicit def ignoreServerHeaderCompiler[K, V, T <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O]
-      (implicit compiler: RequestDataBuilder[T, KIn, VIn, M, O]) = 
-    new RequestDataBuilder[ServerHeader[K, V] :: T, KIn, VIn, M, O] {
+  implicit def clientHeaderInputCompiler[K, V, T <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit kWit: Witness.Aux[K], kShow: WitnessToString[K], compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
+    new RequestDataBuilder[ClientHeaderInput :: T, K :: KIn, V :: VIn, M, O] {
       type Out = compiler.Out
 
-      def apply(inputs: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
-        compiler(inputs, uri, queries, headers)
+      def apply(inputs: V :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+        val key   = kShow.show(kWit.value)
+        val value = inputs.head.toString
+
+        compiler(inputs.tail, uri, queries, Map((key, value)) ++ headers)
       }
     }
 

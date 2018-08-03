@@ -50,6 +50,12 @@ object TestServer {
 
       Ok(User("joe", 27))
 
+    case req @ GET -> Root / "header" / "input" / "client" =>
+      val headers = req.headers.toList
+      val value   = headers.find(_.name.value == "Hello").get.value
+
+      Ok(User(value, 27))
+
     case req @ GET -> Root / "header" / "server" =>
       Ok(User("joe", 27)).map(resp => resp.copy(headers = resp.headers put Header("Hello", "*")))
 

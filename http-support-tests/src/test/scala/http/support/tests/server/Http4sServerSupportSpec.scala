@@ -10,7 +10,7 @@ final class Http4sServerSupportSpec extends ServerSupportSpec[IO] {
 
   import UserCoding._
 
-  val endpoints = deriveAll[IO](Api).from(path, segment, query, header, fixed, fixed, fixed, get, put, putB, post, postB, delete)
+  val endpoints = deriveAll[IO](Api).from(path, segment, query, header, fixed, fixed, fixed, fixed, get, put, putB, post, postB, delete)
   val sm        = ServerManager(BlazeBuilder[IO], "localhost", 9000)
   val server    = mount(sm, endpoints).unsafeRunSync()
 
