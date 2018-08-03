@@ -49,6 +49,27 @@ import system.dispatcher
 val cm = ClientManager(Http(), "http://my-host", myPort)
 ```
 
+### Scalaj-Http
+If you want to use [scalaj-http](https://github.com/scalaj/scalaj-http) as your client backend you have to add the following code:
+
+```Scala
+import typedapi.client.scalajhttp._
+import scalaj.http._
+
+val cm = ClientManager(Http, "http://my-host", myPort)
+```
+Be aware that `typedapi.util` provides an `Encoder[F[_], A]` and `Decoder[F[_], A]` trait to marshall and unmarhsall bodies. You have to provide implementations for your types.
+
+```Scala
+implicit val decoder = Decoder[Future, User] { json =>
+  // unmarshall the json using some known lib like circe
+}
+
+implicit val encoder = Encoder[Future, User] { user =>
+  // marshall the user using some known lib like circe
+}
+```
+
 ### ScalaJS
 If you want to compile to [ScalaJS](https://www.scala-js.org/) you have to use the [Ajax](https://github.com/scala-js/scala-js-dom/blob/master/src/main/scala/org/scalajs/dom/ext/Extensions.scala#L253) with:
 
@@ -59,7 +80,7 @@ import org.scalajs.dom.ext.Ajax
 val cm = ClientManager(Ajax, "http://my-host", myPort)
 ```
 
-Be aware that `typedapi.client.js` provides a `Encoder[F[_], A]` and `Decoder[F[_], A]` trait to marshall and unmarhsall bodies. You have to provide implementations for your types.
+Be aware that `typedapi.util` provides an `Encoder[F[_], A]` and `Decoder[F[_], A]` trait to marshall and unmarhsall bodies. You have to provide implementations for your types.
 
 ```Scala
 implicit val decoder = Decoder[Future, User] { json =>
