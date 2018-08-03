@@ -126,8 +126,9 @@ final class ExecutableCompositionDerivation[F[_]] {
     val from: Drv = derived.apply(fns => merge(pre.constructors, fns))
   }
 
-  def apply[H <: HList, Fold <: HList, Fns <: HList, FnsTup, Consts <: HList, Out <: HList, Drv](apiLists: CompositionCons[H])
-                                      (implicit folder: TypeLevelFoldLeftList.Aux[H, Fold],
+  def apply[H <: HList, FH <: HList, Fold <: HList, Fns <: HList, FnsTup, Consts <: HList, Out <: HList, Drv](apiLists: CompositionCons[H])
+                                      (implicit filter: FilterClientElementsList.Aux[H, FH],
+                                                folder: TypeLevelFoldLeftList.Aux[FH, Fold],
                                                 pre: PrecompileEndpoint.Aux[F, Fold, Fns, Consts],
                                                 merge: MergeToEndpoint.Aux[F, Consts, Fns, Out],
                                                 derived: FnFromProduct.Aux[Fns => Out, Drv]): Derivation[Fold, Fns, Consts, Out, Drv] =

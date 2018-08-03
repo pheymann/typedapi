@@ -41,6 +41,12 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-http-core" % akkaHttpV % Provided
   )
 
+  private val scalajHttpV = "2.4.1"
+
+  val scalajHttpClient = Seq(
+    "org.scalaj" %% "scalaj-http" % scalajHttpV % Provided
+  )
+
   private val circeV = "0.9.1"
 
   val httpSupportTests = Seq(
@@ -51,6 +57,7 @@ object Dependencies {
     "org.http4s" %% "http4s-dsl" % http4sV          % Test,
     "org.http4s" %% "http4s-circe" % http4sV        % Test,
     "com.typesafe.akka" %% "akka-http" % akkaHttpV  % Test,
+    "org.scalaj" %% "scalaj-http" % scalajHttpV     % Test,
 
     "io.circe"   %% "circe-core" % circeV               % Test,
     "io.circe"   %% "circe-parser" % circeV             % Test,

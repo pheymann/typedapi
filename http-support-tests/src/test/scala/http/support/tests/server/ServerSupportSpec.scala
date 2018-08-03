@@ -42,8 +42,11 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
       )).unsafeRunSync() === User("joe", 27)
       client.expect[User](Request[IO](
         method = GET,
-        uri = Uri.fromString(s"http://localhost:$port/header/client").right.get,
-        headers = Headers(Header("Hello", "*"))
+        uri = Uri.fromString(s"http://localhost:$port/header/client").right.get
+      )).unsafeRunSync() === User("joe", 27)
+      client.expect[User](Request[IO](
+        method = GET,
+        uri = Uri.fromString(s"http://localhost:$port/header/input/client").right.get
       )).unsafeRunSync() === User("joe", 27)
       client.fetch[Option[Header]](
         Request[IO](

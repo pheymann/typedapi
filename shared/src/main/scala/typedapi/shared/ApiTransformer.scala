@@ -13,6 +13,7 @@ sealed trait HeaderInput extends ApiOp
 
 sealed trait FixedHeader[K, V] extends ApiOp
 sealed trait ClientHeader[K, V] extends ApiOp
+sealed trait ClientHeaderInput extends ApiOp
 sealed trait ServerHeader[K, V] extends ApiOp
 
 trait MethodType extends ApiOp
@@ -24,7 +25,7 @@ sealed trait PostWithBodyCall extends MethodType
 sealed trait DeleteCall extends MethodType
 
 /** Transforms a [[MethodType]] to a `String`. */
-@implicitNotFound("""Missing String transformation for this method = ${M}.""")
+@implicitNotFound("Missing String transformation for this method = ${M}.")
 trait MethodToString[M <: MethodType] {
 
   def show: String
@@ -59,16 +60,16 @@ trait ApiTransformer {
   implicit def pathElementTransformer[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[PathElement[S], (El, KIn, VIn, M, Out), (S :: El, KIn, VIn, M, Out)]
 
-  implicit def segmentElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+  implicit def segmentParamTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[SegmentParam[S, A], (El, KIn, VIn, M, Out), (SegmentInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def queryElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+  implicit def queryParamTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[QueryParam[S, A], (El, KIn, VIn, M, Out), (QueryInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def queryListElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+  implicit def queryListParamTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[QueryParam[S, List[A]], (El, KIn, VIn, M, Out), (QueryInput :: El, S :: KIn, List[A] :: VIn, M, Out)]
 
-  implicit def headerElementTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+  implicit def headerParamTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[HeaderParam[S, A], (El, KIn, VIn, M, Out), (HeaderInput :: El, S :: KIn, A :: VIn, M, Out)]
 
   implicit def fixedHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
@@ -76,6 +77,9 @@ trait ApiTransformer {
 
   implicit def clientHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[ClientHeaderElement[K, V], (El, KIn, VIn, M, Out), (ClientHeader[K, V] :: El, KIn, VIn, M, Out)]
+
+  implicit def clientHeaderParamTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[ClientHeaderParam[K, V], (El, KIn, VIn, M, Out), (ClientHeaderInput :: El, K :: KIn, V :: VIn, M, Out)]
 
   implicit def serverHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[ServerHeaderElement[K, V], (El, KIn, VIn, M, Out), (ServerHeader[K, V] :: El, KIn, VIn, M, Out)]

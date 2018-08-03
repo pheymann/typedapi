@@ -12,12 +12,12 @@ final class RequestDataBuilderSpec extends Specification {
 
   type Result = (String, List[String], Map[String, String], Map[String, String], Option[Foo])
 
-  implicit val get       = testGet[Id, ReqInput](identity)
-  implicit val put       = testPut[Id, ReqInput](identity)
-  implicit def putB[Bd]  = testPutWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)
-  implicit val post      = testPost[Id, ReqInput](identity)
-  implicit def postB[Bd] = testPostWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)
-  implicit val delete    = testDelete[Id, ReqInput](identity)
+  implicit val get       = testGet[Id, ReqInput](identity)(identity)
+  implicit val put       = testPut[Id, ReqInput](identity)(identity)
+  implicit def putB[Bd]  = testPutWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)(identity)
+  implicit val post      = testPost[Id, ReqInput](identity)(identity)
+  implicit def postB[Bd] = testPostWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)(identity)
+  implicit val delete    = testDelete[Id, ReqInput](identity)(identity)
 
   "executes compiled api" >> {
     val cm = clientManager
@@ -64,10 +64,15 @@ final class RequestDataBuilderSpec extends Specification {
         api2(None).run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json"))
         val api3 = derive(:= :> Header('i0, 'i1) :> Get[Json, ReqInput])
         api3().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "i1"))
-        val api4 = derive(:= :> Client('i0, 'i1) :> Get[Json, ReqInput])
-        api4().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "i1"))
-        val api5 = derive(:= :> Server('i0, 'i1) :> Get[Json, ReqInput])
-        api5().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json"))
+        val api4 = derive(:= :> Client.Header[Int]('i0) :> Get[Json, ReqInput])
+        api4(0).run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "0"))
+        val api5 = derive(:= :> Client.Header('i0, 'i1) :> Get[Json, ReqInput])
+        api5().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "i1"))
+      }
+
+      "ignore server elements" >> {
+        val api0 = derive(:= :> Server.Header('s1, 's2) :> Client.Header[Int]('i0) :> Get[Json, ReqInput])
+        api0(0).run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "0"))
       }
 
       "request body" >> {
@@ -83,7 +88,7 @@ final class RequestDataBuilderSpec extends Specification {
 
     "composition" >> {
       val api = 
-        (:= :> "find" :> Get[Json, ReqInput]) :|:
+        (:= :> "find" :> Server.Header("Test", "ignore") :> Get[Json, ReqInput]) :|:
         (:= :> "fetch" :> Segment[String]('type) :> Get[Json, ReqInput]) :|:
         (:= :> "store" :> ReqBody[Json, Int] :> Post[Json, ReqInputWithBody[Int]])
 

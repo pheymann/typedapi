@@ -17,6 +17,12 @@ final class ExecutableDerivation[El <: HList, KIn <: HList, VIn <: HList, M <: M
 
       req(data, cm)
     }
+
+    def raw[C](cm: ClientManager[C])(implicit req: ApiRequest[M, D, C, F, O]): F[req.Resp] = {
+      val data = builder(input, List.newBuilder, Map.empty, Map.empty)
+
+      req.raw(data, cm)
+    }
   }
 
   def run[F[_]]: Derivation[F] = new Derivation[F]

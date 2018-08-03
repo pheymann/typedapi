@@ -18,9 +18,11 @@ sealed trait HeaderParam[K, V] extends ApiElement
 
 /** Type-container providing the name (singleton) and value type for a static header element. */
 sealed trait FixedHeaderElement[K, V] extends ApiElement
-/** Type-container providing the name (singleton) and value type for a static header element only used solely for the client. */
+/** Type-container providing the name (singleton) and value type for a static header element only used for the client. */
 sealed trait ClientHeaderElement[K, V] extends ApiElement
-/** Type-container providing the name (singleton) and value type for a static header element only used solely for the server. */
+/** Type-container providing the name (singleton) and value type for a header parameter only used for the client. */
+sealed trait ClientHeaderParam[K, V] extends ApiElement
+/** Type-container providing the name (singleton) and value type for a static header element only used for the server. */
 sealed trait ServerHeaderElement[K, V] extends ApiElement
 
 /** Type-container providing the media-type and value type for a request body. */

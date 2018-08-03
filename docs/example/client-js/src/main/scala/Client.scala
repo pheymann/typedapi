@@ -17,11 +17,11 @@ object Client {
 
   final case class DecodeException(msg: String) extends Exception
 
-  implicit val decoder = typedapi.client.js.Decoder[Future, User](json => decode[User](json).fold(
+  implicit val decoder = typedapi.util.Decoder[Future, User](json => decode[User](json).fold(
     error => Future.successful(Left(DecodeException(error.toString()))), 
     user  => Future.successful(Right(user))
   ))
-  implicit val encoder = typedapi.client.js.Encoder[Future, User](user => Future.successful(user.asJson.noSpaces))
+  implicit val encoder = typedapi.util.Encoder[Future, User](user => Future.successful(user.asJson.noSpaces))
 
   val (get, put, post, delete, path, putBody, segment, search, header, fixed, client) = deriveAll(FromDsl.MyApi)
 

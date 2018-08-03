@@ -98,6 +98,7 @@ lazy val typedapi = project
     `akka-http-client`,
     `akka-http-server`,
     `js-client`,
+    `scalaj-http-client`,
     `http-support-tests`
   )
 
@@ -194,6 +195,16 @@ lazy val `js-client` = project
   )
   .dependsOn(`client-js`)
 
+lazy val `scalaj-http-client` = project
+  .in(file("scalaj-http-client"))
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-scalaj-http-client",
+    libraryDependencies ++= Dependencies.scalajHttpClient
+  )
+  .dependsOn(`client-jvm`)
+
 lazy val `http-support-tests` = project
   .in(file("http-support-tests"))
   .settings(
@@ -201,4 +212,4 @@ lazy val `http-support-tests` = project
     parallelExecution in Test := false,
     libraryDependencies ++= Dependencies.httpSupportTests
   )
-  .dependsOn(`http4s-client`, `http4s-server`, `akka-http-client`, `akka-http-server`)
+  .dependsOn(`http4s-client`, `http4s-server`, `akka-http-client`, `akka-http-server`, `scalaj-http-client`)

@@ -72,7 +72,7 @@ final class ServeAndMountSpec extends Specification {
     }
 
     "check if route exists and return method" >> {
-      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Server("Hello", "*") :> Get[Json, List[Foo]]
+      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Server.Header("Hello", "*") :> Get[Json, List[Foo]]
       val endpoint = derive[Option](Api).from((name, sortByAge) => Some(List(Foo(name))))
       val served   = toList(endpoint)
 
