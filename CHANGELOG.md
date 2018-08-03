@@ -2,7 +2,8 @@
  - internal cleanups and refactorings
  - extended example project and added ScalaJS client
  - centralized http-support specs
- - added akka-http support on server and client side
+ - added akka-http support on server and client-side
+ - added scalaj-http support on the client-side
  - added ScalaJS compilation support for shared and client code
  - implemented basic ScalaJS client
  - added body encoding types and made them mandatory (several hundred Mediatypes supported)
@@ -31,19 +32,31 @@
    ______________________________________^
    ```
    
-   - added server-side headers; fixed header only sent by the server
+   - fixed header only sent by the server
    ```Scala
-   := :> Server("Access-Control-Allow-Origin", "*") :> Get[Json, User]
+   := :> Server.Send("Access-Control-Allow-Origin", "*") :> Get[Json, User]
    
-   api(Get[Json, User], Headers.server("Access-Control-Allow-Origin", "*"))
+   api(Get[Json, User], Headers.serverSend("Access-Control-Allow-Origin", "*"))
+   ```
+   - extract headers which have keys that match a `String`
+   ```Scala
+   := :> Server.Match[String]("Control") :> Get[Json, User]
+   
+   api(Get[Json, User], Headers.serverMatch[String]("Control"))
    ```
  - changes to the client API:
    - new encoding types add `Content-Type` and `Accept` headers
-   - added client-side headers; fixed header only sent by the client
+   - fixed header only sent by the client
    ```Scala
-   := :> Client("Access-Control-Allow-Origin", "*") :> Get[Json, User]
+   := :> Client.Header("Access-Control-Allow-Origin", "*") :> Get[Json, User]
    
    api(Get[Json, User], Headers.client("Access-Control-Allow-Origin", "*"))
+   ```
+   - send dynamic header ignore it on the server-side
+   ```Scala
+   := :> Client.Header[String]("Foo") :> Get[Json, User]
+   
+   api(Get[Json, User], Headers.client[String]("Foo"))
    ```
 
 ### 0.1.0-RC5 / Almost there
