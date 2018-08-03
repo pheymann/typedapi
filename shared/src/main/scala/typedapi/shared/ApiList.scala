@@ -2,57 +2,45 @@ package typedapi.shared
 
 import shapeless._
 
-/** A final element is a method describing the request type. */
-final case class ApiTypeCarrier[H <: HList]() {
+/** Typecarrier to construct a complete path description from [[PathElement]]s and [[SegmentParam]]s. */
+final case class PathListBuilder[P <: HList]() {
 
-  def :|:[H1 <: HList](next: ApiTypeCarrier[H1]): CompositionCons[H1 :: H :: HNil] = CompositionCons()
+  def /[S](path: Witness.Lt[S]): PathListBuilder[PathElement[S] :: P] = PathListBuilder()
+  def /[K, V](segment: TypeCarrier[SegmentParam[K, V]]): PathListBuilder[SegmentParam[K, V] :: P] = PathListBuilder()
 }
 
-/** Compose multiple type level api descriptions in a HList of HLists.
-  */
-final case class CompositionCons[H <: HList]() {
+/** Typecarrier to construct a set of queries from [[QueryParam]]s. */
+final case class QueryListBuilder[Q <: HList]() {
 
-  def :|:[H1 <: HList](next: ApiTypeCarrier[H1]): CompositionCons[H1 :: H] = CompositionCons()
+  final class WitnessDerivation[V] {
+    def apply[K](wit: Witness.Lt[K]): QueryListBuilder[QueryParam[K, V] :: Q] = QueryListBuilder()
+  }
+
+  def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
 }
 
-sealed trait PathList[P <: HList]
+/** Typecarrier to construct a set of headers from [[HeaderParam]]s, [[FixedHeaderElement]]s, [[ClientHeaderElement]]s, 
+    [[ServerHeaderSendElement]]s and [ServerHeaderMatchParam]]s. */
+final case class HeaderListBuilder[H <: HList]() {
 
-final case class PathListCons[P <: HList]() extends PathList[P] {
+  final class WitnessDerivation[V] {
+    def apply[K](wit: Witness.Lt[K]): HeaderListBuilder[HeaderParam[K, V] :: H] = HeaderListBuilder()
+  }
+  def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
+  
+  def add[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[FixedHeaderElement[K, V] :: H] = HeaderListBuilder()
 
-  def /[S](path: Witness.Lt[S]): PathListCons[PathElement[S] :: P] = PathListCons()
-  def /[S <: Symbol, A](segment: SegmentParam[S, A]): PathListCons[SegmentParam[S, A] :: P] = PathListCons()
-}
+  final class ClientWitnessDerivation[V] {
+    def apply[K](wit: Witness.Lt[K]): HeaderListBuilder[ClientHeaderParam[K, V] :: H] = HeaderListBuilder()
+  }
+  def client[V]: ClientWitnessDerivation[V] = new ClientWitnessDerivation[V]
+  
+def client[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[ClientHeaderElement[K, V] :: H] = HeaderListBuilder()
 
-case object PathListEmpty extends PathList[HNil] {
+  final class ServerMatchWitnessDerivation[V] {
+    def apply[K](wit: Witness.Lt[K]): HeaderListBuilder[ServerHeaderMatchParam[K, V] :: H] = HeaderListBuilder()
+  }
+  def serverMatch[V]: ServerMatchWitnessDerivation[V] = new ServerMatchWitnessDerivation[V]
 
-  def /[S](path: Witness.Lt[S]): PathListCons[PathElement[S] :: HNil] = PathListCons()
-  def /[S <: Symbol, A](segment: SegmentParam[S, A]): PathListCons[SegmentParam[S, A] :: HNil] = PathListCons()
-}
-
-sealed trait QueryList[Q <: HList]
-
-final case class QueryListCons[Q <: HList]() extends QueryList[Q] {
-
-  def add[S <: Symbol, A](query: QueryParam[S, A]): QueryListCons[QueryParam[S, A] :: Q] = QueryListCons()
-}
-
-case object QueryListEmpty extends QueryList[HNil] {
-
-  def add[S <: Symbol, A](query: QueryParam[S, A]): QueryListCons[QueryParam[S, A] :: HNil] = QueryListCons()
-}
-
-sealed trait HeaderList[H <: HList]
-
-final case class HeaderListCons[H <: HList]() extends HeaderList[H] {
-
-  def add[S <: Symbol, A](header: HeaderParam[S, A]): HeaderListCons[HeaderParam[S, A] :: H] = HeaderListCons()
-  def add(headers: RawHeadersParam.type): RawHeaderCons[RawHeadersParam.type :: H] = RawHeaderCons()
-}
-
-final case class RawHeaderCons[H <: HList]() extends HeaderList[H]
-
-case object HeaderListEmpty extends HeaderList[HNil] {
-
-  def add[S <: Symbol, A](header: HeaderParam[S, A]): HeaderListCons[HeaderParam[S, A] :: HNil] = HeaderListCons()
-  def add(headers: RawHeadersParam.type): RawHeaderCons[RawHeadersParam.type :: HNil] = RawHeaderCons()
+  def serverSend[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[ServerHeaderSendElement[K, V] :: H] = HeaderListBuilder()
 }

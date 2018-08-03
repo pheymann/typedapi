@@ -8,4 +8,6 @@ jdk:
   - oraclejdk8
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean test it:compile
+  - sbt ++$TRAVIS_SCALA_VERSION clean test
+  - sbt "project sharedJS" "fastOptJS"
+  - sbt "project js-client" "fastOptJS"

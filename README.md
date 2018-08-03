@@ -15,10 +15,10 @@ For the Servant lovers:
 import typedapi.dsl._
 
 val MyApi = 
-  // GET /fetch/user?name=<>
-  (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[User]) :|:
-  // POST /create/user
-  (:= :> "create" :> "user" :> ReqBody[User] :> Post[User])
+  // GET {body: User} /fetch/user?{name: String}
+  (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[Json, User]) :|:
+  // POST {body: User} /create/user
+  (:= :> "create" :> "user" :> ReqBody[Json, User] :> Post[Json, User])
 ```
 
 And for all the others:
@@ -27,10 +27,10 @@ And for all the others:
 import typedapi._
 
 val MyApi =
-  // GET /fetch/user?name=<>
-  api(method = Get[User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name)) :|:
-  // POST /create/user
-  apiWithBody(method = Post[User], body = ReqBody[User], path = Root / "create" / "user")
+  // GET {body: User} /fetch/user?{name: String}
+  api(method = Get[Json, User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name)) :|:
+  // POST {body: User} /create/user
+  apiWithBody(method = Post[Json, User], body = ReqBody[Json, User], path = Root / "create" / "user")
 ```
 
 ### Client side
@@ -75,11 +75,14 @@ This library is the result of the following questions:
 It is inspired by [Servant](https://github.com/haskell-servant/servant) and it provides an API layer which is independent of the underlying server/client implementation. Right now Typedapi supports:
 
   - [http4s](https://github.com/http4s/http4s)
+  - [akka-http](https://github.com/akka/akka-http)
+  - [scalaj-http](https://github.com/scalaj/scalaj-http) on the client-side
+  - ScalaJS on the client-side
 
-But it is planned to add [akka-http](https://github.com/akka/akka-http) before the first stable release `0.1.0`.
+If you need something else take a look at this [doc](https://github.com/pheymann/typedapi/blob/master/docs/ExtendIt.md#write-your-own-client-backend).
 
 ## Get this library
-It is available for Scala 2.11 and 2.12 and can downloaded as Maven artifact:
+It is available for Scala 2.11, 2.12 and ScalaJS and can be downloaded as Maven artifact:
 
 ```
 // dsl
@@ -89,6 +92,16 @@ It is available for Scala 2.11 and 2.12 and can downloaded as Maven artifact:
 // http4s support
 "com.github.pheymann" %% "typedapi-http4s-client" % <version>
 "com.github.pheymann" %% "typedapi-http4s-server" % <version>
+
+// akka-http support
+"com.github.pheymann" %% "typedapi-akka-http-client" % <version>
+"com.github.pheymann" %% "typedapi-akka-http-server" % <version>
+
+// Scalaj-Http client support
+"com.github.pheymann" %% "typedapi-scalaj-http-client" % <version>
+
+// ScalaJS client support
+"com.github.pheymann" %% "typedapi-js-client" % <version>
 ```
 
 You can also build it on your machine:
@@ -106,6 +119,7 @@ The documentation is located in [docs](https://github.com/pheymann/typedapi/blob
  - [How to create a server](https://github.com/pheymann/typedapi/blob/master/docs/ServerCreation.md)
  - [Extend the library](https://github.com/pheymann/typedapi/blob/master/docs/ExtendIt.md)
  - Typelevel Summit 2018 Berlin Talk [Typedapi: Define your API on the type-level](https://github.com/pheymann/typelevel-summit-2018)
+ - and a [post](https://typelevel.org/blog/2018/06/15/typedapi.html) on the Typelevel Blog describing the basic concept behind this library.
 
 ## Dependencies
  - [shapeless 2.3.3](https://github.com/milessabin/shapeless/)

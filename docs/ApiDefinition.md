@@ -1,7 +1,7 @@
 ## How to define an API
-The central idea behind Typedapi is to make client and server implementation as typesafe and simple as possible.
+The central idea behind Typedapi is to make client and server implementation as boilerplate-free, typesafe and simple as possible.
 
- - On the client-side you only define what you expect from an API provided by a server. In other words you define a contract between the client and the server.
+ - On the client-side you only define what you expect from an API provided by a server. In other words, you define a contract between the client and the server.
  - The server-side then has to comply with that contract by implementing proper endpoint functions.
  
 But how do you create this API definitions/contracts? This document will show you two ways provided by Typedapi:
@@ -13,175 +13,206 @@ Every API has to fullfil the base case, meaning it has to have a root path and a
  
 ```Scala
 // dsl
-:= :> Get[A]
+:= :> Get[Json, A]
 
 // function
-api(Get[A])
+api(Get[Json, A])
 // or
-api(method = Get[A], path = Root)
+api(method = Get[Json, A], path = Root)
 ```
  
-This translates to `GET /` returning some `A`.
+This translates to `GET /` returning some `Json A`.
 
 ### Methods
 So far Typedapi supports the following methods:
  
 ```Scala
 // dsl
-:= :> Get[A]
-:= :> Put[A]
-:= :> Post[A]
-:= :> Delete[A]
+:= :> Get[Json, A]
+:= :> Put[Json, A]
+:= :> Post[Json, A]
+:= :> Delete[Json, A]
 
 // function
-api(Get[A])
-api(Put[A])
-api(Post[A])
-api(Delete[A])
+api(Get[Json, A])
+api(Put[Json, A])
+api(Post[Json, A])
+api(Delete[Json, A])
 ```
  
 ### Request Body
 You may noticed that `Put` and `Post` don't have a field to describe a request body. To add that you have to explicitly define it with an element in your Api:
  
 ```Scala
+// PUT {body: User} /
 // dsl
-:= :> ReqBody[B] :> Put[A]
-// PUT {body: A} /
+:= :> ReqBody[Json, B] :> Put[Json, A]
 
 // function
-apiWithBody(Put[A], ReqBody[B])
-// or
-apiWithBody(method = Put[A], body = ReqBody[B])
+apiWithBody(Put[Json, A], ReqBody[Json, B])
+
+// POST {body: User} /
+// dsl
+:= :> ReqBody[Json, B] :> Post[Json, A]
+
+// function
+apiWithBody(Post[Json, A], ReqBody[Json, B])
 ```
  
-By the way, you can only add `Put` and `Post` as the next element of `ReqBody`. Everything else will not compile. Thus, you end up with a valid API description and not something like `:= :> ReqBody[B] :> Get[A]` or `api(Get[A], ReqBody[B])`.
- 
-### Path
-When you want to describe more than just the root path you can add path elements:
- 
-```Scala
-// dsl
-:= :> "hello" :> "world" :> Get[A]
-// GET /hello/world
+By the way, you can only add `Put` and `Post` as the next element of `ReqBody`. Everything else will not compile. Thus, you end up with a valid API description and not something like `:= :> ReqBody[Json, B] :> Get[Json, A]` or `api(Get[Json, A], ReqBody[Json, B])`.
 
-:= :> "hello" :> "world" :> ReqBody[B] :> Put[A]
-// PUT {body: B} /hello/world
+### One word to encodings
+You can find a list of provided encodings [here](https://github.com/pheymann/typedapi/blob/master/shared/src/main/scala/typedapi/shared/ApiElement.scala#L62). If you need something else implement `trait MediaType`.
+
+### Path
+```Scala
+// GET /hello/world
+// dsl
+:= :> "hello" :> "world" :> Get[Json, A]
 
 // function
-api(Get[A], Root / "hello" / "world")
-apiWithBody(Put[A], ReqBody[B], Root / "hello" / "world")
+api(Get[Json, A], Root / "hello" / "world")
 ```
  
 All path elements are translated to singleton types and therefore encoded in the type of the API.
  
 ### Segment
-You can also put information into the path by using segments:
+Have a dynamic path element:
  
 ```Scala
+// GET /user/{name: String}
 // dsl
-:= :> Segment[Int]('id) :> Get[A]
-// GET /{id}
-
-:= :> "hello" :> Segment[String]('name) :> Get[A]
-// GET /hello/{name}
-
-:= :> "hello" :> Segment[String]('name) :> ReqBody[B]:> Put[A]
-// PUT {body: B} /hello/{name}
+:= :> "user" :> Segment[String]("name") :> Get[Json, A]
 
 // function
-api(Get[A], Root / Segment[Int]('id))
-api(Get[A], Root / "hello" / Segment[String]('name)
-apiWithBody(Put[A], ReqBody[B], Root / "hello" / Segment[String]('name))
+api(Get[Json, A], Root / "user" / Segment[String]("name"))
 ```
 
-Every segment gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
+Every segment gets a name which is again encoded as singleton type in the API type.
 
 ### Query Parameter
-You can add query parameters with:
-
 ```Scala
+// GET /query?{id: Int}
 // dsl
-:= :> "hello" :> Query[Int]('id) :> Get[A]
-// GET /hello?id={: Int}
-
-:= :> "hello" :> Query[Int]('id) :> ReqBody[B] :> Put[A]
-// PUT {body: B} /hello?id={: Int}
+:= :> "query" :> Query[Int]("id") :> Get[Json, A]
 
 // function
-api(Get[A], Root / "hello", Queries.add(Query[Int]('id)))
-apiWithBody(Put[A], ReqBody[B], Root / "hello", Queries.add(Query[Int]('id)))
+api(Get[Json, A], Root / "query", Queries.add[Int]("id"))
 ```
 
-Every query gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
+Every query gets a name which is again encoded as singleton type in the API type.
 
 #### Optional Query
 ```Scala
+// GET /query/opt?{id: Option[Int]}
 // dsl
-:= :> "hello" :> Query[Option[Int]]('id) :> Get[A]
+:= :> "query" :> "opt" :> Query[Option[Int]]("id") :> Get[Json, A]
 
 // function
-api(Get[A], Root / "hello", Queries.add(Query[Option[Int]]('id)))
+api(Get[Json, A], Root / "query" / "opt", Queries.add[Option[Int]]("id"))
 ```
 
 #### Query with a List of elements
 ```Scala
+// GET /query/list?{id: List[Int]}
 // dsl
-:= :> "hello" :> Query[List[Int]]('id) :> Get[A]
+:= :> "query" :> "list" :> Query[List[Int]]("id") :> Get[Json, A]
 
 // function
-api(Get[A], Root / "hello", Queries.add(Query[List[Int]]('id)))
+api(Get[Json, A], Root / "query" / "list", Queries.add[List[Int]]("id"))
 ```
 
 ### Header
-You can add header parameters with:
-
 ```Scala
+// GET /header {headers: id: Int}
 // dsl
-:= :> "hello" :> Header[Int]('id) :> Get[A]
-// GET /hello {headers: id={:Int}}
-
-:= :> "hello" :> Header[Int]('id) :> ReqBody[B] :> Put[A]
-// PUT {body: B} /hello {headers: id={:Int}}
-
-:= :> "hello" :> Query[String]('name) :> Header[Int]('id) :> Get[A]
-// GET /hello?name={:String} {headers: id={:Int}}
+:= :> "header" :> Header[Int]("id") :> Get[Json, A]
 
 // function
-api(Get[A], Root / "hello", headers = Headers.add(Header[Int]('id)))
-apiWithBody(Put[A], ReqBody[B], Root / "hello", headers = Headers.add(Header[Int]('id)))
-api(Get[A], Root / "hello", Queries.add(Query[String]('name)), Headers.add(Header[Int]('id)))
+api(Get[Json, A], Root / "header", headers = Headers.add[Int]("id"))
 ```
 
-Every header gets a name which is again encoded as singleton type in the API type. **You have** to use `Symbol`s for names.
+This header is an expected input parameter.
+
+Every header gets a name which is again encoded as singleton type in the API type.
 
 #### Optional Header
 ```Scala
+// GET /header/opt {headers: id: Option[Int]}
 // dsl
-:= :> "hello" :> Header[Option[Int]]('id) :> Get[A]
+:= :> "header" :> "opt" :> Header[Option[Int]]("id") :> Get[Json, A]
 
 // function
-api(Get[A], Root / "hello", headers = Headers.add(Header[Option[Int]]('id)))
+api(Get[Json, A], Root / "header" / "opt", headers = Headers.add[Option[Int]]("id"))
 ```
 
-#### Add multiple headers at once
-Sometimes you have to pass a set of standard headers with every request, but you don't want to encode them in every API. Typedapi provides a convinience element calles `RawHeaders` which is a `Map[String, String]`.
+#### Fixed Headers aka static headers
+If you have a set of headers which are statically known and have to be provided by all sides you can add them as follows:
 
 ```Scala
+// GET /header/fixed {headers: consumer=me}
 // dsl
-:= :> "hello" :> RawHeaders :> Get[A]
-// GET /hello {headers: any pair of String -> String}
+:= :> "header" :> "fixed" :> Header("consumer", "me") :> Get[Json, A]
 
 // function
-api(Get[A], Root / "hello", headers = Headers.add(RawHeaders))
+api(Get[Json, A], Root / "header" / "fixed", headers = Headers.add("consumer", "me"))
 ```
 
-You cannot define a typesafe header after a `RawHeaders` element. Furthermore, you should use this with care as it is not typesafe.
+#### Client-Side: Headers
+You have to send headers from the client-side but not server side? Here you go:
+
+```Scala
+// GET /header/client {header: consumer: String}
+// dsl
+:= :> "header" :> "client" :> Client.Header[String]("consumer") :> Get[Json, A]
+
+// function
+api(Get[Json, A], Root / "header" / "client", headers = Headers.client[String]("consumer"))
+```
+
+#### Client-Side: fixed/static Headers
+You have to send static headers from the client-side but not server side? Here you go:
+
+```Scala
+// GET /header/client/fixed {header: consumer=me}
+// dsl
+:= :> "header" :> "client" :> "fixed" :> Client.Header("consumer", "me") :> Get[Json, A]
+
+// function
+api(Get[Json, A], Root / "header" / "client", headers = Headers.client("consumer", "me"))
+```
+
+#### Server-Side: send Headers
+You have to send headers from the server-side, e.g. for CORS? Here you go:
+
+```Scala
+// GET /header/server/send => {header: consumer=me}
+// dsl
+:= :> "header" :> "server" :> "send" :> Server.Send("consumer", "me") :> Get[Json, A]
+
+// function
+api(Get[Json, A], Root / "header" / "server" / "send", headers = Headers.serverSend("consumer", "me"))
+```
+
+#### Server-Side: extract matching Headers keys
+You want to extract all headers which contain a certain `String`? Here you go:
+
+```Scala
+// GET /header/server/match {header: test1=me, test2=you}
+// dsl
+:= :> "header" :> "server" :> "match" :> Server.Match[String]("test") :> Get[Json, A]
+
+// function
+api(Get[Json, A], Root / "header" / "server" / "match", headers = Headers.serverMatch[String]("test"))
+```
+
+This will give you a `Set[V]` with `V = String` in this example.
 
 ### Multiple definitions in a single API
 You can put multiple definitions into a single API element:
 
 ```Scala
 val Api =
-  (:= :> "hello" :> Get[A]) :|:
+  (:= :> "hello" :> Get[Json, A]) :|:
   (:= :> "world" :> Query[Int]('foo) :> Delete[B])
 ```

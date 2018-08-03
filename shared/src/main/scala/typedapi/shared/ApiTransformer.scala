@@ -1,57 +1,104 @@
 package typedapi.shared
 
 import shapeless._
+import shapeless.labelled.FieldType
 
-sealed trait ApiOp
+import scala.annotation.implicitNotFound
+
+trait ApiOp
 
 sealed trait SegmentInput extends ApiOp
 sealed trait QueryInput extends ApiOp
 sealed trait HeaderInput extends ApiOp
-sealed trait RawHeadersInput extends ApiOp
 
-sealed trait GetCall extends ApiOp
-sealed trait PutCall extends ApiOp
-sealed trait PutWithBodyCall[Bd] extends ApiOp
-sealed trait PostCall extends ApiOp
-sealed trait PostWithBodyCall[Bd] extends ApiOp
-sealed trait DeleteCall extends ApiOp
+sealed trait FixedHeader[K, V] extends ApiOp
+sealed trait ClientHeader[K, V] extends ApiOp
+sealed trait ClientHeaderInput extends ApiOp
+sealed trait ServerHeaderSend[K, V] extends ApiOp
+sealed trait ServerHeaderMatchInput extends ApiOp
 
-/** Separates uri, input description and out type from `ApiList`. 
-  *   Example:
-  *     val api: FinalCons[Get[Foo] :: Segment["name".type, String] :: "find".type :: HNil] = := :> "find" :> Segment[String]('name) :> Get[Foo]
-  *     val trans: ("name".type :: SegmentInput :: HNil, FieldType['name.type, String :: HNil], Foo)
+trait MethodType extends ApiOp
+sealed trait GetCall extends MethodType
+sealed trait PutCall extends MethodType
+sealed trait PutWithBodyCall extends MethodType
+sealed trait PostCall extends MethodType
+sealed trait PostWithBodyCall extends MethodType
+sealed trait DeleteCall extends MethodType
+
+/** Transforms a [[MethodType]] to a `String`. */
+@implicitNotFound("Missing String transformation for this method = ${M}.")
+trait MethodToString[M <: MethodType] {
+
+  def show: String
+}
+
+trait MethodToStringLowPrio {
+
+  implicit val getToStr      = new MethodToString[GetCall] { val show = "GET" }
+  implicit val putToStr      = new MethodToString[PutCall] { val show = "PUT" }
+  implicit val putBodyToStr  = new MethodToString[PutWithBodyCall] { val show = "PUT" }
+  implicit val postToStr     = new MethodToString[PostCall] { val show = "POST" }
+  implicit val postBodyToStr = new MethodToString[PostWithBodyCall] { val show = "POST" }
+  implicit val deleteToStr   = new MethodToString[DeleteCall] { val show = "DELETE" }
+}
+
+/** Tranforms API type shape into five distinct types:
+  *  - El:  elements of the API (path elements, segment/query/header input placeholder, etc.)
+  *  - KIn: expected input key types (from parameters)
+  *  - VIn: expected input value types (from parameters)
+  *  - M:   method type 
+  *  - Out: output type
+  * 
+  * ```
+  * val api: TypeCarrier[Get[Json, Foo] :: Segment["name".type, String] :: "find".type :: HNil]
+  * val trans: ("name".type :: SegmentInput :: HNil, "name".type :: HNil, String :: HNil], Field[Json, GetCall], Foo)
+  * ```
   */
 trait ApiTransformer {
 
   import TypeLevelFoldFunction.at
 
-  implicit def pathElementTransformer[S, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[PathElement[S], (El, KIn, VIn, Out), (S :: El, KIn, VIn, Out)]
+  implicit def pathElementTransformer[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[PathElement[S], (El, KIn, VIn, M, Out), (S :: El, KIn, VIn, M, Out)]
 
-  implicit def segmentElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[SegmentParam[S, A], (El, KIn, VIn, Out), (SegmentInput :: El, S :: KIn, A :: VIn, Out)]
+  implicit def segmentParamTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[SegmentParam[S, A], (El, KIn, VIn, M, Out), (SegmentInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def queryElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[QueryParam[S, A], (El, KIn, VIn, Out), (QueryInput :: El, S :: KIn, A :: VIn, Out)]
+  implicit def queryParamTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[QueryParam[S, A], (El, KIn, VIn, M, Out), (QueryInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def queryListElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[QueryParam[S, List[A]], (El, KIn, VIn, Out), (QueryInput :: El, S :: KIn, List[A] :: VIn, Out)]
+  implicit def queryListParamTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[QueryParam[S, List[A]], (El, KIn, VIn, M, Out), (QueryInput :: El, S :: KIn, List[A] :: VIn, M, Out)]
 
-  implicit def headerElementTransformer[S <: Symbol, A, El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[HeaderParam[S, A], (El, KIn, VIn, Out), (HeaderInput :: El, S :: KIn, A :: VIn, Out)]
+  implicit def headerParamTransformer[S, A, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[HeaderParam[S, A], (El, KIn, VIn, M, Out), (HeaderInput :: El, S :: KIn, A :: VIn, M, Out)]
 
-  implicit def rawHeadersElementTransformer[El <: HList, KIn <: HList, VIn <: HList, Out] = 
-    at[RawHeadersParam.type, (El, KIn, VIn, Out), (RawHeadersInput :: El, RawHeadersField.T :: KIn, Map[String, String] :: VIn, Out)]
+  implicit def fixedHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[FixedHeaderElement[K, V], (El, KIn, VIn, M, Out), (FixedHeader[K, V] :: El, KIn, VIn, M, Out)]
 
-  implicit def getTransformer[A] = at[GetElement[A], (HNil, HNil, HNil), (GetCall :: HNil, HNil, HNil, A)]
+  implicit def clientHeaderElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[ClientHeaderElement[K, V], (El, KIn, VIn, M, Out), (ClientHeader[K, V] :: El, KIn, VIn, M, Out)]
 
-  implicit def putTransformer[A] = at[PutElement[A], (HNil, HNil, HNil), (PutCall :: HNil, HNil, HNil, A)]
+  implicit def clientHeaderParamTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[ClientHeaderParam[K, V], (El, KIn, VIn, M, Out), (ClientHeaderInput :: El, K :: KIn, V :: VIn, M, Out)]
 
-  implicit def putWithBodyTransformer[Bd, A] = at[PutWithBodyElement[Bd, A], (HNil, HNil, HNil), (PutWithBodyCall[Bd] :: HNil, BodyField.T :: HNil, Bd :: HNil, A)]
+  implicit def serverHeaderSendElementTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[ServerHeaderSendElement[K, V], (El, KIn, VIn, M, Out), (ServerHeaderSend[K, V] :: El, KIn, VIn, M, Out)]
 
-  implicit def postTransformer[A] = at[PostElement[A], (HNil, HNil, HNil), (PostCall :: HNil, HNil, HNil, A)]
+  implicit def serverHeaderMatchParamTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
+    at[ServerHeaderMatchParam[K, V], (El, KIn, VIn, M, Out), (ServerHeaderMatchInput :: El, K :: KIn, Set[V] :: VIn, M, Out)]
 
-  implicit def postWithBodyTransformer[Bd, A] = at[PostWithBodyElement[Bd, A], (HNil, HNil, HNil), (PostWithBodyCall[Bd] :: HNil, BodyField.T :: HNil, Bd :: HNil, A)]
+  implicit def getTransformer[MT <: MediaType, A] = at[GetElement[MT, A], Unit, (HNil, HNil, HNil, GetCall, FieldType[MT, A])]
 
-  implicit def deleteTransformer[A] = at[DeleteElement[A], (HNil, HNil, HNil), (DeleteCall :: HNil, HNil, HNil, A)]
+  implicit def putTransformer[MT <: MediaType, A] = at[PutElement[MT, A], Unit, (HNil, HNil, HNil, PutCall, FieldType[MT, A])]
+
+  implicit def putWithBodyTransformer[BMT <: MediaType, Bd, MT <: MediaType, A] = 
+    at[PutWithBodyElement[BMT, Bd, MT, A], Unit, (HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PutWithBodyCall, FieldType[MT, A])]
+
+  implicit def postTransformer[MT <: MediaType, A] = at[PostElement[MT, A], Unit, (HNil, HNil, HNil, PostCall, FieldType[MT, A])]
+
+  implicit def postWithBodyTransformer[BMT <: MediaType, Bd, MT <: MediaType, A] = 
+    at[PostWithBodyElement[BMT, Bd, MT, A], Unit, (HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PostWithBodyCall, FieldType[MT, A])]
+
+  implicit def deleteTransformer[MT <: MediaType, A] = at[DeleteElement[MT, A], Unit, (HNil, HNil, HNil, DeleteCall, FieldType[MT, A])]
 }

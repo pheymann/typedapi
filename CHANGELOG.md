@@ -1,3 +1,64 @@
+### 0.1.0
+ - internal cleanups and refactorings
+ - extended example project and added ScalaJS client
+ - centralized http-support specs
+ - added akka-http support on server and client-side
+ - added scalaj-http support on the client-side
+ - added ScalaJS compilation support for shared and client code
+ - implemented basic ScalaJS client
+ - added body encoding types and made them mandatory (several hundred Mediatypes supported)
+   ```Scala
+   := :> ReqBody[Json, User] :> Get[Json, User]
+    _______________^__________________^
+   ```
+ 
+ - `RawHeaders` was removed
+ - fixed headers were added; a fixed header is a statically known key-value pair, therefore, no input is required
+   ```Scala
+   // dsl
+   := :> Header("Access-Control-Allow-Origin", "*") :> Get[Json, User]
+   
+   // function
+   api(Get[Json, User], headers = Headers add("Access-Control-Allow-Origin", "*"))
+   ```
+   
+ - changes to the server API:
+   - `NoReqBodyExecutor` and `ReqBodyExecutor` now expect a `MethodType`:
+   ```Scala
+   new NoReqBodyExecutor[El, KIn, VIn, M, F, FOut] {
+   ____________________________________^
+  
+   new ReqBodyExecutor[El, KIn, VIn, Bd, M, ROut, POut, F, FOut] {
+   ______________________________________^
+   ```
+   
+   - fixed header only sent by the server
+   ```Scala
+   := :> Server.Send("Access-Control-Allow-Origin", "*") :> Get[Json, User]
+   
+   api(Get[Json, User], Headers.serverSend("Access-Control-Allow-Origin", "*"))
+   ```
+   - extract headers which have keys that match a `String`
+   ```Scala
+   := :> Server.Match[String]("Control") :> Get[Json, User]
+   
+   api(Get[Json, User], Headers.serverMatch[String]("Control"))
+   ```
+ - changes to the client API:
+   - new encoding types add `Content-Type` and `Accept` headers
+   - fixed header only sent by the client
+   ```Scala
+   := :> Client.Header("Access-Control-Allow-Origin", "*") :> Get[Json, User]
+   
+   api(Get[Json, User], Headers.client("Access-Control-Allow-Origin", "*"))
+   ```
+   - send dynamic header ignore it on the server-side
+   ```Scala
+   := :> Client.Header[String]("Foo") :> Get[Json, User]
+   
+   api(Get[Json, User], Headers.client[String]("Foo"))
+   ```
+
 ### 0.1.0-RC5 / Almost there
  - changes to the client API:
  ```Scala

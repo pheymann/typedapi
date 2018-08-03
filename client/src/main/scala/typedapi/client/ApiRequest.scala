@@ -1,100 +1,62 @@
 package typedapi.client
 
-import RequestDataBuilder.{RequestData, Data, DataWithBody}
+import RequestDataBuilder.{Data, DataWithBody}
 import typedapi.shared._
 import shapeless._
 
 import scala.language.higherKinds
 import scala.annotation.implicitNotFound
 
-/** Basic api request structure. Expected input data and return-type are defined for each method. */
-trait ApiRequest[D <: HList, C, F[_], Out] {
+/** Basic api request element. Provides a function to create an effect representing the actual request. */
+@implicitNotFound("""Cannot find ApiRequest instance for {{M}}. Do you miss some implicit value e.g. encoders/decoders?
 
+ouput: ${Out}
+context: ${F}""")
+trait ApiRequest[M <: MethodType, D <: HList, C, F[_], Out] {
+
+  type Resp
+
+  def raw(data: D, cm: ClientManager[C]): F[Resp]
   def apply(data: D, cm: ClientManager[C]): F[Out]
 }
 
-@implicitNotFound("""Cannot find GetRequest instance. Do you miss some implicit value e.g. encoders/decoders?
+trait ApiWithoutBodyRequest[M <: MethodType, C, F[_], Out] extends ApiRequest[M, Data, C, F, Out] {
 
-value: ${A}
-context: ${F}""")
-trait GetRequest[C, F[_], A] extends ApiRequest[RequestData[GetCall, Data], C, F, A] {
+  def raw(data: Data, cm: ClientManager[C]): F[Resp] = {
+    val (uri :: queries :: headers :: HNil): Data = data
 
-  def apply(data: RequestData[GetCall, Data], cm: ClientManager[C]): F[A] = {
+    raw(uri, queries, headers, cm)
+  }
+  def raw(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[C]): F[Resp]
+
+  def apply(data: Data, cm: ClientManager[C]): F[Out] = {
     val (uri :: queries :: headers :: HNil): Data = data
 
     apply(uri, queries, headers, cm)
   }
-  def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[C]): F[A]
+  def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[C]): F[Out]
 }
 
-@implicitNotFound("""Cannot find PutRequest instance. Do you miss some implicit value e.g. encoders/decoders?
+trait ApiWithBodyRequest[M <: MethodType, C, F[_], Bd, Out] extends ApiRequest[M, DataWithBody[Bd], C, F, Out] {
 
-value: ${A}
-context: ${F}""")
-trait PutRequest[C, F[_], A] extends ApiRequest[RequestData[PutCall, Data], C, F, A] {
+  def raw(data: DataWithBody[Bd], cm: ClientManager[C]): F[Resp] = {
+    val (uri :: queries :: headers :: body :: HNil): DataWithBody[Bd] = data
 
-  def apply(data: RequestData[PutCall, Data], cm: ClientManager[C]): F[A] = {
-    val (uri :: queries :: headers :: HNil): Data = data
-
-    apply(uri, queries, headers, cm)
+    raw(uri, queries, headers, body, cm)
   }
-  def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[C]): F[A]
-}
+  def raw(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[C]): F[Resp]
 
-@implicitNotFound("""Cannot find PutRequest with body instance. Do you miss some implicit value e.g. encoders/decoders?
-
-value: ${A}
-body: ${Bd}
-context: ${F}""")
-trait PutWithBodyRequest[C, F[_], Bd, A] extends ApiRequest[RequestData[PutWithBodyCall[Bd], DataWithBody[Bd]], C, F, A] {
-
-  def apply(data: RequestData[PutWithBodyCall[Bd], DataWithBody[Bd]], cm: ClientManager[C]): F[A] = {
+  def apply(data: DataWithBody[Bd], cm: ClientManager[C]): F[Out] = {
     val (uri :: queries :: headers :: body :: HNil): DataWithBody[Bd] = data
 
     apply(uri, queries, headers, body, cm)
   }
-  def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[C]): F[A]
+  def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[C]): F[Out]
 }
 
-@implicitNotFound("""Cannot find PostRequest instance. Do you miss some implicit value e.g. encoders/decoders?
-
-value: ${A}
-context: ${F}""")
-trait PostRequest[C, F[_], A] extends ApiRequest[RequestData[PostCall, Data], C, F, A] {
-
-  def apply(data: RequestData[PostCall, Data], cm: ClientManager[C]): F[A] = {
-    val (uri :: queries :: headers :: HNil): Data = data
-
-    apply(uri, queries, headers, cm)
-  }
-  def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[C]): F[A]
-}
-
-@implicitNotFound("""Cannot find PutRequest with body instance. Do you miss some implicit value e.g. encoders/decoders?
-
-value: ${A}
-body: ${Bd}
-context: ${F}""")
-trait PostWithBodyRequest[C, F[_], Bd, A] extends ApiRequest[RequestData[PostWithBodyCall[Bd], DataWithBody[Bd]], C, F, A] {
-
-  def apply(data: RequestData[PostWithBodyCall[Bd], DataWithBody[Bd]], cm: ClientManager[C]): F[A] = {
-    val (uri :: queries :: headers :: body :: HNil): DataWithBody[Bd] = data
-
-    apply(uri, queries, headers, body, cm)
-  }
-  def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], body: Bd, cm: ClientManager[C]): F[A]
-}
-
-@implicitNotFound("""Cannot find DeleteRequest instance. Do you miss some implicit value e.g. encoders/decoders?
-
-value: ${A}
-context: ${F}""")
-trait DeleteRequest[C, F[_], A] extends ApiRequest[RequestData[DeleteCall, Data], C, F, A] {
-
-  def apply(data: RequestData[DeleteCall, Data], cm: ClientManager[C]): F[A] = {
-    val (uri :: queries :: headers :: HNil): Data = data
-
-    apply(uri, queries, headers, cm)
-  }
-  def apply(uri: List[String], queries: Map[String, List[String]], headers: Map[String, String], cm: ClientManager[C]): F[A]
-}
+trait GetRequest[C, F[_], A] extends ApiWithoutBodyRequest[GetCall, C, F, A]
+trait PutRequest[C, F[_], A] extends ApiWithoutBodyRequest[PutCall, C, F, A]
+trait PutWithBodyRequest[C, F[_], Bd, A] extends ApiWithBodyRequest[PutWithBodyCall, C, F, Bd, A]
+trait PostRequest[C, F[_], A] extends ApiWithoutBodyRequest[PostCall, C, F, A]
+trait PostWithBodyRequest[C, F[_], Bd, A] extends ApiWithBodyRequest[PostWithBodyCall, C, F, Bd, A]
+trait DeleteRequest[C, F[_], A] extends ApiWithoutBodyRequest[DeleteCall, C, F, A]

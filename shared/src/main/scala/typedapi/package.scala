@@ -3,31 +3,31 @@ import typedapi.shared._
 import shapeless._
 import shapeless.ops.hlist.Prepend
 
-package object typedapi extends MethodToReqBodyLowPrio {
+package object typedapi extends MethodToReqBodyLowPrio with MethodToStringLowPrio with MediaTypes {
 
-  val Root       = PathListEmpty
-  def Segment[A] = new SegmentHelper[A]
+  val Root       = PathListBuilder[HNil]()
+  def Segment[V] = new PairTypeFromWitnessKey[SegmentParam, V]
 
-  val Queries   = QueryListEmpty
+  val Queries   = QueryListBuilder[HNil]()
   val NoQueries = Queries
-  def Query[A]  = new QueryHelper[A]
 
-  val Headers    = HeaderListEmpty
-  val NoHeaders  = Headers
-  def Header[A]  = new HeaderHelper[A]
-  val RawHeaders = RawHeadersParam
+  val Headers      = HeaderListBuilder[HNil]()
+  val NoHeaders    = Headers
 
-  def ReqBody[A] = ReqBodyElement[A]
-  def Get[A]     = GetElement[A]
-  def Put[A]     = PutElement[A]
-  def Post[A]    = PostElement[A]
-  def Delete[A]  = DeleteElement[A]
+  def ReqBody[MT <: MediaType, A] = TypeCarrier[ReqBodyElement[MT, A]]()
+  def Get[MT <: MediaType, A]     = TypeCarrier[GetElement[MT, A]]()
+  def Put[MT <: MediaType, A]     = TypeCarrier[PutElement[MT, A]]()
+  def Post[MT <: MediaType, A]    = TypeCarrier[PostElement[MT, A]]()
+  def Delete[MT <: MediaType, A]  = TypeCarrier[DeleteElement[MT, A]]()
+
+  type Json  = `Application/json`
+  type Plain = `Text/plain`
 
   def api[M <: MethodElement, P <: HList, Q <: HList, H <: HList, Prep <: HList, Api <: HList]
-      (method: M, path: PathList[P] = Root, queries: QueryList[Q] = NoQueries, headers: HeaderList[H] = NoHeaders)
+      (method: TypeCarrier[M], path: PathListBuilder[P] = Root, queries: QueryListBuilder[Q] = NoQueries, headers: HeaderListBuilder[H] = NoHeaders)
       (implicit prepQP: Prepend.Aux[Q, P, Prep], prepH: Prepend.Aux[H, Prep, Api]): ApiTypeCarrier[M :: Api] = ApiTypeCarrier()
 
-  def apiWithBody[M <: MethodElement, P <: HList, Q <: HList, H <: HList, Prep <: HList, Api <: HList, Bd]
-      (method: M, body: ReqBodyElement[Bd], path: PathList[P] = Root, queries: QueryList[Q] = NoQueries, headers: HeaderList[H] = NoHeaders)
-      (implicit prepQP: Prepend.Aux[Q, P, Prep], prepH: Prepend.Aux[H, Prep, Api], m: MethodToReqBody[M, Bd]): ApiTypeCarrier[m.Out :: Api] = ApiTypeCarrier()
+  def apiWithBody[M <: MethodElement, P <: HList, Q <: HList, H <: HList, Prep <: HList, Api <: HList, BMT <: MediaType, Bd]
+      (method: TypeCarrier[M], body: TypeCarrier[ReqBodyElement[BMT, Bd]], path: PathListBuilder[P] = Root, queries: QueryListBuilder[Q] = NoQueries, headers: HeaderListBuilder[H] = NoHeaders)
+      (implicit prepQP: Prepend.Aux[Q, P, Prep], prepH: Prepend.Aux[H, Prep, Api], m: MethodToReqBody[M, BMT, Bd]): ApiTypeCarrier[m.Out :: Api] = ApiTypeCarrier()
 }

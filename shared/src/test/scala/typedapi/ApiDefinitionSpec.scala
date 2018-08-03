@@ -26,31 +26,31 @@ object ApiDefinitionSpec {
 
   // query lists
   testCompile(Queries)[HNil]
-  testCompile(Queries add Query[Int](fooW))[QueryParam[fooW.T, Int] :: HNil]
-  testCompile(Queries add Query[Int](fooW) add Query[Int](barW))[QueryParam[barW.T, Int] :: QueryParam[fooW.T, Int] :: HNil]
+  testCompile(Queries add[Int](fooW))[QueryParam[fooW.T, Int] :: HNil]
+  testCompile(Queries add[Int](fooW) add[Int](barW))[QueryParam[barW.T, Int] :: QueryParam[fooW.T, Int] :: HNil]
 
   // header lists
   testCompile(Headers)[HNil]
-  testCompile(Headers add Header[Int](fooW))[HeaderParam[fooW.T, Int] :: HNil]
-  testCompile(Headers add Header[Int](fooW) add Header[Int](barW))[HeaderParam[barW.T, Int] :: HeaderParam[fooW.T, Int] :: HNil]
-
-  // raw headers
-  testCompile(Headers add RawHeaders)[RawHeadersParam.type :: HNil]
-  testCompile(Headers add Header[Int](fooW) add RawHeaders)[RawHeadersParam.type :: HeaderParam[fooW.T, Int] :: HNil]
-  test.illTyped("Headers add RawHeaders add Header[Int](fooW)")
+  testCompile(Headers add[Int](fooW))[HeaderParam[fooW.T, Int] :: HNil]
+  testCompile(Headers add[Int](fooW) add[Int](barW))[HeaderParam[barW.T, Int] :: HeaderParam[fooW.T, Int] :: HNil]
+  testCompile(Headers add(fooW, testW))[FixedHeaderElement[fooW.T, testW.T] :: HNil]
+  testCompile(Headers client(fooW, testW))[ClientHeaderElement[fooW.T, testW.T] :: HNil]
+  testCompile(Headers client[String](fooW))[ClientHeaderParam[fooW.T, String] :: HNil]
+  testCompile(Headers serverSend(fooW, testW))[ServerHeaderSendElement[fooW.T, testW.T] :: HNil]
+  testCompile(Headers serverMatch[String](fooW))[ServerHeaderMatchParam[fooW.T, String] :: HNil]
 
   // methods
-  testCompile(api(Get[Foo]))[GetElement[Foo] :: HNil]
+  testCompile(api(Get[Json, Foo]))[GetElement[`Application/json`, Foo] :: HNil]
   test.illTyped("apiWothBody(Get[Foo], ReqBody[Foo])")
-  testCompile(api(Put[Foo]))[PutElement[Foo] :: HNil]
-  testCompile(apiWithBody(Put[Foo], ReqBody[Foo]))[PutWithBodyElement[Foo, Foo] :: HNil]
-  testCompile(api(Post[Foo]))[PostElement[Foo] :: HNil]
-  testCompile(apiWithBody(Post[Foo], ReqBody[Foo]))[PostWithBodyElement[Foo, Foo] :: HNil]
-  testCompile(api(Delete[Foo]))[DeleteElement[Foo] :: HNil]
-  test.illTyped("apiWothBody(Delete[Foo], ReqBody[Foo])")
+  testCompile(api(Put[Json, Foo]))[PutElement[`Application/json`, Foo] :: HNil]
+  testCompile(apiWithBody(Put[Json, Foo], ReqBody[Plain, Foo]))[PutWithBodyElement[`Text/plain`, Foo, `Application/json`, Foo] :: HNil]
+  testCompile(api(Post[Json, Foo]))[PostElement[`Application/json`, Foo] :: HNil]
+  testCompile(apiWithBody(Post[Json, Foo], ReqBody[Plain, Foo]))[PostWithBodyElement[`Text/plain`, Foo, `Application/json`, Foo] :: HNil]
+  testCompile(api(Delete[Json, Foo]))[DeleteElement[`Application/json`, Foo] :: HNil]
+  test.illTyped("apiWothBody(Delete[Json, Foo], ReqBody[Plain, Foo])")
 
   // whole api
   testCompile(
-    api(Get[Foo], Root / "test" / Segment[Int]('foo), Queries add Query[String]('foo), Headers add Header[Double]('foo))
-  )[GetElement[Foo] :: HeaderParam[fooW.T, Double] :: QueryParam[fooW.T, String] :: SegmentParam[fooW.T, Int] :: PathElement[testW.T] :: HNil]
+    api(Get[Json, Foo], Root / "test" / Segment[Int]('foo), Queries add[String]('foo), Headers add[Double]('foo))
+  )[GetElement[`Application/json`, Foo] :: HeaderParam[fooW.T, Double] :: QueryParam[fooW.T, String] :: SegmentParam[fooW.T, Int] :: PathElement[testW.T] :: HNil]
 }

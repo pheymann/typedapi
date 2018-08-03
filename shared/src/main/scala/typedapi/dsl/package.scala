@@ -1,22 +1,34 @@
 package typedapi
 
 import typedapi.shared._
-import shapeless.Witness
 
-package object dsl {
+package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio with MediaTypes {
 
   def := = EmptyCons
 
-  def Path[S](wit: Witness.Lt[S]) = PathElement[S](wit)
-  def Segment[A] = new SegmentHelper[A]
-  def Query[A]   = new QueryHelper[A]
-  def Header[A]  = new HeaderHelper[A]
-  val RawHeaders = RawHeadersParam
-  def ReqBody[A] = ReqBodyElement[A]
-  def Get[A] = GetElement[A]
-  def Put[A] = PutElement[A]
-  def PutWithBody[Bd, A] = PutWithBodyElement[Bd, A]
-  def Post[A] = PostElement[A]
-  def PostWithBody[Bd, A] = PostWithBodyElement[Bd, A]
-  def Delete[A] = DeleteElement[A]
+  def Segment[V] = new PairTypeFromWitnessKey[SegmentParam, V]
+  def Query[V]   = new PairTypeFromWitnessKey[QueryParam, V]
+  def Header[V]  = new PairTypeFromWitnessKey[HeaderParam, V]
+  def Header     = new PairTypeFromWitnesses[FixedHeaderElement]
+
+  object Client {
+
+    def Header    = new PairTypeFromWitnesses[ClientHeaderElement]
+    def Header[V] = new PairTypeFromWitnessKey[ClientHeaderParam, V]
+  }
+
+  object Server {
+
+    def Send      = new PairTypeFromWitnesses[ServerHeaderSendElement]
+    def Match[V]  = new PairTypeFromWitnessKey[ServerHeaderMatchParam, V]
+  }
+
+  type Json  = `Application/json`
+  type Plain = `Text/plain`
+
+  def ReqBody[MT <: MediaType, A] = TypeCarrier[ReqBodyElement[MT, A]]()
+  def Get[MT <: MediaType, A]     = TypeCarrier[GetElement[MT, A]]()
+  def Put[MT <: MediaType, A]     = TypeCarrier[PutElement[MT, A]]()
+  def Post[MT <: MediaType, A]    = TypeCarrier[PostElement[MT, A]]()
+  def Delete[MT <: MediaType, A]  = TypeCarrier[DeleteElement[MT, A]]()
 }
