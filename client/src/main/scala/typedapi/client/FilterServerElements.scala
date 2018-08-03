@@ -1,6 +1,6 @@
 package typedapi.client
 
-import typedapi.shared.ServerHeaderElement
+import typedapi.shared._
 import shapeless._
 
 //TODO replace with Typelevelfoldleft
@@ -24,7 +24,11 @@ object FilterServerElements extends FilterServerElementsLowPrio {
 
   type Aux[H <: HList, Out0 <: HList] = FilterServerElements[H] { type Out = Out0 }
 
-  implicit def filterServerEl[K, V, T <: HList](implicit next: FilterServerElements[T]) = new FilterServerElements[ServerHeaderElement[K, V] :: T] {
+  implicit def filterServerHeaderMatch[K, V, T <: HList](implicit next: FilterServerElements[T]) = new FilterServerElements[ServerHeaderMatchParam[K, V] :: T] {
+    type Out = next.Out
+  }
+
+  implicit def filterServerHeaderSend[K, V, T <: HList](implicit next: FilterServerElements[T]) = new FilterServerElements[ServerHeaderSendElement[K, V] :: T] {
     type Out = next.Out
   }
 }

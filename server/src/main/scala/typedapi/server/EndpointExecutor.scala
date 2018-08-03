@@ -18,7 +18,7 @@ sealed trait EndpointExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: Meth
   type Out
 
   def extract(eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, ROut, F, FOut]): Either[ExtractionError, ROut] = 
-    endpoint.extractor(eReq, Set.empty, HNil)
+    endpoint.extractor(eReq, HNil)
 
   def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, ROut, F, FOut]): Either[ExtractionError, Out]
 }

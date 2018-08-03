@@ -26,7 +26,7 @@ trait RouteExtractor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, E
 
   type Out
 
-  def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Either[ExtractionError, Out]
+  def apply(request: EndpointRequest, inAgg: EIn): Either[ExtractionError, Out]
 }
 
 object RouteExtractor extends RouteExtractorMediumPrio {
@@ -48,10 +48,10 @@ trait RouteExtractorLowPrio {
     new RouteExtractor[shapeless.::[S, El], KIn, VIn, M, EIn] {
     type Out = next.Out
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = request.uri match {
+    def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = request.uri match {
       case p :: tail => 
         if (p == show.show(wit.value))
-          next(request.copy(uri = tail), extractedHeaderKeys, inAgg)
+          next(request.copy(uri = tail), inAgg)
         else
           NotFoundE
 
@@ -74,8 +74,8 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[shapeless.::[SegmentInput, El], shapeless.::[K, KIn], shapeless.::[V, VIn], M, EIn] {
       type Out = next.Out
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = request.uri match {
-        case p :: tail => value(p).fold(NotFoundE[Out])(v => next(request.copy(uri = tail), extractedHeaderKeys, v :: inAgg))
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = request.uri match {
+        case p :: tail => value(p).fold(NotFoundE[Out])(v => next(request.copy(uri = tail), v :: inAgg))
         case Nil       => NotFoundE
       }
     }
@@ -85,12 +85,12 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[shapeless.::[QueryInput, El], shapeless.::[K, KIn], shapeless.::[V, VIn], M, EIn] {
       type Out = next.Out
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key = show.show(wit.value)
 
         req.queries.get(key).fold(BadRequestE[Out](s"missing query '$key'")) { raw =>
           raw.headOption.flatMap(value.apply).fold(BadRequestE[Out](s"query '$key' has not type ${value.typeDesc}")) { v =>
-            next(request, extractedHeaderKeys, v :: inAgg)
+            next(request, v :: inAgg)
           }
         }
       }
@@ -101,12 +101,12 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[shapeless.::[QueryInput, El], shapeless.::[K, KIn], shapeless.::[Option[V], VIn], M, EIn] {
       type Out = next.Out
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key = show.show(wit.value)
 
-        req.queries.get(key).fold(next(request, extractedHeaderKeys, None :: inAgg)) { raw =>
+        req.queries.get(key).fold(next(request, None :: inAgg)) { raw =>
           raw.headOption.flatMap(value.apply).fold(BadRequestE[Out](s"query '$key' has not type ${value.typeDesc}")) { v =>
-            next(request, extractedHeaderKeys, Some(v) :: inAgg)
+            next(request, Some(v) :: inAgg)
           }
         }
       }
@@ -117,16 +117,16 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[shapeless.::[QueryInput, El], shapeless.::[K, KIn], shapeless.::[List[V], VIn], M, EIn] {
       type Out = next.Out
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key = show.show(wit.value)
 
-        req.queries.get(key).fold(next(request, extractedHeaderKeys, Nil :: inAgg)) { raw =>
+        req.queries.get(key).fold(next(request, Nil :: inAgg)) { raw =>
           val vs = raw.flatMap(value.apply)
 
           if (vs.length < raw.length)
             BadRequestE(s"some values of query '$key' are no ${value.typeDesc}")
           else
-            next(request, extractedHeaderKeys, vs :: inAgg)
+            next(request, vs :: inAgg)
         }
       }
     }
@@ -136,12 +136,12 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[shapeless.::[HeaderInput, El], shapeless.::[K, KIn], shapeless.::[V, VIn], M, EIn] {
       type Out = next.Out
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key = show.show(wit.value).toLowerCase
 
         req.headers.get(key).fold(BadRequestE[Out](s"missing header '$key'")) { raw =>
           value(raw).fold(BadRequestE[Out](s"header '$key' has not type ${value.typeDesc}")) { v =>
-            next(request, extractedHeaderKeys + key, v :: inAgg)
+            next(request, v :: inAgg)
           }
         }
       }
@@ -152,12 +152,12 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[shapeless.::[HeaderInput, El], shapeless.::[K, KIn], shapeless.::[Option[V], VIn], M, EIn] {
       type Out = next.Out
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key = show.show(wit.value)
 
-        req.headers.get(key.toLowerCase).fold(next(request, extractedHeaderKeys + key, None :: inAgg)) { raw =>
+        req.headers.get(key.toLowerCase).fold(next(request, None :: inAgg)) { raw =>
           value(raw).fold(BadRequestE[Out](s"header '$key' has not type ${value.typeDesc}")) { v =>
-            next(request, extractedHeaderKeys + key, Some(v) :: inAgg)
+            next(request, Some(v) :: inAgg)
           }
         }
       }
@@ -168,7 +168,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[shapeless.::[FixedHeader[K, V], El], KIn, VIn, M, EIn] {
       type Out = next.Out
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key   = kShow.show(kWit.value)
         val value = vShow.show(vWit.value)
 
@@ -176,25 +176,52 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
           if (raw != value)
             BadRequestE[Out](s"header '$key' has unexpected value '${raw}' - expected '${value}'")
           else
-            next(request, extractedHeaderKeys + key, inAgg)
+            next(request, inAgg)
         }
       }
     }
 
-  implicit def ignoreServerHeaderElExtractor[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
+  implicit def ignoreServerHeaderSendExtractor[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
       (implicit next: RouteExtractor[El, KIn, VIn, M, EIn]) =
-    new RouteExtractor[shapeless.::[ServerHeader[K, V], El], KIn, VIn, M, EIn] {
+    new RouteExtractor[shapeless.::[ServerHeaderSend[K, V], El], KIn, VIn, M, EIn] {
       type Out = next.Out
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
-        next(request, extractedHeaderKeys, inAgg)
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+        next(request, inAgg)
+      }
+    }
+
+  implicit def serverHeaderMatchExtractor[El <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
+      (implicit wit: Witness.Aux[K], show: WitnessToString[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Set[V], EIn]]) =
+    new RouteExtractor[shapeless.::[ServerHeaderMatchInput, El], shapeless.::[K, KIn], shapeless.::[Set[V], VIn], M, EIn] {
+      type Out = next.Out
+
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+        val key      = show.show(wit.value).toLowerCase
+        val matchesE = req.headers.foldLeft[Either[ExtractionError, Set[V]]](Right(Set.empty)) { 
+          case (Right(agg), (k, raw)) =>
+            if (k.contains(key)) {
+              value(raw).fold(BadRequestE[Set[V]](s"header '$k' has not type ${value.typeDesc}")) { v =>
+                Right(agg + v)
+              }
+            }
+            else
+              Right(agg)
+          case (error, _) => error
+        }
+
+        matchesE.fold(
+          error   => Left(error),
+          matches => next(request, matches :: inAgg)
+        )
+        
       }
     }
 
   implicit def getExtractor[EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[EIn, REIn]) = new RouteExtractor[HNil, HNil, HNil, GetCall, EIn] {
     type Out = REIn
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+    def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
       if (req.method == "GET" || req.method == "OPTIONS") 
         Right(inAgg.reverse)
       else 
@@ -205,7 +232,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
   implicit def putExtractor[EIn <: HList, REIn <: HList](implicit rev: Reverse.Aux[EIn, REIn]) = new RouteExtractor[HNil, HNil, HNil, PutCall, EIn] {
     type Out = REIn
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+    def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
       if (req.method == "PUT" || req.method == "OPTIONS") 
         Right(inAgg.reverse)
       else 
@@ -217,7 +244,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[HNil, shapeless.::[FieldType[BMT, BodyField.T], HNil], shapeless.::[Bd, HNil], PutWithBodyCall, EIn] {
       type Out = (BodyType[Bd], EIn)
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         if (req.method == "PUT" || req.method == "OPTIONS")
           Right((BodyType[Bd], inAgg))
         else
@@ -228,7 +255,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
   implicit def postExtractor[EIn <: HList] = new RouteExtractor[HNil, HNil, HNil, PostCall, EIn] {
     type Out = EIn
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+    def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
       if (req.method == "POST" || req.method == "OPTIONS") 
         Right(inAgg)
       else 
@@ -240,7 +267,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     new RouteExtractor[HNil, shapeless.::[FieldType[BMT, BodyField.T], HNil], shapeless.::[Bd, HNil], PostWithBodyCall, EIn] {
       type Out = (BodyType[Bd], EIn)
 
-      def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+      def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         if (req.method == "POST" || req.method == "OPTIONS")
           Right((BodyType[Bd], inAgg))
         else
@@ -251,7 +278,7 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
   implicit def deleteExtractor[EIn <: HList] = new RouteExtractor[HNil, HNil, HNil, DeleteCall, EIn] {
     type Out = EIn
 
-    def apply(request: EndpointRequest, extractedHeaderKeys: Set[String], inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
+    def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
       if (req.method == "DELETE" || req.method == "OPTIONS")
         Right(inAgg)
       else 

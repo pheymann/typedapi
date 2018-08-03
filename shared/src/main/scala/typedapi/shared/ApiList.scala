@@ -19,20 +19,28 @@ final case class QueryListBuilder[Q <: HList]() {
   def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
 }
 
-/** Typecarrier to construct a set of headers from [[HeaderParam]]s, [[FixedHeaderElement]]s, [[ClientHeaderElement]]s and [[ServerHeaderElement]]s. */
+/** Typecarrier to construct a set of headers from [[HeaderParam]]s, [[FixedHeaderElement]]s, [[ClientHeaderElement]]s, 
+    [[ServerHeaderSendElement]]s and [ServerHeaderMatchParam]]s. */
 final case class HeaderListBuilder[H <: HList]() {
 
   final class WitnessDerivation[V] {
     def apply[K](wit: Witness.Lt[K]): HeaderListBuilder[HeaderParam[K, V] :: H] = HeaderListBuilder()
   }
+  def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
+  
+  def add[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[FixedHeaderElement[K, V] :: H] = HeaderListBuilder()
 
   final class ClientWitnessDerivation[V] {
     def apply[K](wit: Witness.Lt[K]): HeaderListBuilder[ClientHeaderParam[K, V] :: H] = HeaderListBuilder()
   }
-
-  def add[V]: WitnessDerivation[V] = new WitnessDerivation[V]
-  def add[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[FixedHeaderElement[K, V] :: H] = HeaderListBuilder()
   def client[V]: ClientWitnessDerivation[V] = new ClientWitnessDerivation[V]
-  def client[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[ClientHeaderElement[K, V] :: H] = HeaderListBuilder()
-  def server[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[ServerHeaderElement[K, V] :: H] = HeaderListBuilder()
+  
+def client[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[ClientHeaderElement[K, V] :: H] = HeaderListBuilder()
+
+  final class ServerMatchWitnessDerivation[V] {
+    def apply[K](wit: Witness.Lt[K]): HeaderListBuilder[ServerHeaderMatchParam[K, V] :: H] = HeaderListBuilder()
+  }
+  def serverMatch[V]: ServerMatchWitnessDerivation[V] = new ServerMatchWitnessDerivation[V]
+
+  def serverSend[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[ServerHeaderSendElement[K, V] :: H] = HeaderListBuilder()
 }

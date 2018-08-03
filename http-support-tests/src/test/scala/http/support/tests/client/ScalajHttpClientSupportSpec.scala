@@ -27,7 +27,7 @@ final class ScalajHttpClientSupportSpec extends Specification {
   val server = TestServer.start()
 
   "http4s client support" >> {
-    val (p, s, q, h0, h1, h2, h3, h4, m0, m1, m2, m3, m4, m5) = deriveAll(Api)
+    val (p, s, q, header, fixed, clInH, clFixH, serMatchH, serSendH, m0, m1, m2, m3, m4, m5) = deriveAll(Api)
 
     "paths and segments" >> {
       p().run[Blocking](cm) === Right(User("foo", 27))
@@ -39,11 +39,12 @@ final class ScalajHttpClientSupportSpec extends Specification {
     }
     
     "headers" >> {
-      h0(42).run[Blocking](cm) === Right(User("foo", 42))
-      h1().run[Blocking](cm) === Right(User("joe", 27))
-      h2("jim").run[Blocking](cm) === Right(User("jim", 27))
-      h3().run[Blocking](cm) === Right(User("joe", 27))
-      h4().run[Blocking](cm) === Right(User("joe", 27))
+      header(42).run[Blocking](cm) === Right(User("foo", 42))
+      fixed().run[Blocking](cm) === Right(User("joe", 27))
+      clInH("jim").run[Blocking](cm) === Right(User("jim", 27))
+      clFixH().run[Blocking](cm) === Right(User("joe", 27))
+      serMatchH().run[Blocking](cm) === Right(User("joe", 27))
+      serSendH().run[Blocking](cm) === Right(User("joe", 27))
     }
 
     "methods" >> {

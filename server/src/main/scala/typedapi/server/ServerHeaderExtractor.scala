@@ -28,7 +28,7 @@ object ServerHeaderExtractor extends ServerHeaderExtractorLowPrio {
 
   implicit def serverHeaderExtractCase[K, V, T <: HList]
       (implicit kWit: Witness.Aux[K], kShow: WitnessToString[K], vWit: Witness.Aux[V], vShow: WitnessToString[V], next: ServerHeaderExtractor[T]) = 
-    new ServerHeaderExtractor[ServerHeader[K, V] :: T] {
+    new ServerHeaderExtractor[ServerHeaderSend[K, V] :: T] {
       def apply(agg: Map[String, String]): Map[String, String] = {
         val key   = kShow.show(kWit.value)
         val value = vShow.show(vWit.value)

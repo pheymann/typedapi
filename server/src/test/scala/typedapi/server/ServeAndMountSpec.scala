@@ -47,7 +47,7 @@ final class ServeAndMountSpec extends Specification {
                                                                                         (implicit executor: EndpointExecutor[El, KIn, VIn, M, ROut, F, FOut]): List[Serve[executor.R, executor.Out]] = 
     List(new Serve[executor.R, executor.Out] {
       def options(eReq: EndpointRequest): Option[(String, Map[String, String])] = {
-        endpoint.extractor(eReq, Set.empty, HNil) match {
+        endpoint.extractor(eReq, HNil) match {
           case Right(_) => Some((endpoint.method, endpoint.headers))
           case _        => None
         }
@@ -72,7 +72,7 @@ final class ServeAndMountSpec extends Specification {
     }
 
     "check if route exists and return method" >> {
-      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Server.Header("Hello", "*") :> Get[Json, List[Foo]]
+      val Api      = := :> "find" :> "user" :> Segment[String]('name) :> Query[Int]('sortByAge) :> Server.Send("Hello", "*") :> Get[Json, List[Foo]]
       val endpoint = derive[Option](Api).from((name, sortByAge) => Some(List(Foo(name))))
       val served   = toList(endpoint)
 

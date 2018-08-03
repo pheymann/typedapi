@@ -10,7 +10,7 @@ object Client {
   implicit val decoder = jsonOf[IO, User]
   implicit val encoder = jsonEncoderOf[IO, User]
 
-  val (get, put, post, delete, path, putBody, segment, search, header, fixed, client) = deriveAll(FromDsl.MyApi)
+  val (get, put, post, delete, path, putBody, segment, search, header, fixed, client, matches) = deriveAll(FromDsl.MyApi)
 
   def main(args: Array[String]): Unit = {
     import User._
