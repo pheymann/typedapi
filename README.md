@@ -74,7 +74,8 @@ It is inspired by [Servant](https://github.com/haskell-servant/servant) and it p
 
   - [http4s](https://github.com/http4s/http4s)
   - [akka-http](https://github.com/akka/akka-http)
-  - ScalaJS on the client
+  - [scalaj-http](https://github.com/scalaj/scalaj-http) on the client-side
+  - ScalaJS on the client-side
 
 If you need something else take a look at this [doc](https://github.com/pheymann/typedapi/blob/master/docs/ExtendIt.md#write-your-own-client-backend).
 
@@ -93,6 +94,9 @@ It is available for Scala 2.11, 2.12 and ScalaJS and can be downloaded as Maven 
 // akka-http support
 "com.github.pheymann" %% "typedapi-akka-http-client" % <version>
 "com.github.pheymann" %% "typedapi-akka-http-server" % <version>
+
+// Scalaj-Http client support
+"com.github.pheymann" %% "typedapi-scalaj-http-client" % <version>
 
 // ScalaJS client support
 "com.github.pheymann" %% "typedapi-js-client" % <version>
