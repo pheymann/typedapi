@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/pheymann/typedapi.svg?branch=master)](https://travis-ci.org/pheymann/typedapi)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-shared_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-shared_2.12)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pheymann/Lobby)
+[![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org/)
 
 **0.1.0 IS OUT**: Maven batch should update in a few hours.
 
