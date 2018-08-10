@@ -4,7 +4,7 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pheymann/Lobby)
 [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org/)
 
-**0.1.0 IS OUT**: Maven batch should update in a few hours.
+**0.1.0 is OUT and available on Maven**
 
 # Typedapi
 Define type safe APIs and let the Scala compiler do the rest:
