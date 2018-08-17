@@ -121,15 +121,11 @@ import typedapi._
 import client._
 import amm._
 
-val cm = clientManager("http://localhost", 9000)
-
-final case class User(name: String, age: Int)
-
-val Api = api(Get[Json, User], Root / "user" / "url")
-
-val get = derive(Api)
+val Readme = api(Get[`Text/html`, String], Root / "pheymann" / "typedapi" / "master" / "README.md")
+val readme = derive(Readme)
 
 // gives you the raw scalaj-http response
+val cm = clientManager("https://raw.githubusercontent.com")
 val response = get().run[Id].raw(cm)
 
 response.body
