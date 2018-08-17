@@ -146,8 +146,6 @@ lazy val `http4s-client` = project
     mavenSettings,
     name := "typedapi-http4s-client",
     libraryDependencies ++= Dependencies.http4sClient,
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(`client-jvm`)
 
@@ -158,8 +156,6 @@ lazy val `http4s-server` = project
     mavenSettings,
     name := "typedapi-http4s-server",
     libraryDependencies ++= Dependencies.http4sServer,
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(server)
 
