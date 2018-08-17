@@ -57,7 +57,7 @@ final class ScalajHttpClientSupportSpec extends Specification {
     }
 
     "raw" >> {
-      m0().run[Blocking].raw(cm).right.map(_.body) === Right("""{"name":"foo","age":27}""")
+      m0().run[Id].raw(cm).body === """{"name":"foo","age":27}"""
     }
 
     step {
