@@ -9,6 +9,7 @@ package object amm {
   type Blocking[A] = scalajhttp.Blocking[A]
 
   def clientManager(host: String, port: Int): ClientManager[Http.type] = ClientManager(Http, host, port)
+  def clientManager(host: String): ClientManager[Http.type] = ClientManager(Http, host)
 
   implicit def rawGetRequestAmm = scalajhttp.rawGetRequest
   implicit def getRequestAmm[A](implicit decoder: Decoder[Id, A]) = scalajhttp.getRequest[A]
