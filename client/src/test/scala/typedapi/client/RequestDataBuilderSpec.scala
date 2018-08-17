@@ -12,12 +12,12 @@ final class RequestDataBuilderSpec extends Specification {
 
   type Result = (String, List[String], Map[String, String], Map[String, String], Option[Foo])
 
-  implicit val get       = testGet[Id, ReqInput](identity)(identity)
-  implicit val put       = testPut[Id, ReqInput](identity)(identity)
-  implicit def putB[Bd]  = testPutWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)(identity)
-  implicit val post      = testPost[Id, ReqInput](identity)(identity)
-  implicit def postB[Bd] = testPostWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)(identity)
-  implicit val delete    = testDelete[Id, ReqInput](identity)(identity)
+  implicit val get       = testGet[Id, ReqInput](identity)
+  implicit val put       = testPut[Id, ReqInput](identity)
+  implicit def putB[Bd]  = testPutWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)
+  implicit val post      = testPost[Id, ReqInput](identity)
+  implicit def postB[Bd] = testPostWithBody[Id, Bd, ReqInputWithBody[Bd]](identity)
+  implicit val delete    = testDelete[Id, ReqInput](identity)
 
   "executes compiled api" >> {
     val cm = clientManager
@@ -77,13 +77,20 @@ final class RequestDataBuilderSpec extends Specification {
 
       "request body" >> {
         val api0 = derive(:= :> ReqBody[Json, Int] :> Put[Json, ReqInputWithBody[Int]])
-        api0(0).run[Id](cm)(putB) === ReqInputWithBody("PUT", Nil, Map(), Map(("Accept", "application/json")), 0)
+        api0(0).run[Id](cm) === ReqInputWithBody("PUT", Nil, Map(), Map(("Accept", "application/json")), 0)
       }
 
       "path" >> {
         val api0 = derive(:= :> "hello" :> "world" :> Get[Json, ReqInput])
         api0().run[Id](cm) === ReqInput("GET", "hello" :: "world" :: Nil, Map(), Map(("Accept", "application/json")))
       }
+    }
+
+    "raw" >> {
+      implicit def rawPutB[Bd] = testRawPutWithBody[Id, Bd](identity)
+
+      val api0 = derive(:= :> ReqBody[Json, Int] :> Put[Json, ReqInputWithBody[Int]])
+      api0(0).run[Id].raw(cm) === ReqInputWithBody("PUT", Nil, Map(), Map(("Accept", "application/json")), 0)
     }
 
     "composition" >> {

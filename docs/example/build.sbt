@@ -1,5 +1,5 @@
 
-val typedapiVersion = "0.1.0"
+val typedapiVersion = "0.2.0-M1"
 val http4sVersion   = "0.18.0"
 
 val commonSettings = Seq(
