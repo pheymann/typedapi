@@ -99,7 +99,8 @@ lazy val typedapi = project
     `akka-http-server`,
     `js-client`,
     `scalaj-http-client`,
-    `http-support-tests`
+    `http-support-tests`,
+    `ammonite-client-support`
   )
 
 lazy val shared = crossProject.crossType(CrossType.Pure)
@@ -213,3 +214,13 @@ lazy val `http-support-tests` = project
     libraryDependencies ++= Dependencies.httpSupportTests
   )
   .dependsOn(`http4s-client`, `http4s-server`, `akka-http-client`, `akka-http-server`, `scalaj-http-client`)
+
+lazy val `ammonite-client-support` = project
+  .in(file("ammonite-client-support"))
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-ammonite-client",
+    libraryDependencies ++= Dependencies.ammoniteSupport
+  )
+  .dependsOn(`scalaj-http-client`)

@@ -66,4 +66,8 @@ object Dependencies {
 
     "org.specs2" %% "specs2-core" % specs2V         % Test
   )
+
+  val ammoniteSupport = Seq(
+    "org.scalaj" %% "scalaj-http" % scalajHttpV % Compile
+  )
 }
