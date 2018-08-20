@@ -1,3 +1,8 @@
+### 0.2.0
+ - internal: separated decoded and raw requests with `RawApiRequest` and `ApiRequest`
+ - fixed `implicitNotFound` message for `ApiRequest`
+ - implemented change suggested in #31 (ClientManager Enhancements)
+
 ### 0.1.0
  - internal cleanups and refactorings
  - extended example project and added ScalaJS client
