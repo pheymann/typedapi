@@ -47,7 +47,7 @@ val `compiler-2.11` = Seq(
 
 lazy val commonSettings = Seq(
   organization  := "com.github.pheymann",
-  version       := "0.1.0",
+  version       := "0.2.0-RC1",
   crossScalaVersions := Seq("2.11.11", "2.12.4"),
   scalaVersion       := "2.12.4",
   scalacOptions      ++= { CrossVersion.partialVersion(scalaVersion.value) match {
