@@ -1,10 +1,10 @@
 
 [![Build Status](https://travis-ci.org/pheymann/typedapi.svg?branch=master)](https://travis-ci.org/pheymann/typedapi)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-shared_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-shared_2.12)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-client_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-shared_2.12)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pheymann/Lobby)
 [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org/)
 
-**0.1.0 is OUT and available on Maven**
+**Stable Version**: 0.1.0, **Current Development**: branch [0.2.0-release](https://github.com/pheymann/typedapi/tree/0.2.0-release)
 
 # Typedapi
 Define type safe APIs and let the Scala compiler do the rest:
