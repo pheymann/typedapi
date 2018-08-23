@@ -33,7 +33,7 @@ object EndpointExecutor {
 
 trait NoReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, F[_], FOut] extends EndpointExecutor[El, KIn, VIn, M, VIn, F, FOut] {
 
-  protected def execute(input: VIn, endpoint: Endpoint[El, KIn, VIn, M, VIn, F, FOut]): F[FOut] = 
+  protected def execute(input: VIn, endpoint: Endpoint[El, KIn, VIn, M, VIn, F, FOut]): F[Result[FOut]] = 
     endpoint.apply(input)
 }
 
@@ -42,6 +42,6 @@ trait ReqBodyExecutor[El <: HList, KIn <: HList, VIn <: HList, Bd, M <: MethodTy
   implicit def prepend: Prepend.Aux[ROut, Bd :: HNil, POut]
   implicit def eqProof: POut =:= VIn
 
-  protected def execute(input: ROut, body: Bd, endpoint: Endpoint[El, KIn, VIn, M, (BodyType[Bd], ROut), F, FOut]): F[FOut] = 
+  protected def execute(input: ROut, body: Bd, endpoint: Endpoint[El, KIn, VIn, M, (BodyType[Bd], ROut), F, FOut]): F[Result[FOut]] = 
     endpoint.apply(input :+ body)
 }

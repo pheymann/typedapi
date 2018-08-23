@@ -9,7 +9,8 @@ import scala.language.higherKinds
 package object server extends TypeLevelFoldLeftLowPrio 
                       with TypeLevelFoldLeftListLowPrio 
                       with WitnessToStringLowPrio
-                      with ApiTransformer {
+                      with ApiTransformer
+                      with EndpointResult {
 
   def derive[F[_]]: ExecutableDerivation[F] = new ExecutableDerivation[F]
 
