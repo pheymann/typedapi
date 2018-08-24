@@ -1,6 +1,6 @@
 package http.support.tests.server
 
-import typedapi.server.{Result, successWith, Ok}
+import typedapi.server.{Result, successWith, errorWith, Ok, BadRequest, InternalServerError}
 import http.support.tests.{User, UserCoding}
 import org.http4s._
 import org.http4s.dsl.io._
@@ -85,6 +85,12 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
       client.expect[User](POST(Uri.fromString(s"http://localhost:$port/body").right.get, User("joe", 27))).unsafeRunSync() === User("joe", 27)
       client.expect[User](DELETE(Uri.fromString(s"http://localhost:$port/?reasons=because").right.get)).unsafeRunSync() === User("joe", 27)
     }
+
+    "status codes" >> {
+      client.fetch[Int](GET(Uri.fromString(s"http://localhost:$port/status/200").right.get))(resp => IO.pure(resp.status.code)).unsafeRunSync === 200
+      client.fetch[Int](GET(Uri.fromString(s"http://localhost:$port/status/400").right.get))(resp => IO.pure(resp.status.code)).unsafeRunSync === 400
+      client.fetch[Int](GET(Uri.fromString(s"http://localhost:$port/status/500").right.get))(resp => IO.pure(resp.status.code)).unsafeRunSync === 500
+    }
   }
 
   val path: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
@@ -102,4 +108,7 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
     println(reasons)
     Applicative[F].pure(successWith(Ok)(User("joe", 27)))
   }
+  val code200: () => F[Result[String]] = () => Applicative[F].pure(successWith(Ok)(""))
+  val code400: () => F[Result[String]] = () => Applicative[F].pure(errorWith(BadRequest, "meh"))
+  val code500: () => F[Result[String]] = () => Applicative[F].pure(errorWith(InternalServerError, "boom"))
 }

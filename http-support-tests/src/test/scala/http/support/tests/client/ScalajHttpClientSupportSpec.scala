@@ -27,7 +27,7 @@ final class ScalajHttpClientSupportSpec extends Specification {
   val server = TestServer.start()
 
   "http4s client support" >> {
-    val (p, s, q, header, fixed, clInH, clFixH, serMatchH, serSendH, m0, m1, m2, m3, m4, m5) = deriveAll(Api)
+    val (p, s, q, header, fixed, clInH, clFixH, serMatchH, serSendH, m0, m1, m2, m3, m4, m5, code200, code400, code500) = deriveAll(Api)
 
     "paths and segments" >> {
       p().run[Blocking](cm) === Right(User("foo", 27))
