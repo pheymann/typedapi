@@ -6,6 +6,7 @@ import cats.implicits._
 import cats.effect.IO
 import org.http4s._
 import org.http4s.dsl._
+import org.http4s.dsl.impl.EntityResponseGenerator
 import org.http4s.server.Server
 import org.http4s.server.blaze.BlazeBuilder
 import shapeless._
@@ -26,12 +27,16 @@ package object http4s {
       private val dsl = Http4sDsl[F]
       import dsl._
 
+      private def respGenerator(code: Status) = new EntityResponseGenerator[F] { val status = code }
+
       def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, VIn, F, FOut]): Either[ExtractionError, Out] = {
         extract(eReq, endpoint).map { extracted =>
-          Monad[F].flatMap(execute(extracted, endpoint)) { response =>
-            Ok(response).map { resp =>
-              resp.copy(headers = resp.headers ++ getHeaders(endpoint.headers))
-            }
+          Monad[F].flatMap(execute(extracted, endpoint)) {
+            case Right((code, response)) =>
+              respGenerator(Status(code.statusCode))(response, getHeaders(endpoint.headers): _*)
+
+            case Left(HttpError(code, msg)) =>
+              respGenerator(Status(code.statusCode))(msg, getHeaders(endpoint.headers): _*)
           }
         }
       }
@@ -51,20 +56,27 @@ package object http4s {
     private val dsl = Http4sDsl[F]
     import dsl._
 
+    private def respGenerator(code: Status) = new EntityResponseGenerator[F] { val status = code }
+
     def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, (BodyType[Bd], ROut), F, FOut]): Either[ExtractionError, Out] = {
       extract(eReq, endpoint).map { case (_, extracted) =>
         for {
           body     <- req.as[Bd]
-          response <- execute(extracted, body, endpoint)
+          response <- execute(extracted, body, endpoint).flatMap {
+            case Right((code, response)) =>
+              respGenerator(Status(code.statusCode))(response, getHeaders(endpoint.headers): _*)
 
-          r <- Ok(response)
-        } yield r.copy(headers = r.headers ++ getHeaders(endpoint.headers))
+            case Left(HttpError(code, msg)) =>
+              respGenerator(Status(code.statusCode))(msg, getHeaders(endpoint.headers): _*)
+          }
+        } yield response
       }
     }
   }
 
   implicit val mountEndpoints = new MountEndpoints[BlazeBuilder[IO], Request[IO], IO[Response[IO]]] {
-    import org.http4s.dsl.io._
+
+    import io._
 
     type Out = IO[Server[IO]]
 
@@ -75,10 +87,10 @@ package object http4s {
             case collection.immutable.::(endpoint, tail) => endpoint(request, eReq) match {
               case Right(response)            => response
               case Left(RouteNotFound)        => execute(tail, eReq)
-              case Left(BadRouteRequest(msg)) => BadRequest(msg)
+              case Left(BadRouteRequest(msg)) => io.BadRequest(msg)
             }
 
-            case Nil => NotFound("uri = " + request.uri)
+            case Nil => io.NotFound("uri = " + request.uri)
           }
 
           val eReq = EndpointRequest(

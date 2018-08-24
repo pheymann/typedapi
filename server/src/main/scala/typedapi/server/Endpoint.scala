@@ -11,7 +11,7 @@ import scala.language.higherKinds
 abstract class Endpoint[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], Out]
     (val method: String, val extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut], val headers: Map[String, String]) {
 
-  def apply(in: VIn): F[Out]
+  def apply(in: VIn): F[Result[Out]]
 }
 
 /** Request representation which every server implementation has to provide. */
@@ -26,7 +26,7 @@ final class ExecutableDerivation[F[_]] {
     (extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
      method: String,
      headers: Map[String, String],
-     fnToVIn: FnToProduct.Aux[Fn, VIn => F[Out]]) {
+     fnToVIn: FnToProduct.Aux[Fn, VIn => F[Result[Out]]]) {
 
     /** Restricts type of parameter `fn` to a function defined by the given API:
       * 
@@ -40,7 +40,7 @@ final class ExecutableDerivation[F[_]] {
       new Endpoint[El, KIn, VIn, M, ROut, F, Out](method, extractor, headers) {
         private val fin = fnToVIn(fn)
 
-        def apply(in: VIn): F[Out] = fin(in)
+        def apply(in: VIn): F[Result[Out]] = fin(in)
       }
   }
 
@@ -51,7 +51,7 @@ final class ExecutableDerivation[F[_]] {
               extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
               methodShow: MethodToString[M],
               serverHeaders: ServerHeaderExtractor[El],
-              inToFn: Lazy[FnFromProduct.Aux[VIn => F[Out], Fn]],
-              fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]]): Derivation[El, KIn, VIn, M, ROut, Fn, Out] =
+              inToFn: Lazy[FnFromProduct.Aux[VIn => F[Result[Out]], Fn]],
+              fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Result[Out]]]]): Derivation[El, KIn, VIn, M, ROut, Fn, Out] =
     new Derivation[El, KIn, VIn, M, ROut, Fn, Out](extractor, methodShow.show, serverHeaders(Map.empty), fnToVIn.value)
 }

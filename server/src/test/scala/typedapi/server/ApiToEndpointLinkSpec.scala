@@ -16,8 +16,8 @@ final class ApiToEndpointLinkSpec extends Specification {
                     Server.Send('foo, 'bar) :> Server.Match[String]("hi") :>
                     Get[Json, List[Foo]]
 
-    val endpoint0 = derive[Option](Api).from((name, limit, hi) => Some(List(Foo(name)).take(limit)))
-    endpoint0("john" :: 10 :: Set("whats", "up") :: HNil) === Some(List(Foo("john")))
+    val endpoint0 = derive[Option](Api).from((name, limit, hi) => Some(successWith(Ok)(List(Foo(name)).take(limit))))
+    endpoint0("john" :: 10 :: Set("whats", "up") :: HNil) === Some(Right(Ok -> List(Foo("john"))))
     endpoint0.headers == Map("foo" -> "bar")
     endpoint0.method == "GET"
   }

@@ -24,7 +24,7 @@ final class AkkaHttpServerSupportSpec(implicit ee: ExecutionEnv) extends ServerS
 
   import system.dispatcher
 
-  val endpoints = deriveAll[Future](Api).from(path, segment, query, header, fixed, fixed, fixed, matching, fixed, get, put, putB, post, postB, delete)
+  val endpoints = deriveAll[Future](Api).from(path, segment, query, header, fixed, fixed, fixed, matching, fixed, get, put, putB, post, postB, delete, code200, code400, code500)
   val sm        = ServerManager(Http(), "localhost", 9000)
   val server    = mount(sm, endpoints)
 

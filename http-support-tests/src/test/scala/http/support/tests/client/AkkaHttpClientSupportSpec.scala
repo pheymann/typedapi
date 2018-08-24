@@ -30,7 +30,7 @@ final class AkkaHttpClientSupportSpec(implicit ee: ExecutionEnv) extends Specifi
   val server = TestServer.start()
 
   "akka http client support" >> {
-    val (p, s, q, header, fixed, clInH, clFixH, serMatchH, serSendH, m0, m1, m2, m3, m4, m5) = deriveAll(Api)
+    val (p, s, q, header, fixed, clInH, clFixH, serMatchH, serSendH, m0, m1, m2, m3, m4, m5, _, _, _) = deriveAll(Api)
 
     "paths and segments" >> {
       p().run[Future](cm) must beEqualTo(User("foo", 27)).awaitFor(timeout)
