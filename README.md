@@ -49,8 +49,8 @@ fetch("joe").run[IO](cm): IO[User]
 ```Scala
 import typedapi.server._
 
-val fetch: String => IO[User] = name => ???
-val create: User => IO[User] = user => ???
+val fetch: String => IO[Result[User]] = name => findUserIO(name).map(success)
+val create: User => IO[Result[User]] = user => createUserIO(user).map(success)
 
 val endpoints = deriveAll[IO](MyApi).from(fetch, create)
 
