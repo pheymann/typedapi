@@ -1,5 +1,6 @@
 package http.support.tests.server
 
+import typedapi.server.{Result, successWith, Ok}
 import http.support.tests.{User, UserCoding}
 import org.http4s._
 import org.http4s.dsl.io._
@@ -86,19 +87,19 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
     }
   }
 
-  val path: () => F[User] = () => Applicative[F].pure(User("joe", 27))
-  val segment: String => F[User] = name => Applicative[F].pure(User(name, 27))
-  val query: Int => F[User] = age => Applicative[F].pure(User("joe", age))
-  val header: Int => F[User] = age => Applicative[F].pure(User("joe", age))
-  val fixed: () => F[User] = () => Applicative[F].pure(User("joe", 27))
-  val matching: Set[String] => F[User] = matches => Applicative[F].pure(User(matches.mkString(""), 27))
-  val get: () => F[User] = () => Applicative[F].pure(User("joe", 27))
-  val put: () => F[User] = () => Applicative[F].pure(User("joe", 27))
-  val putB: User => F[User] = user => Applicative[F].pure(user)
-  val post: () => F[User] = () => Applicative[F].pure(User("joe", 27))
-  val postB: User => F[User] = user => Applicative[F].pure(user)
-  val delete: List[String] => F[User] = reasons => {
+  val path: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val segment: String => F[Result[User]] = name => Applicative[F].pure(successWith(Ok)(User(name, 27)))
+  val query: Int => F[Result[User]] = age => Applicative[F].pure(successWith(Ok)(User("joe", age)))
+  val header: Int => F[Result[User]] = age => Applicative[F].pure(successWith(Ok)(User("joe", age)))
+  val fixed: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val matching: Set[String] => F[Result[User]] = matches => Applicative[F].pure(successWith(Ok)(User(matches.mkString(""), 27)))
+  val get: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val put: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val putB: User => F[Result[User]] = user => Applicative[F].pure(successWith(Ok)(user))
+  val post: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val postB: User => F[Result[User]] = user => Applicative[F].pure(successWith(Ok)(user))
+  val delete: List[String] => F[Result[User]] = reasons => {
     println(reasons)
-    Applicative[F].pure(User("joe", 27))
+    Applicative[F].pure(successWith(Ok)(User("joe", 27)))
   }
 }
