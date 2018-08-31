@@ -86,7 +86,7 @@ trait ApiTransformer {
     at[ServerHeaderSendElement[K, V], (El, KIn, VIn, M, Out), (ServerHeaderSend[K, V] :: El, KIn, VIn, M, Out)]
 
   implicit def serverHeaderMatchParamTransformer[K, V, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
-    at[ServerHeaderMatchParam[K, V], (El, KIn, VIn, M, Out), (ServerHeaderMatchInput :: El, K :: KIn, Set[V] :: VIn, M, Out)]
+    at[ServerHeaderMatchParam[K, V], (El, KIn, VIn, M, Out), (ServerHeaderMatchInput :: El, K :: KIn, Map[String, V] :: VIn, M, Out)]
 
   implicit def getTransformer[MT <: MediaType, A] = at[GetElement[MT, A], Unit, (HNil, HNil, HNil, GetCall, FieldType[MT, A])]
 

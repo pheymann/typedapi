@@ -192,17 +192,17 @@ trait RouteExtractorMediumPrio extends RouteExtractorLowPrio {
     }
 
   implicit def serverHeaderMatchExtractor[El <: HList, K, V, KIn <: HList, VIn <: HList, M <: MethodType, EIn <: HList]
-      (implicit wit: Witness.Aux[K], show: WitnessToString[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Set[V], EIn]]) =
-    new RouteExtractor[shapeless.::[ServerHeaderMatchInput, El], shapeless.::[K, KIn], shapeless.::[Set[V], VIn], M, EIn] {
+      (implicit wit: Witness.Aux[K], show: WitnessToString[K], value: ValueExtractor[V], next: RouteExtractor[El, KIn, VIn, M, shapeless.::[Map[String, V], EIn]]) =
+    new RouteExtractor[shapeless.::[ServerHeaderMatchInput, El], shapeless.::[K, KIn], shapeless.::[Map[String, V], VIn], M, EIn] {
       type Out = next.Out
 
       def apply(request: EndpointRequest, inAgg: EIn): Extract[Out] = checkEmptyPath(request) { req =>
         val key      = show.show(wit.value).toLowerCase
-        val matchesE = req.headers.foldLeft[Either[ExtractionError, Set[V]]](Right(Set.empty)) { 
+        val matchesE = req.headers.foldLeft[Either[ExtractionError, Map[String, V]]](Right(Map.empty)) { 
           case (Right(agg), (k, raw)) =>
             if (k.contains(key)) {
-              value(raw).fold(BadRequestE[Set[V]](s"header '$k' has not type ${value.typeDesc}")) { v =>
-                Right(agg + v)
+              value(raw).fold(BadRequestE[Map[String, V]](s"header '$k' has not type ${value.typeDesc}")) { v =>
+                Right(agg + (k -> v))
               }
             }
             else
