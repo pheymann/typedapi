@@ -1,6 +1,6 @@
 package typedapi.server
 
-import typedapi.shared.{ClientHeaderElement, ClientHeaderParam}
+import typedapi.shared.{ClientHeaderElement, ClientHeaderParam, ClientHeaderCollParam}
 import shapeless._
 
 sealed trait FilterClientElements[H <: HList] {
@@ -28,6 +28,10 @@ object FilterClientElements extends FilterClientElementsLowPrio {
   }
 
   implicit def filterClientParam[K, V, T <: HList](implicit next: FilterClientElements[T]) = new FilterClientElements[ClientHeaderParam[K, V] :: T] {
+    type Out = next.Out
+  }
+
+  implicit def filterClientCollParam[V, T <: HList](implicit next: FilterClientElements[T]) = new FilterClientElements[ClientHeaderCollParam[V] :: T] {
     type Out = next.Out
   }
 }

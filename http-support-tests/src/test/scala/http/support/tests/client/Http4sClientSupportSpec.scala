@@ -18,7 +18,7 @@ final class Http4sClientSupportSpec extends Specification {
   val server = TestServer.start()
 
   "http4s client support" >> {
-    val (p, s, q, header, fixed, clInH, clFixH, serMatchH, serSendH, m0, m1, m2, m3, m4, m5, _, _, _) = deriveAll(Api)
+    val (p, s, q, header, fixed, clInH, clFixH, clColl, serMatchH, serSendH, m0, m1, m2, m3, m4, m5, _, _, _) = deriveAll(Api)
 
     "paths and segments" >> {
       p().run[IO](cm).unsafeRunSync() === User("foo", 27)
@@ -34,6 +34,7 @@ final class Http4sClientSupportSpec extends Specification {
       fixed().run[IO](cm).unsafeRunSync() === User("joe", 27)
       clInH("jim").run[IO](cm).unsafeRunSync === User("jim", 27)
       clFixH().run[IO](cm).unsafeRunSync() === User("joe", 27)
+      clColl(Map("coll" -> "joe", "collect" -> "jim")).run[IO](cm).unsafeRunSync === User("coll: joe,collect: jim", 27)
       serMatchH().run[IO](cm).unsafeRunSync() === User("joe", 27)
       serSendH().run[IO](cm).unsafeRunSync() === User("joe", 27)
     }

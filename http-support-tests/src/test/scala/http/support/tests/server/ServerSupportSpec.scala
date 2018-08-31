@@ -22,12 +22,12 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
     import UserCoding._
 
     "paths and segments" >> {
-      client.expect[User](s"http://localhost:$port/path").unsafeRunSync() === User("joe", 27)
+      client.expect[User](s"http://localhost:$port/path").unsafeRunSync() === User("path", 27)
       client.expect[User](s"http://localhost:$port/segment/jim").unsafeRunSync() === User("jim", 27)
     }
 
     "queries" >> {
-      client.expect[User](s"http://localhost:$port/query?age=42").unsafeRunSync() === User("joe", 42)
+      client.expect[User](s"http://localhost:$port/query?age=42").unsafeRunSync() === User("query", 42)
     }
 
     "headers" >> {
@@ -35,20 +35,20 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
         method = GET,
         uri = Uri.fromString(s"http://localhost:$port/header").right.get,
         headers = Headers(Header("age", "42"))
-      )).unsafeRunSync() === User("joe", 42)
+      )).unsafeRunSync() === User("header", 42)
       client.expect[User](Request[IO](
         method = GET,
         uri = Uri.fromString(s"http://localhost:$port/header/fixed").right.get,
         headers = Headers(Header("Hello", "*"))
-      )).unsafeRunSync() === User("joe", 27)
+      )).unsafeRunSync() === User("fixed", 27)
       client.expect[User](Request[IO](
         method = GET,
         uri = Uri.fromString(s"http://localhost:$port/header/client").right.get
-      )).unsafeRunSync() === User("joe", 27)
+      )).unsafeRunSync() === User("client header", 27)
       client.expect[User](Request[IO](
         method = GET,
         uri = Uri.fromString(s"http://localhost:$port/header/input/client").right.get
-      )).unsafeRunSync() === User("joe", 27)
+      )).unsafeRunSync() === User("input", 27)
       client.fetch[Option[Header]](
         Request[IO](
           method = GET,
@@ -78,12 +78,12 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
     }
 
     "methods" >> {
-      client.expect[User](s"http://localhost:$port/").unsafeRunSync() === User("joe", 27)
-      client.expect[User](PUT(Uri.fromString(s"http://localhost:$port/").right.get)).unsafeRunSync() === User("joe", 27)
+      client.expect[User](s"http://localhost:$port/").unsafeRunSync() === User("get", 27)
+      client.expect[User](PUT(Uri.fromString(s"http://localhost:$port/").right.get)).unsafeRunSync() === User("put", 27)
       client.expect[User](PUT(Uri.fromString(s"http://localhost:$port/body").right.get, User("joe", 27))).unsafeRunSync() === User("joe", 27)
-      client.expect[User](POST(Uri.fromString(s"http://localhost:$port/").right.get)).unsafeRunSync() === User("joe", 27)
+      client.expect[User](POST(Uri.fromString(s"http://localhost:$port/").right.get)).unsafeRunSync() === User("post", 27)
       client.expect[User](POST(Uri.fromString(s"http://localhost:$port/body").right.get, User("joe", 27))).unsafeRunSync() === User("joe", 27)
-      client.expect[User](DELETE(Uri.fromString(s"http://localhost:$port/?reasons=because").right.get)).unsafeRunSync() === User("joe", 27)
+      client.expect[User](DELETE(Uri.fromString(s"http://localhost:$port/?reasons=because").right.get)).unsafeRunSync() === User("because", 27)
     }
 
     "status codes" >> {
@@ -93,20 +93,23 @@ abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
     }
   }
 
-  val path: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val path: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("path", 27)))
   val segment: String => F[Result[User]] = name => Applicative[F].pure(successWith(Ok)(User(name, 27)))
-  val query: Int => F[Result[User]] = age => Applicative[F].pure(successWith(Ok)(User("joe", age)))
-  val header: Int => F[Result[User]] = age => Applicative[F].pure(successWith(Ok)(User("joe", age)))
-  val fixed: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val query: Int => F[Result[User]] = age => Applicative[F].pure(successWith(Ok)(User("query", age)))
+  val header: Int => F[Result[User]] = age => Applicative[F].pure(successWith(Ok)(User("header", age)))
+  val fixed: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("fixed", 27)))
+  val input: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("input", 27)))
+  val clientHdr: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("client header", 27)))
+  val coll: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("coll", 27)))
   val matching: Map[String, String] => F[Result[User]] = matches => Applicative[F].pure(successWith(Ok)(User(matches.mkString(","), 27)))
-  val get: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
-  val put: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val send: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("send", 27)))
+  val get: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("get", 27)))
+  val put: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("put", 27)))
   val putB: User => F[Result[User]] = user => Applicative[F].pure(successWith(Ok)(user))
-  val post: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+  val post: () => F[Result[User]] = () => Applicative[F].pure(successWith(Ok)(User("post", 27)))
   val postB: User => F[Result[User]] = user => Applicative[F].pure(successWith(Ok)(user))
   val delete: List[String] => F[Result[User]] = reasons => {
-    println(reasons)
-    Applicative[F].pure(successWith(Ok)(User("joe", 27)))
+    Applicative[F].pure(successWith(Ok)(User(reasons.mkString(","), 27)))
   }
   val code200: () => F[Result[String]] = () => Applicative[F].pure(successWith(Ok)(""))
   val code400: () => F[Result[String]] = () => Applicative[F].pure(errorWith(BadRequest, "meh"))

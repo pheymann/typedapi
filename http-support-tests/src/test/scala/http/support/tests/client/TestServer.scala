@@ -50,6 +50,15 @@ object TestServer {
 
       Ok(User("joe", 27))
 
+    case req @ GET -> Root / "header" / "client" / "coll" =>
+      val headers = req.headers.toList
+      val values  = headers.filter(_.name.value.contains("coll"))
+
+      if (values.isEmpty)
+        throw new IllegalArgumentException("no header collection ")
+
+      Ok(User(values.mkString(","), 27))
+
     case req @ GET -> Root / "header" / "input" / "client" =>
       val headers = req.headers.toList
       val value   = headers.find(_.name.value == "Hello").get.value
