@@ -179,7 +179,19 @@ You have to send static headers from the client-side but not server side? Here y
 := :> "header" :> "client" :> "fixed" :> Client.Header("consumer", "me") :> Get[Json, A]
 
 // function
-api(Get[Json, A], Root / "header" / "client", headers = Headers.client("consumer", "me"))
+api(Get[Json, A], Root / "header" / "client" / "fixed", headers = Headers.client("consumer", "me"))
+```
+
+#### Client-Side: Header collections
+You can send header collections (`Map[String, V]`) as a single argument:
+
+```Scala
+// GET /header/client/coll {headers: a:b:...}
+//dsl
+:= :> "header" :> "client" :> "coll" :> Client.Coll[Int] :> Get[Json, A]
+
+//function
+api(Get[Json, A], Root / "header" / "client" / "coll", headers = Headers.clientColl[Int])
 ```
 
 #### Server-Side: send Headers
