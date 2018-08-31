@@ -35,7 +35,9 @@ final case class HeaderListBuilder[H <: HList]() {
   }
   def client[V]: ClientWitnessDerivation[V] = new ClientWitnessDerivation[V]
   
-def client[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[ClientHeaderElement[K, V] :: H] = HeaderListBuilder()
+  def client[K, V](kWit: Witness.Lt[K], vWit: Witness.Lt[V]): HeaderListBuilder[ClientHeaderElement[K, V] :: H] = HeaderListBuilder()
+
+  def clientColl[V]: HeaderListBuilder[ClientHeaderCollParam[V] :: H] = HeaderListBuilder()
 
   final class ServerMatchWitnessDerivation[V] {
     def apply[K](wit: Witness.Lt[K]): HeaderListBuilder[ServerHeaderMatchParam[K, V] :: H] = HeaderListBuilder()

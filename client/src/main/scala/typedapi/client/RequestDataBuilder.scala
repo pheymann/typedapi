@@ -117,6 +117,18 @@ trait RequestDataBuilderLowPrio {
       }
     }
 
+  implicit def clientHeaderCollInputCompiler[V, T <: HList, KIn <: HList, VIn <: HList, M <: MethodType, O]
+      (implicit compiler: RequestDataBuilder[T, KIn, VIn, M, O]) =
+    new RequestDataBuilder[ClientHeaderCollInput :: T, KIn, Map[String, V] :: VIn, M, O] {
+      type Out = compiler.Out
+
+      def apply(inputs: Map[String, V] :: VIn, uri: Builder[String, List[String]], queries: Map[String, List[String]], headers: Map[String, String]): Out = {
+        val coll = inputs.head.mapValues(_.toString)
+
+        compiler(inputs.tail, uri, queries, coll ++ headers)
+      }
+    }
+
   type Data             = List[String] :: Map[String, List[String]] :: Map[String, String] :: HNil
   type DataWithBody[Bd] = List[String] :: Map[String, List[String]] :: Map[String, String] :: Bd :: HNil
 

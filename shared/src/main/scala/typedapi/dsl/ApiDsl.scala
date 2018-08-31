@@ -22,8 +22,11 @@ sealed trait HeaderOps[H <: HList] {
 
   def :>[K, V](header: TypeCarrier[HeaderParam[K, V]]): InputHeaderCons[HeaderParam[K, V] :: H] = InputHeaderCons()
   def :>[K, V](fixed: TypeCarrier[FixedHeaderElement[K, V]]): FixedHeaderCons[FixedHeaderElement[K, V] :: H] = FixedHeaderCons()
+
   def :>[K, V](client: TypeCarrier[ClientHeaderElement[K, V]]): ClientHeaderElCons[ClientHeaderElement[K, V] :: H] = ClientHeaderElCons()
   def :>[K, V](client: TypeCarrier[ClientHeaderParam[K, V]]): ClientHeaderParamCons[ClientHeaderParam[K, V] :: H] = ClientHeaderParamCons()
+  def :>[V](client: TypeCarrier[ClientHeaderCollParam[V]]): ClientHeaderCollParamCons[ClientHeaderCollParam[V] :: H] = ClientHeaderCollParamCons()
+
   def :>[K, V](server: TypeCarrier[ServerHeaderMatchParam[K, V]]): ServerHeaderMatchParamCons[ServerHeaderMatchParam[K, V] :: H] = ServerHeaderMatchParamCons()
   def :>[K, V](server: TypeCarrier[ServerHeaderSendElement[K, V]]): ServerHeaderSendElCons[ServerHeaderSendElement[K, V] :: H] = ServerHeaderSendElCons()
 }
@@ -59,6 +62,7 @@ final case class InputHeaderCons[H <: HList]() extends HeaderCons[H]
 final case class FixedHeaderCons[H <: HList]() extends HeaderCons[H]
 final case class ClientHeaderElCons[H <: HList]() extends HeaderCons[H]
 final case class ClientHeaderParamCons[H <: HList]() extends HeaderCons[H]
+final case class ClientHeaderCollParamCons[H <: HList]() extends HeaderCons[H]
 final case class ServerHeaderMatchParamCons[H <: HList]() extends HeaderCons[H]
 final case class ServerHeaderSendElCons[H <: HList]() extends HeaderCons[H]
 
