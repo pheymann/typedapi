@@ -5,11 +5,11 @@ import shapeless._
 import shapeless.labelled.FieldType
 
 // compilation-only test
-final class ApiTransformerSpec extends TypeLevelFoldLeftLowPrio with ApiTransformer {
+final class ApiTransformerSpec {
 
   case class Foo()
 
-  def testCompile[H <: HList, Out](implicit folder: TypeLevelFoldLeft.Aux[H, Unit, Out]): TypeLevelFoldLeft.Aux[H, Unit, Out] = 
+  def testCompile[H <: HList, Out](implicit folder: TplLeftFolder.Aux[ApiTransformer.type, H, Unit, Out]): TplLeftFolder.Aux[ApiTransformer.type, H, Unit, Out] = 
     folder
 
   val pathW = Witness("test")

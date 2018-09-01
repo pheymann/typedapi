@@ -3,6 +3,12 @@ package typedapi.client
 import typedapi.shared._
 import shapeless._
 
+object AFilterServerElements extends TplPoly0 {
+
+  implicit def filterServerHeaderMatch[K, V] = at[ServerHeaderMatchParam[K, V]]
+  implicit def filterServerHeaderSend[K, V]  = at[ServerHeaderSendElement[K, V]]
+}
+
 //TODO replace with Typelevelfoldleft
 sealed trait FilterServerElements[H <: HList] {
 

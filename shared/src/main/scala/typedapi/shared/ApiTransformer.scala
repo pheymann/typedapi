@@ -55,9 +55,7 @@ trait MethodToStringLowPrio {
   * val trans: ("name".type :: SegmentInput :: HNil, "name".type :: HNil, String :: HNil], Field[Json, GetCall], Foo)
   * ```
   */
-trait ApiTransformer {
-
-  import TypeLevelFoldFunction.at
+object ApiTransformer extends TplPoly2 {
 
   implicit def pathElementTransformer[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Out] = 
     at[PathElement[S], (El, KIn, VIn, M, Out), (S :: El, KIn, VIn, M, Out)]
@@ -105,4 +103,6 @@ trait ApiTransformer {
     at[PostWithBodyElement[BMT, Bd, MT, A], Unit, (HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PostWithBodyCall, FieldType[MT, A])]
 
   implicit def deleteTransformer[MT <: MediaType, A] = at[DeleteElement[MT, A], Unit, (HNil, HNil, HNil, DeleteCall, FieldType[MT, A])]
+
+  implicit def hlistTransformer[H <: HList, In <: HList, Out](implicit folder: TplLeftFolder.Aux[this.type, H, Unit, Out]) = at[H, In, Out :: In]
 }
