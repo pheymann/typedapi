@@ -127,8 +127,8 @@ final class ExecutableCompositionDerivation[F[_]] {
   }
 
   def apply[H <: HList, FH <: HList, Fold <: HList, Fns <: HList, FnsTup, Consts <: HList, Out <: HList, Drv](apiLists: CompositionCons[H])
-                                      (implicit filter: FilterClientElementsList.Aux[H, FH],
-                                                folder: TypeLevelFoldLeftList.Aux[FH, Fold],
+                                      (implicit filter: TplRightFolder.Aux[FilterClientElements.type, H, HNil, FH],
+                                                folders: Lazy[TplRightFolder.Aux[ApiTransformer.type, FH, HNil, Fold]],
                                                 pre: PrecompileEndpoint.Aux[F, Fold, Fns, Consts],
                                                 merge: MergeToEndpoint.Aux[F, Consts, Fns, Out],
                                                 derived: FnFromProduct.Aux[Fns => Out, Drv]): Derivation[Fold, Fns, Consts, Out, Drv] =

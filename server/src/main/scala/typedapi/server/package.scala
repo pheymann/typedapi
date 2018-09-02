@@ -6,10 +6,7 @@ import shapeless.ops.hlist.Mapper
 
 import scala.language.higherKinds
 
-package object server extends TypeLevelFoldLeftLowPrio 
-                      with TypeLevelFoldLeftListLowPrio 
-                      with WitnessToStringLowPrio
-                      with ApiTransformer
+package object server extends WitnessToStringLowPrio
                       with EndpointResult {
 
   def derive[F[_]]: ExecutableDerivation[F] = new ExecutableDerivation[F]
@@ -32,7 +29,8 @@ package object server extends TypeLevelFoldLeftLowPrio
 
   object endpointToServe extends Poly1 {
 
-    implicit def default[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut](implicit executor: EndpointExecutor[El, KIn, VIn, M, ROut, F, FOut]) = 
+    implicit def default[El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut]
+        (implicit executor: EndpointExecutor[El, KIn, VIn, M, ROut, F, FOut]) =
       at[Endpoint[El, KIn, VIn, M, ROut, F, FOut]] { endpoint =>
         new Serve[executor.R, executor.Out] {
           def options(eReq: EndpointRequest): Option[(String, Map[String, String])] = {
@@ -47,6 +45,9 @@ package object server extends TypeLevelFoldLeftLowPrio
       }
   }
 
-  def mount[S, End <: HList, Serv <: HList, Req, Resp, Out](server: ServerManager[S], end: End)(implicit mapper: Mapper.Aux[endpointToServe.type, End, Serv], toList: ServeToList[Serv, Req, Resp], mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
+  def mount[S, End <: HList, Serv <: HList, Req, Resp, Out](server: ServerManager[S], end: End)
+      (implicit mapper: Mapper.Aux[endpointToServe.type, End, Serv], 
+                toList: ServeToList[Serv, Req, Resp], 
+                mounting: MountEndpoints.Aux[S, Req, Resp, Out]): Out =
     mounting(server, toList(end.map(endpointToServe)))
 }

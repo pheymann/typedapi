@@ -103,6 +103,4 @@ object ApiTransformer extends TplPoly2 {
     at[PostWithBodyElement[BMT, Bd, MT, A], Unit, (HNil, FieldType[BMT, BodyField.T] :: HNil, Bd :: HNil, PostWithBodyCall, FieldType[MT, A])]
 
   implicit def deleteTransformer[MT <: MediaType, A] = at[DeleteElement[MT, A], Unit, (HNil, HNil, HNil, DeleteCall, FieldType[MT, A])]
-
-  implicit def hlistTransformer[H <: HList, In <: HList, Out](implicit folder: TplLeftFolder.Aux[this.type, H, Unit, Out]) = at[H, In, Out :: In]
 }
