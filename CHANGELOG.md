@@ -1,7 +1,8 @@
 ### 0.2.0
  - internal: separated decoded and raw requests with `RawApiRequest` and `ApiRequest`
  - fixed `implicitNotFound` message for `ApiRequest`
- - implemented change suggested in #31 (ClientManager Enhancements)
+ - implemented [#31](https://github.com/pheymann/typedapi/issues/31) [#35](https://github.com/pheymann/typedapi/issues/35) [#36](https://github.com/pheymann/typedapi/issues/36)
+ 
 
 ### 0.1.0
  - internal cleanups and refactorings
