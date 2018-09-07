@@ -15,6 +15,7 @@ package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio wit
 
     def Header    = new PairTypeFromWitnesses[ClientHeaderElement]
     def Header[V] = new PairTypeFromWitnessKey[ClientHeaderParam, V]
+    def Coll[V]   = TypeCarrier[ClientHeaderCollParam[V]]()
   }
 
   object Server {

@@ -79,9 +79,9 @@ final class RouteExtractorSpec extends Specification {
 
       val ext6 = extract(:= :> "foo" :> Server.Match[Int]("age") :> Get[Json, Foo])
 
-      ext6(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0")), HNil) === Right(Set(0) :: HNil)
-      ext6(EndpointRequest("GET", List("foo"), Map.empty, Map("age-and-what-not" -> "0")), HNil) === Right(Set(0) :: HNil)
-      ext6(EndpointRequest("GET", List("foo"), Map.empty, Map("nope" -> "0")), HNil) === Right(Set.empty :: HNil)
+      ext6(EndpointRequest("GET", List("foo"), Map.empty, Map("age" -> "0")), HNil) === Right(Map("age" ->0) :: HNil)
+      ext6(EndpointRequest("GET", List("foo"), Map.empty, Map("age-and-what-not" -> "0")), HNil) === Right(Map("age-and-what-not" -> 0) :: HNil)
+      ext6(EndpointRequest("GET", List("foo"), Map.empty, Map("nope" -> "0")), HNil) === Right(Map.empty :: HNil)
       ext6(EndpointRequest("GET", List("foo"), Map.empty, Map("age-" -> "hello")), HNil) === RouteExtractor.BadRequestE("header 'age-' has not type Int")
     }
 

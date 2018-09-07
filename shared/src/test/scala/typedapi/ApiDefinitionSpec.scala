@@ -36,7 +36,9 @@ object ApiDefinitionSpec {
   testCompile(Headers add(fooW, testW))[FixedHeaderElement[fooW.T, testW.T] :: HNil]
   testCompile(Headers client(fooW, testW))[ClientHeaderElement[fooW.T, testW.T] :: HNil]
   testCompile(Headers client[String](fooW))[ClientHeaderParam[fooW.T, String] :: HNil]
+  testCompile(Headers.clientColl[String])[ClientHeaderCollParam[String] :: HNil]
   testCompile(Headers serverSend(fooW, testW))[ServerHeaderSendElement[fooW.T, testW.T] :: HNil]
+  testCompile(Headers serverMatch[String](fooW))[ServerHeaderMatchParam[fooW.T, String] :: HNil]
   testCompile(Headers serverMatch[String](fooW))[ServerHeaderMatchParam[fooW.T, String] :: HNil]
 
   // methods

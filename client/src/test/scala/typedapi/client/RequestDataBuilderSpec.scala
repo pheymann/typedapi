@@ -68,6 +68,8 @@ final class RequestDataBuilderSpec extends Specification {
         api4(0).run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "0"))
         val api5 = derive(:= :> Client.Header('i0, 'i1) :> Get[Json, ReqInput])
         api5().run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "i0" -> "i1"))
+        val api6 = derive(:= :> Client.Coll[Int] :> Get[Json, ReqInput])
+        api6(Map("hello" -> 5)).run[Id](cm) === ReqInput("GET", Nil, Map(), Map("Accept" -> "application/json", "hello" -> "5"))
       }
 
       "ignore server elements" >> {

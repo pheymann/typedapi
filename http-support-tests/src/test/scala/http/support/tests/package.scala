@@ -12,6 +12,7 @@ package object tests {
     (:= :> "header" :> "fixed" :> Header("Hello", "*") :> Get[Json, User]) :|:
     (:= :> "header" :> "input" :> "client" :> Client.Header[String]("Hello") :> Get[Json, User]) :|:
     (:= :> "header" :> "client" :> Client.Header("Hello", "*") :> Get[Json, User]) :|:
+    (:= :> "header" :> "client" :> "coll" :> Client.Coll[String] :> Get[Json, User]) :|:
     (:= :> "header" :> "server" :> "match" :> Server.Match[String]("test") :> Get[Json, User]) :|:
     (:= :> "header" :> "server" :> "send" :> Server.Send("Hello", "*") :> Get[Json, User]) :|:
     (:= :> Get[Json, User]) :|:
