@@ -1,4 +1,5 @@
 ### 0.2.0
+ - `StatusCodes` and `MediaTypes` are in distinct `object`s, thus, have to be imported explicitly
  - improved Ammonite integration
  - internal: separated decoded and raw requests with `RawApiRequest` and `ApiRequest`
  - fixed `implicitNotFound` message for `ApiRequest`
