@@ -40,7 +40,7 @@ deriveAll[IO](Api).from(
   name =>
       val user: User = ???
       
-      successWith(Ok)(user) // set code
+      successWith(StatusCodes.Ok)(user) // set code
   ...
 }
 ```
@@ -51,7 +51,7 @@ deriveAll[IO](Api).from(
   name =>
       val user: Option[User] = ???
       
-      user.fold(errorWith(NotFound, s"no user $id")(user => success(user))
+      user.fold(errorWith(StatusCodes.NotFound, s"no user $id")(user => success(user))
   ...
 }
 ```
