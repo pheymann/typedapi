@@ -1,7 +1,15 @@
 ### 0.2.0
+ - improved Ammonite integration
  - internal: separated decoded and raw requests with `RawApiRequest` and `ApiRequest`
  - fixed `implicitNotFound` message for `ApiRequest`
  - implemented [#31](https://github.com/pheymann/typedapi/issues/31) [#35](https://github.com/pheymann/typedapi/issues/35) [#36](https://github.com/pheymann/typedapi/issues/36)
+ - server endpoints have to define a response code:
+ ```Scala
+ derive[IO](Api) { input =>
+   success(/*...*/)
+      ^
+ }
+ ```
  
 
 ### 0.1.0
