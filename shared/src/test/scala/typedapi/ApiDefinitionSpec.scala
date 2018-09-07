@@ -8,6 +8,8 @@ import SpecUtil._
 // compilation-only test
 object ApiDefinitionSpec {
 
+  import MediaTypes._
+
   case class Foo()
 
   val testW  = Witness("test")

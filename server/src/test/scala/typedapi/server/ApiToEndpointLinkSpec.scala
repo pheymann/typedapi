@@ -7,6 +7,8 @@ import org.specs2.mutable.Specification
 
 final class ApiToEndpointLinkSpec extends Specification {
 
+  import StatusCodes._
+
   case class Foo(name: String)
 
   "link api definitions to endpoint functions" >> { 

@@ -10,6 +10,8 @@ import scala.language.higherKinds
 
 final class ServeAndMountSpec extends Specification {
 
+  import StatusCodes._
+
   case class Foo(name: String)
 
   sealed trait Req

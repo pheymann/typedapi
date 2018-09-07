@@ -1,6 +1,6 @@
 package http.support.tests.server
 
-import typedapi.server.{Result, successWith, errorWith, Ok, BadRequest, InternalServerError}
+import typedapi.server._
 import http.support.tests.{User, UserCoding}
 import org.http4s._
 import org.http4s.dsl.io._
@@ -13,6 +13,8 @@ import org.specs2.mutable.Specification
 import scala.language.higherKinds
 
 abstract class ServerSupportSpec[F[_]: Applicative] extends Specification {
+
+  import StatusCodes._
 
   sequential
 

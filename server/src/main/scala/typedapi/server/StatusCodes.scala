@@ -5,13 +5,9 @@ final case class ErrorCode(statusCode: Int) extends AnyVal
 
 final case class HttpError(code: ErrorCode, message: String)
 
-trait EndpointResult {
+object StatusCodes {
 
-  type Result[A] = Either[HttpError, (SuccessCode, A)]
-
-  final def successWith[A](code: SuccessCode)(a: A): Result[A] = Right(code -> a)
-  final def success[A](a: A): Result[A] = successWith(Ok)(a)
-
+  // success codes
   final val Continue           = SuccessCode(100)
   final val SwitchingProtocols = SuccessCode(101)
   final val Processing         = SuccessCode(102)
@@ -36,8 +32,7 @@ trait EndpointResult {
   final val TemporaryRedirect = SuccessCode(307)
   final val PermanentRedirect = SuccessCode(308)
 
-  final def errorWith[A](code: ErrorCode, message: String): Result[A] = Left(HttpError(code, message))
-
+  // error codes
   final val BadRequest                      = ErrorCode(400)
   final val Unauthorized                    = ErrorCode(401)
   final val PaymentRequired                 = ErrorCode(402)

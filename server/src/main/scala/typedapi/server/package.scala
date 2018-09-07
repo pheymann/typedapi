@@ -9,8 +9,16 @@ import scala.language.higherKinds
 package object server extends TypeLevelFoldLeftLowPrio 
                       with TypeLevelFoldLeftListLowPrio 
                       with WitnessToStringLowPrio
-                      with ApiTransformer
-                      with EndpointResult {
+                      with ApiTransformer {
+
+  val SC = StatusCodes
+
+  type Result[A] = Either[HttpError, (SuccessCode, A)]
+
+  def successWith[A](code: SuccessCode)(a: A): Result[A] = Right(code -> a)
+  def success[A](a: A): Result[A] = successWith(StatusCodes.Ok)(a)
+
+  def errorWith[A](code: ErrorCode, message: String): Result[A] = Left(HttpError(code, message))
 
   def derive[F[_]]: ExecutableDerivation[F] = new ExecutableDerivation[F]
 
