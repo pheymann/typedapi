@@ -31,10 +31,14 @@ package object akkahttp {
 
       def apply(req: R, eReq: EndpointRequest, endpoint: Endpoint[El, KIn, VIn, M, VIn, Future, FOut]): Either[ExtractionError, Out] = {
         extract(eReq, endpoint).right.map { extracted =>
-          execute(extracted, endpoint).flatMap { response =>
-            Marshal(response).to[ResponseEntity].map { marshalledBody =>
-              HttpResponse(entity = marshalledBody, headers = getHeaders(endpoint.headers))
-            }
+          execute(extracted, endpoint).flatMap {
+            case Right((code, response)) =>
+              Marshal(response).to[ResponseEntity].map { marshalledBody =>
+                HttpResponse(status = StatusCode.int2StatusCode(code.statusCode), entity = marshalledBody, headers = getHeaders(endpoint.headers))
+              }
+
+            case Left(HttpError(code, msg)) =>
+              Future.successful(HttpResponse(status = StatusCode.int2StatusCode(code.statusCode), entity = msg, headers = getHeaders(endpoint.headers)))
           }
         }
       }
@@ -57,10 +61,16 @@ package object akkahttp {
       extract(eReq, endpoint).right.map { case (_, extracted) =>
         for {
           body     <- Unmarshal(req.entity).to[Bd]
-          response <- execute(extracted, body, endpoint)
+          response <- execute(extracted, body, endpoint).flatMap {
+            case Right((code, response)) =>
+              Marshal(response).to[ResponseEntity].map { marshalledBody =>
+                HttpResponse(status = StatusCode.int2StatusCode(code.statusCode), entity = marshalledBody, headers = getHeaders(endpoint.headers))
+              }
 
-          entity <- Marshal(response).to[ResponseEntity]
-        } yield HttpResponse(entity = entity, headers = getHeaders(endpoint.headers))
+            case Left(HttpError(code, msg)) =>
+              Future.successful(HttpResponse(status = StatusCode.int2StatusCode(code.statusCode), entity = msg, headers = getHeaders(endpoint.headers)))
+          }
+        } yield response
       }
     }
   }

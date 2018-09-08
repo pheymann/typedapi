@@ -30,7 +30,7 @@ final class AkkaHttpClientSupportSpec(implicit ee: ExecutionEnv) extends Specifi
   val server = TestServer.start()
 
   "akka http client support" >> {
-    val (p, s, q, header, fixed, clInH, clFixH, serMatchH, serSendH, m0, m1, m2, m3, m4, m5) = deriveAll(Api)
+    val (p, s, q, header, fixed, clInH, clFixH, clColl, serMatchH, serSendH, m0, m1, m2, m3, m4, m5, _, _, _) = deriveAll(Api)
 
     "paths and segments" >> {
       p().run[Future](cm) must beEqualTo(User("foo", 27)).awaitFor(timeout)
@@ -46,6 +46,7 @@ final class AkkaHttpClientSupportSpec(implicit ee: ExecutionEnv) extends Specifi
       fixed().run[Future](cm) must beEqualTo(User("joe", 27)).awaitFor(timeout)
       clInH("jim").run[Future](cm) must beEqualTo(User("jim", 27)).awaitFor(timeout)
       clFixH().run[Future](cm) must beEqualTo(User("joe", 27)).awaitFor(timeout)
+      clColl(Map("coll" -> "joe", "collect" -> "jim")).run[Future](cm) must beEqualTo(User("coll: joe,collect: jim", 27)).awaitFor(timeout)
       serMatchH().run[Future](cm) must beEqualTo(User("joe", 27)).awaitFor(timeout)
       serSendH().run[Future](cm) must beEqualTo(User("joe", 27)).awaitFor(timeout)
     }

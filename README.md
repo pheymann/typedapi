@@ -1,10 +1,7 @@
-
 [![Build Status](https://travis-ci.org/pheymann/typedapi.svg?branch=master)](https://travis-ci.org/pheymann/typedapi)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-client_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.pheymann/typedapi-shared_2.12)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pheymann/Lobby)
 [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org/)
-
-**Stable Version**: 0.1.0, **Current Development**: branch [0.2.0-release](https://github.com/pheymann/typedapi/tree/0.2.0-release)
 
 # Typedapi
 Define type safe APIs and let the Scala compiler do the rest:
@@ -51,8 +48,8 @@ fetch("joe").run[IO](cm): IO[User]
 ```Scala
 import typedapi.server._
 
-val fetch: String => IO[User] = name => ???
-val create: User => IO[User] = user => ???
+val fetch: String => IO[Result[User]] = name => findUserIO(name).map(success)
+val create: User => IO[Result[User]] = user => createUserIO(user).map(success)
 
 val endpoints = deriveAll[IO](MyApi).from(fetch, create)
 
@@ -111,6 +108,28 @@ You can also build it on your machine:
 git clone https://github.com/pheymann/typedapi.git
 cd typedapi
 sbt "+ publishLocal"
+```
+
+## Ammonite
+Typedapi also offers an improved experience for [Ammonite](http://ammonite.io/#Ammonite-REPL) and [ScalaScripts](http://ammonite.io/#ScalaScripts):
+
+```Scala
+import $ivy.`com.github.pheymann::typedapi-ammonite-client:<version>`
+
+import typedapi._
+import client._
+import amm._
+
+val Readme = api(Get[`Text/html`, String], Root / "pheymann" / "typedapi" / "master" / "README.md")
+val readme = derive(Readme)
+
+// gives you the raw scalaj-http response
+val cm = clientManager("https://raw.githubusercontent.com")
+val response = get().run[Id].raw(cm)
+
+response.body
+response.headers
+...
 ```
 
 ## Documentation

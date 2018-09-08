@@ -70,6 +70,43 @@ implicit val encoder = Encoder[Future, User] { user =>
 }
 ```
 
+### Ammonite
+There is special support for [Ammonite](http://ammonite.io/#Ammonite-REPL) and [ScalaScripts](http://ammonite.io/#ScalaScripts). It lets you tinker with the raw response and reduces the amount of imports you have to do:
+
+```Scala
+import $ivy.`com.github.pheymann::typedapi-ammonite-client:<version>`
+
+import typedapi._
+import client._
+import amm._
+
+val cm = clientManager("http://localhost", 9000)
+
+final case class User(name: String, age: Int)
+
+val Api = api(Get[Json, User], Root / "user" / "url")
+
+val get = derive(Api)
+
+// gives you the raw scalaj-http response
+val response = get().run[Id].raw(cm)
+
+response.body
+response.headers
+...
+```
+
+No `Decoder` needed if you use `raw(cm)`. Under the covers it uses scalaj-http as a client library.
+
+It can be, that Ammonite isn't able to load `com.dwijnand:sbt-compat:1.0.0`. If that is the case execute the following command:
+
+```Scala
+interp.repositories() ++= Seq(coursier.ivy.IvyRepository.fromPattern(
+  "https://dl.bintray.com/dwijnand/sbt-plugins/" +:
+  coursier.ivy.Pattern.default
+))
+```
+
 ### ScalaJS
 If you want to compile to [ScalaJS](https://www.scala-js.org/) you have to use the [Ajax](https://github.com/scala-js/scala-js-dom/blob/master/src/main/scala/org/scalajs/dom/ext/Extensions.scala#L253) with:
 

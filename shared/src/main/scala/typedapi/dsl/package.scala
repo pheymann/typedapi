@@ -2,7 +2,10 @@ package typedapi
 
 import typedapi.shared._
 
-package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio with MediaTypes {
+package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio {
+
+  val MediaTypes = typedapi.shared.MediaTypes
+  val MT         = typedapi.shared.MediaTypes
 
   def := = EmptyCons
 
@@ -15,6 +18,7 @@ package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio wit
 
     def Header    = new PairTypeFromWitnesses[ClientHeaderElement]
     def Header[V] = new PairTypeFromWitnessKey[ClientHeaderParam, V]
+    def Coll[V]   = TypeCarrier[ClientHeaderCollParam[V]]()
   }
 
   object Server {
@@ -23,8 +27,8 @@ package object dsl extends MethodToReqBodyLowPrio with MethodToStringLowPrio wit
     def Match[V]  = new PairTypeFromWitnessKey[ServerHeaderMatchParam, V]
   }
 
-  type Json  = `Application/json`
-  type Plain = `Text/plain`
+  type Json  = MT.`Application/json`
+  type Plain = MT.`Text/plain`
 
   def ReqBody[MT <: MediaType, A] = TypeCarrier[ReqBodyElement[MT, A]]()
   def Get[MT <: MediaType, A]     = TypeCarrier[GetElement[MT, A]]()

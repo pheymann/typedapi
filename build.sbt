@@ -47,7 +47,7 @@ val `compiler-2.11` = Seq(
 
 lazy val commonSettings = Seq(
   organization  := "com.github.pheymann",
-  version       := "0.1.0",
+  version       := "0.2.0",
   crossScalaVersions := Seq("2.11.11", "2.12.4"),
   scalaVersion       := "2.12.4",
   scalacOptions      ++= { CrossVersion.partialVersion(scalaVersion.value) match {
@@ -99,7 +99,8 @@ lazy val typedapi = project
     `akka-http-server`,
     `js-client`,
     `scalaj-http-client`,
-    `http-support-tests`
+    `http-support-tests`,
+    `ammonite-client-support`
   )
 
 lazy val shared = crossProject.crossType(CrossType.Pure)
@@ -145,8 +146,6 @@ lazy val `http4s-client` = project
     mavenSettings,
     name := "typedapi-http4s-client",
     libraryDependencies ++= Dependencies.http4sClient,
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(`client-jvm`)
 
@@ -157,8 +156,6 @@ lazy val `http4s-server` = project
     mavenSettings,
     name := "typedapi-http4s-server",
     libraryDependencies ++= Dependencies.http4sServer,
-
-    addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
   )
   .dependsOn(server)
 
@@ -213,3 +210,13 @@ lazy val `http-support-tests` = project
     libraryDependencies ++= Dependencies.httpSupportTests
   )
   .dependsOn(`http4s-client`, `http4s-server`, `akka-http-client`, `akka-http-server`, `scalaj-http-client`)
+
+lazy val `ammonite-client-support` = project
+  .in(file("ammonite-client-support"))
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-ammonite-client",
+    libraryDependencies ++= Dependencies.ammoniteSupport
+  )
+  .dependsOn(`scalaj-http-client`)

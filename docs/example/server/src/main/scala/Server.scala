@@ -10,23 +10,38 @@ object Server {
   implicit val decoder = jsonOf[IO, User]
   implicit val encoder = jsonEncoderOf[IO, User]
 
-  val get: () => IO[User] = () => IO.pure(User("Joe", 42))
-  val put: () => IO[User] = get
-  val post: () => IO[User] = get
-  val delete: () => IO[User] = get
+  val get: () => IO[Result[User]] = () => IO.pure(success(User("Joe", 42)))
+  val put: () => IO[Result[User]] = get
+  val post: () => IO[Result[User]] = get
+  val delete: () => IO[Result[User]] = get
 
-  val path: () => IO[User] = get
+  val path: () => IO[Result[User]] = get
 
-  val putBody: User => IO[User] = user => IO.pure(user)
-  val segment: String => IO[User] = name => IO.pure(User(name, 42))
-  val search: String => IO[User] = segment
+  val putBody: User => IO[Result[User]] = user => IO.pure(success(user))
+  val segment: String => IO[Result[User]] = name => IO.pure(success(User(name, 42)))
+  val search: String => IO[Result[User]] = segment
 
-  val header: String => IO[User] = consumer => IO.pure(User("found: " + consumer, 42))
-  val fixed: () => IO[User] = get
-  val client: () => IO[User] = get
-  val matching: Set[String] => IO[User] = matches => IO.pure(User(matches.mkString(""), 42))
+  val header: String => IO[Result[User]] = consumer => IO.pure(success(User("found: " + consumer, 42)))
+  val fixed: () => IO[Result[User]] = get
+  val client: () => IO[Result[User]] = get
+  val coll: () => IO[Result[User]] = get
+  val matching: Map[String, String] => IO[Result[User]] = matches => IO.pure(success(User(matches.mkString(","), 42)))
 
-  val endpoints = deriveAll[IO](FromDefinition.MyApi).from(get, put, post, delete, path, putBody, segment, search, header, fixed, client, matching)
+  val endpoints = deriveAll[IO](FromDefinition.MyApi).from(
+    get, 
+    put, 
+    post, 
+    delete, 
+    path, 
+    putBody, 
+    segment, 
+    search, 
+    header, 
+    fixed, 
+    client, 
+    coll, 
+    matching
+  )
 
   def main(args: Array[String]): Unit = {
     import org.http4s.server.blaze.BlazeBuilder

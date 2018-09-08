@@ -7,6 +7,8 @@ import shapeless._
 // compilation-only test
 object ApiDslSpec {
 
+  import MediaTypes._
+
   case class Foo()
 
   val testW = Witness("test")

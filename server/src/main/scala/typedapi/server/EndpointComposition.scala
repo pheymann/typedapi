@@ -49,8 +49,8 @@ trait PrecompileEndpointLowPrio {
     (implicit extractor: RouteExtractor.Aux[El, KIn, VIn, M, HNil, ROut],
               methodShow: MethodToString[M],
               serverHeaders: ServerHeaderExtractor[El],
-              vinToFn: FnFromProduct.Aux[VIn => F[Out], Fn],
-              fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Out]]],
+              vinToFn: FnFromProduct.Aux[VIn => F[Result[Out]], Fn],
+              fnToVIn: Lazy[FnToProduct.Aux[Fn, VIn => F[Result[Out]]]],
               next: PrecompileEndpoint[F, T]) =
     new PrecompileEndpoint[F, (El, KIn, VIn, M, FieldType[MT, Out]) :: T] {
       type Fns    = Fn :: next.Fns
@@ -60,7 +60,7 @@ trait PrecompileEndpointLowPrio {
         def apply(fn: Fn): Endpoint[El, KIn, VIn, M, ROut, F, Out] = new Endpoint[El, KIn, VIn, M, ROut, F, Out](methodShow.show, extractor, serverHeaders(Map.empty)) {
           private val fin = fnToVIn.value(fn)
 
-          def apply(in: VIn): F[Out] = fin(in)
+          def apply(in: VIn): F[Result[Out]] = fin(in)
         }
       }
 

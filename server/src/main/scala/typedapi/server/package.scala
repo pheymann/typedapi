@@ -11,6 +11,15 @@ package object server extends TypeLevelFoldLeftLowPrio
                       with WitnessToStringLowPrio
                       with ApiTransformer {
 
+  val SC = StatusCodes
+
+  type Result[A] = Either[HttpError, (SuccessCode, A)]
+
+  def successWith[A](code: SuccessCode)(a: A): Result[A] = Right(code -> a)
+  def success[A](a: A): Result[A] = successWith(StatusCodes.Ok)(a)
+
+  def errorWith[A](code: ErrorCode, message: String): Result[A] = Left(HttpError(code, message))
+
   def derive[F[_]]: ExecutableDerivation[F] = new ExecutableDerivation[F]
 
   def mount[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, ROut, F[_], FOut, Req, Resp, Out]

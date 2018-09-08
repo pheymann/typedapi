@@ -27,7 +27,7 @@ final class ScalajHttpClientSupportSpec extends Specification {
   val server = TestServer.start()
 
   "http4s client support" >> {
-    val (p, s, q, header, fixed, clInH, clFixH, serMatchH, serSendH, m0, m1, m2, m3, m4, m5) = deriveAll(Api)
+    val (p, s, q, header, fixed, clInH, clFixH, clColl, serMatchH, serSendH, m0, m1, m2, m3, m4, m5, _, _, _) = deriveAll(Api)
 
     "paths and segments" >> {
       p().run[Blocking](cm) === Right(User("foo", 27))
@@ -43,6 +43,7 @@ final class ScalajHttpClientSupportSpec extends Specification {
       fixed().run[Blocking](cm) === Right(User("joe", 27))
       clInH("jim").run[Blocking](cm) === Right(User("jim", 27))
       clFixH().run[Blocking](cm) === Right(User("joe", 27))
+      clColl(Map("coll" -> "joe", "collect" -> "jim")).run[Blocking](cm) === Right(User("collect: jim,coll: joe", 27))
       serMatchH().run[Blocking](cm) === Right(User("joe", 27))
       serSendH().run[Blocking](cm) === Right(User("joe", 27))
     }
@@ -57,7 +58,7 @@ final class ScalajHttpClientSupportSpec extends Specification {
     }
 
     "raw" >> {
-      m0().run[Blocking].raw(cm).right.map(_.body) === Right("""{"name":"foo","age":27}""")
+      m0().run[Id].raw(cm).body === """{"name":"foo","age":27}"""
     }
 
     step {

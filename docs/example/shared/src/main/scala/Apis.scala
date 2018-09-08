@@ -28,6 +28,7 @@ object FromDsl {
     (:= :> "header" :> Header[String]("consumer") :> Server.Send("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
     (:= :> "header" :> "fixed" :> Header("consumer", "me") :> Server.Send("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
     (:= :> "header" :> "client" :> Client.Header("client", "me") :> Server.Send("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
+    (:= :> "header" :> "client" :> "coll" :> Client.Coll[Int] :> Server.Send("Access-Control-Allow-Origin", "*") :> Get[Json, User]) :|:
     (:= :> "header" :> "server" :> Server.Match[String]("Control-") :> Server.Send("Access-Control-Allow-Origin", "*") :> Get[Json, User])
 }
 
@@ -56,5 +57,6 @@ object FromDefinition {
     api(Get[Json, User], Root / "header", headers = Headers.add[String]("consumer").serverSend("Access-Control-Allow-Origin", "*")) :|:
     api(Get[Json, User], Root / "header" / "fixed", headers = Headers.add("consumer", "me").serverSend("Access-Control-Allow-Origin", "*")) :|:
     api(Get[Json, User], Root / "header" / "client", headers = Headers.client("client", "me").serverSend("Access-Control-Allow-Origin", "*")) :|:
+    api(Get[Json, User], Root / "header" / "client" / "coll", headers = Headers.clientColl[Int].serverSend("Access-Control-Allow-Origin", "*")) :|:
     api(Get[Json, User], Root / "header" / "server", headers = Headers.serverMatch[String]("Control-").serverSend("Access-Control-Allow-Origin", "*"))
 }

@@ -21,6 +21,41 @@ val endpoints = deriveAll[IO](Api).from(
 )
 ```
 
+### Set Status Codes
+#### Success
+```Scala
+deriveAll[IO](Api).from(
+  name =>
+      val user: User = ???
+      
+      success(user) // creates a 200
+  ...
+}
+```
+
+or
+
+```Scala
+deriveAll[IO](Api).from(
+  name =>
+      val user: User = ???
+      
+      successWith(StatusCodes.Ok)(user) // set code
+  ...
+}
+```
+
+#### Error
+```Scala
+deriveAll[IO](Api).from(
+  name =>
+      val user: Option[User] = ???
+      
+      user.fold(errorWith(StatusCodes.NotFound, s"no user $id")(user => success(user))
+  ...
+}
+```
+
 ### Http4s
 If you want to use [http4s](https://github.com/http4s/http4s) as your server backend you have to add the following code:
 
