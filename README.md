@@ -14,9 +14,9 @@ import typedapi.dsl._
 
 val MyApi = 
   // GET {body: User} /fetch/user?{name: String}
-  (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[Json, User]) :|:
+  (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[MT.`application/json`, User]) :|:
   // POST {body: User} /create/user
-  (:= :> "create" :> "user" :> ReqBody[Json, User] :> Post[Json, User])
+  (:= :> "create" :> "user" :> ReqBody[Json, User] :> Post[MT.`application/json`, User])
 ```
 
 And for all the others:
@@ -26,9 +26,13 @@ import typedapi._
 
 val MyApi =
   // GET {body: User} /fetch/user?{name: String}
-  api(method = Get[Json, User], path = Root / "fetch" / "user", queries = Queries add Query[String]('name)) :|:
+  api(method = Get[MT.`application/json`, User], 
+      path = Root / "fetch" / "user", 
+      queries = Queries add Query[String]('name)) :|:
   // POST {body: User} /create/user
-  apiWithBody(method = Post[Json, User], body = ReqBody[Json, User], path = Root / "create" / "user")
+  apiWithBody(method = Post[MT.`application/json`, User], 
+              body = ReqBody[Json, User], 
+              path = Root / "create" / "user")
 ```
 
 ### Client side
@@ -120,7 +124,7 @@ import typedapi._
 import client._
 import amm._
 
-val Readme = api(Get[`Text/html`, String], Root / "pheymann" / "typedapi" / "master" / "README.md")
+val Readme = api(Get[MT.`text/html`, String], Root / "pheymann" / "typedapi" / "master" / "README.md")
 val readme = derive(Readme)
 
 // gives you the raw scalaj-http response
@@ -131,6 +135,8 @@ response.body
 response.headers
 ...
 ```
+
+In case Ammanote cannot resolve `com.dwijnand:sbt-compat:1.0.0` follow [this](https://github.com/pheymann/typedapi/blob/master/docs/ClientCreation.md#ammonite) solution.
 
 ## Documentation
 The documentation is located in [docs](https://github.com/pheymann/typedapi/blob/master/docs) and covers the following topics so far:
