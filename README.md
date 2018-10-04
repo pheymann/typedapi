@@ -7,20 +7,6 @@
 Define type safe APIs and let the Scala compiler do the rest:
 
 ### Api definition
-For the Servant lovers:
-
-```Scala
-import typedapi.dsl._
-
-val MyApi = 
-  // GET {body: User} /fetch/user?{name: String}
-  (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[MT.`application/json`, User]) :|:
-  // POST {body: User} /create/user
-  (:= :> "create" :> "user" :> ReqBody[Json, User] :> Post[MT.`application/json`, User])
-```
-
-And for all the others:
-
 ```Scala
 import typedapi._
 
@@ -33,6 +19,18 @@ val MyApi =
   apiWithBody(method = Post[MT.`application/json`, User], 
               body = ReqBody[Json, User], 
               path = Root / "create" / "user")
+```
+
+And for the Servant lovers:
+
+```Scala
+import typedapi.dsl._
+
+val MyApi = 
+  // GET {body: User} /fetch/user?{name: String}
+  (:= :> "fetch" :> "user" :> Query[String]('name) :> Get[MT.`application/json`, User]) :|:
+  // POST {body: User} /create/user
+  (:= :> "create" :> "user" :> ReqBody[Json, User] :> Post[MT.`application/json`, User])
 ```
 
 ### Client side
