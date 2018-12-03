@@ -134,7 +134,7 @@ response.headers
 ...
 ```
 
-In case Ammanote cannot resolve `com.dwijnand:sbt-compat:1.0.0` follow [this](https://github.com/pheymann/typedapi/blob/master/docs/ClientCreation.md#ammonite) solution.
+In case Ammonite cannot resolve `com.dwijnand:sbt-compat:1.0.0`, follow [this](https://github.com/pheymann/typedapi/blob/master/docs/ClientCreation.md#ammonite) solution.
 
 ## Documentation
 The documentation is located in [docs](https://github.com/pheymann/typedapi/blob/master/docs) and covers the following topics so far:
