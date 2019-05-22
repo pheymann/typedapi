@@ -3,6 +3,8 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/pheymann/Lobby)
 [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org/)
 
+*experimental project*: see issues [#39](https://github.com/pheymann/typedapi/issues/39) and [#41](https://github.com/pheymann/typedapi/issues/41)
+
 # Typedapi
 Define type safe APIs and let the Scala compiler do the rest:
 
